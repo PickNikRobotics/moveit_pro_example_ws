@@ -1,0 +1,122 @@
+<mujocoinclude>
+  <geom
+    name="lunar_band_n"
+    type="hfield"
+    hfield="lunar_band_n"
+    pos="0 12.5 -0.0874"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+    group="3"
+  />
+  <geom
+    name="lunar_band_s"
+    type="hfield"
+    hfield="lunar_band_s"
+    pos="0 -12.5 -0.0841"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+    group="3"
+  />
+  <geom
+    name="lunar_band_e"
+    type="hfield"
+    hfield="lunar_band_e"
+    pos="12.5 0 -0.1248"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+    group="3"
+  />
+  <geom
+    name="lunar_band_w"
+    type="hfield"
+    hfield="lunar_band_w"
+    pos="-12.5 0 -0.0710"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+    group="3"
+  />
+  <geom
+    name="lunar_band_n_visual"
+    type="hfield"
+    hfield="lunar_band_n_visual"
+    pos="0 12.5 -0.0862"
+    material="regolith_ground"
+    contype="0"
+    conaffinity="0"
+    group="2"
+  />
+  <geom
+    name="lunar_band_s_visual"
+    type="hfield"
+    hfield="lunar_band_s_visual"
+    pos="0 -12.5 -0.0830"
+    material="regolith_ground"
+    contype="0"
+    conaffinity="0"
+    group="2"
+  />
+  <geom
+    name="lunar_band_e_visual"
+    type="hfield"
+    hfield="lunar_band_e_visual"
+    pos="12.5 0 -0.1212"
+    material="regolith_ground"
+    contype="0"
+    conaffinity="0"
+    group="2"
+  />
+  <geom
+    name="lunar_band_w_visual"
+    type="hfield"
+    hfield="lunar_band_w_visual"
+    pos="-12.5 0 -0.0700"
+    material="regolith_ground"
+    contype="0"
+    conaffinity="0"
+    group="2"
+  />
+  <geom
+    name="lunar_band_ne_visual"
+    type="hfield"
+    hfield="lunar_band_ne_visual"
+    pos="12.5 12.5 -0.0718"
+    material="regolith_ground"
+    contype="0"
+    conaffinity="0"
+    group="2"
+  />
+  <geom
+    name="lunar_band_nw_visual"
+    type="hfield"
+    hfield="lunar_band_nw_visual"
+    pos="-12.5 12.5 -0.0645"
+    material="regolith_ground"
+    contype="0"
+    conaffinity="0"
+    group="2"
+  />
+  <geom
+    name="lunar_band_se_visual"
+    type="hfield"
+    hfield="lunar_band_se_visual"
+    pos="12.5 -12.5 -0.0651"
+    material="regolith_ground"
+    contype="0"
+    conaffinity="0"
+    group="2"
+  />
+  <geom
+    name="lunar_band_sw_visual"
+    type="hfield"
+    hfield="lunar_band_sw_visual"
+    pos="-12.5 -12.5 -0.0644"
+    material="regolith_ground"
+    contype="0"
+    conaffinity="0"
+    group="2"
+  />
+</mujocoinclude>

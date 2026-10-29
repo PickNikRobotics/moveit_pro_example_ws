@@ -61,11 +61,33 @@ def world_bounds(model, data, geom_id):
     return center - half, center + half
 
 
+DRIVABLE_HALF_M = 15.0  # generate_band_terrain.py's OUTER_M
+
+
+def band_ground(model, data, x, y):
+    """Top of the band's collision heightfields under (x, y)."""
+    band = {
+        i
+        for i in range(model.ngeom)
+        if model.geom(i).name.startswith("lunar_band_") and model.geom_contype[i]
+    }
+    groups = np.zeros(6, dtype=np.uint8)
+    for i in band:
+        groups[model.geom_group[i]] = 1
+    hit = np.array([-1], dtype=np.int32)
+    origin = np.array([x, y, 50.0])
+    distance = mujoco.mj_ray(
+        model, data, origin, np.array([0, 0, -1.0]), groups, True, -1, hit
+    )
+    assert distance > 0 and hit[0] in band, f"no band ground under ({x:.2f}, {y:.2f})"
+    return origin[2] - distance
+
+
 def check_base(model, data, scene, baseline):
     ids = [i for i in range(model.ngeom) if model.geom(i).name.startswith("moon_base_")]
     assert ids, "no moon base geoms loaded"
     bodies = {int(model.geom_bodyid[i]) for i in ids}
-    assert len(bodies) == 5, f"expected five fixed bodies, got {len(bodies)}"
+    assert len(bodies) == 10, f"expected ten fixed bodies, got {len(bodies)}"
     for body in bodies:
         assert model.body_jntnum[body] == 0, model.body(body).name
         assert model.body_parentid[body] == 0, model.body(body).name
@@ -87,26 +109,34 @@ def check_base(model, data, scene, baseline):
         assert np.any(high[:2] < route_low) or np.any(
             low[:2] > route_high
         ), f"{model.geom(i).name} overlaps the recorded route's footprint envelope"
-        assert np.all(low[:2] >= -10) and np.all(
-            high[:2] <= 10
-        ), f"{model.geom(i).name} extends beyond the terrain"
+        assert np.all(low[:2] >= -DRIVABLE_HALF_M) and np.all(
+            high[:2] <= DRIVABLE_HALF_M
+        ), f"{model.geom(i).name} extends beyond the drivable terrain"
     minimum = min(clearances)
     assert minimum >= 2, f"far-corner driveable clearance is only {minimum:.3f} m"
 
     root = ET.parse(scene).getroot()
-    hfield = root.find("asset/hfield[@name='lunar_hfield']")
-    half_x, half_y, scale, _ = map(float, hfield.get("size").split())
-    ground = root.find("worldbody/geom[@name='ground_plane']")
-    offset = float(ground.get("pos").split()[2])
-    meshdir = root.find("compiler").get("meshdir", "")
-    with Image.open(scene.parent / meshdir / hfield.get("file")) as image:
-        heights = np.asarray(image)[::-1, :].T / 255.0 * scale + offset
     for body in bodies:
         x, y, z = data.xpos[body]
-        ix = round((x + half_x) / (2 * half_x) * heights.shape[0])
-        iy = round((y + half_y) / (2 * half_y) * heights.shape[1])
+        if max(abs(x), abs(y)) < 10:
+            # The centre's bodies keep their recorded nearest-cell datums.
+            hfield = root.find("asset/hfield[@name='lunar_hfield']")
+            half_x, half_y, scale, _ = map(float, hfield.get("size").split())
+            ground = root.find("worldbody/geom[@name='ground_plane']")
+            offset = float(ground.get("pos").split()[2])
+            meshdir = root.find("compiler").get("meshdir", "")
+            with Image.open(scene.parent / meshdir / hfield.get("file")) as image:
+                heights = np.asarray(image)[::-1, :].T / 255.0 * scale + offset
+            ix = round((x + half_x) / (2 * half_x) * heights.shape[0])
+            iy = round((y + half_y) / (2 * half_y) * heights.shape[1])
+            expected = heights[ix, iy] - 0.04
+            tolerance = 1e-6
+        else:
+            # Band bodies sit 4 cm below the band's bilinear ground under their origin.
+            expected = band_ground(model, data, x, y) - 0.04
+            tolerance = 2e-3
         assert (
-            abs(z - (heights[ix, iy] - 0.04)) < 1e-6
+            abs(z - expected) < tolerance
         ), f"{model.body(body).name} datum differs from the committed terrain sample"
 
     # A visible-group ray from a future rover sensor must hit real base collision
@@ -116,9 +146,9 @@ def check_base(model, data, scene, baseline):
     visible = []
     for name in (
         "moon_base_door",
-        "moon_base_solar_left",
-        "moon_base_antenna_panel",
+        "moon_base_vertical_solar_panel",
         "moon_base_lander_payload",
+        "moon_base_garage_wall_right",
     ):
         target_id = model.geom(name).id
         direction = data.geom_xpos[target_id] - origin
@@ -150,22 +180,28 @@ def render_sheet(model, data, out):
     model.vis.global_.fovy = 75
     views = [
         (
-            "Chase view | looking across the rover toward the base",
-            [-5, -4, 5],
-            [1, 4.4, 1.1],
+            "Chase view | looking north across the rover toward the habitat and lander",
+            [0, -4.5, 6],
+            [0, 5.5, 1.0],
         ),
         (
-            "Route start corner | world (-0.30, 0.50), sensor height 1.2 m",
-            [-0.30, 0.50, 1.2],
-            [0.2, 6.5, 1.5],
+            "Outer band | looking south from the centre toward the logistics module, mesa and garage",
+            [0, 2.0, 4.5],
+            [3.0, -11.0, 0.5],
         ),
     ]
     landmarks = [
-        ("1", "moon_base_habitat_shell"),
-        ("2", "moon_base_solar_left"),
-        ("3", "moon_base_antenna_panel"),
-        ("4", "moon_base_lander_payload"),
-        ("5", "moon_base_pad_mark_right"),
+        [
+            ("1", "moon_base_habitat_shell"),
+            ("2", "moon_base_vertical_solar_panel"),
+            ("3", "moon_base_lander_payload"),
+            ("4", "moon_base_cargo_c"),
+        ],
+        [
+            ("5", "moon_base_logistics_module"),
+            ("6", "landmark_mesa"),
+            ("7", "moon_base_garage_roof_4"),
+        ],
     ]
     sheet = Image.new("RGB", (1280, 1640), "#15191e")
     draw = ImageDraw.Draw(sheet)
@@ -185,7 +221,7 @@ def render_sheet(model, data, out):
             forward, up = np.array(glcam.forward), np.array(glcam.up)
             right = np.cross(forward, up)
             focal = 360 / math.tan(math.radians(model.vis.global_.fovy) / 2)
-            for label, name in landmarks:
+            for label, name in landmarks[index]:
                 offset = data.geom_xpos[model.geom(name).id] - eye_actual
                 depth = offset @ forward
                 assert depth > 0, f"{name} behind evidence camera"
@@ -204,13 +240,14 @@ def render_sheet(model, data, out):
             sheet.paste(frame, (0, top + 56))
             draw.text(
                 (22, top + 788),
-                "1 Habitat / door    2 Solar array    3 Antenna    4 Lander    5 Landing pad",
+                [
+                    "1 Habitat    2 Solar mast    3 Lander    4 Cargo",
+                    "5 Logistics module    6 Mesa    7 Rover garage",
+                ][index],
                 font=font(21),
                 fill="#f3db80",
             )
-            frame.save(
-                out / f"moon_base_{'chase' if index == 0 else 'start_corner'}.png"
-            )
+            frame.save(out / f"moon_base_{'chase' if index == 0 else 'outer_band'}.png")
     sheet.save(out / "moon_base_render_sheet.png")
 
 

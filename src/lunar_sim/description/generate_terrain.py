@@ -73,6 +73,7 @@ CRATER_B = 2.0
 CRATER_DMIN_M = 0.05
 CRATER_DMAX_M = 2.0
 CRATER_COUNT = 600
+DEFAULT_SEED = 869
 CRATER_DEPTH_RATIO = (0.08, 0.15)  # depth/diameter, degraded regolith craterlets
 CRATER_RIM_RATIO = (0.02, 0.06)  # rim height/diameter
 CRATER_RIM_WIDTH = 0.3  # extra radius (x crater radius) the rim falloff extends over
@@ -114,11 +115,39 @@ def sample_crater_diameters(rng: np.random.Generator, count: int) -> np.ndarray:
     return (u * (dmin_b - dmax_b) + dmax_b) ** (-1.0 / CRATER_B)
 
 
-def stamp_craters(height_m: np.ndarray, rng: np.random.Generator) -> None:
+def crater_profile(
+    patch: np.ndarray,
+    u: np.ndarray,
+    e0: float,
+    depth_m: float,
+    rim_h_m: float,
+    allow=None,
+) -> None:
+    """Cut a crater's bowl and build its rim into `patch` in place. `u` is distance from the centre
+    in crater radii; `allow` optionally limits which cells may change."""
+    allow = np.ones_like(u, dtype=bool) if allow is None else allow
+    bowl_mask = (u <= 1.0) & allow
+    bowl = e0 + depth_m * (u**2 - 1.0)
+    patch[bowl_mask] = np.minimum(patch[bowl_mask], bowl[bowl_mask])
+    # The bowl reaches e0 at u=1 while the rim starts at its full crest there, so each
+    # crater ends in a one-cell vertical step of rim_h_m. Accepted, previously measured
+    # artifact: worst case over the committed seed-869 field is a 0.102 m step across one
+    # 2 cm cell. Part of what the Dead Reckon Square calibration in README.md measures.
+    rim_mask = (u > 1.0) & (u <= 1.0 + CRATER_RIM_WIDTH) & allow
+    t = (u[rim_mask] - 1.0) / CRATER_RIM_WIDTH
+    rim = e0 + rim_h_m * np.cos(t * np.pi / 2.0) ** 2
+    patch[rim_mask] = np.maximum(patch[rim_mask], rim)
+
+
+def stamp_craters(height_m: np.ndarray, rng: np.random.Generator) -> list[tuple]:
+    """Stamps the craters in order and returns each as (d, cx, cy, depth, rim_h, e0), e0 being the
+    reference elevation it was cut from, so generate_band_terrain.py can finish the ones its edge cuts.
+    """
     diameters = sample_crater_diameters(rng, CRATER_COUNT)
     cx_all = rng.uniform(-PLANE_HALF_M, PLANE_HALF_M, CRATER_COUNT)
     cy_all = rng.uniform(-PLANE_HALF_M, PLANE_HALF_M, CRATER_COUNT)
 
+    stamped = []
     for d, cx, cy in zip(diameters, cx_all, cy_all):
         radius_m = d / 2.0
         depth_m = rng.uniform(*CRATER_DEPTH_RATIO) * d
@@ -144,20 +173,12 @@ def stamp_craters(height_m: np.ndarray, rng: np.random.Generator) -> None:
         # stamped later correctly cut across earlier rims instead of just
         # summing without bound.
         e0 = height_m[min(px, N - 1), min(py, N - 1)]
+        stamped.append(
+            (float(d), float(cx), float(cy), float(depth_m), float(rim_h_m), float(e0))
+        )
 
-        patch = height_m[x0:x1, y0:y1]
-        bowl_mask = u <= 1.0
-        bowl = e0 + depth_m * (u**2 - 1.0)
-        patch[bowl_mask] = np.minimum(patch[bowl_mask], bowl[bowl_mask])
-
-        # The bowl reaches e0 at u=1 while the rim starts at its full crest there, so each
-        # crater ends in a one-cell vertical step of rim_h_m. Accepted, previously measured
-        # artifact: worst case over the committed seed-869 field is a 0.102 m step across one
-        # 2 cm cell. Part of what the Dead Reckon Square calibration in README.md measures.
-        rim_mask = (u > 1.0) & (u <= 1.0 + CRATER_RIM_WIDTH)
-        t = (u[rim_mask] - 1.0) / CRATER_RIM_WIDTH
-        rim = e0 + rim_h_m * np.cos(t * np.pi / 2.0) ** 2
-        patch[rim_mask] = np.maximum(patch[rim_mask], rim)
+        crater_profile(height_m[x0:x1, y0:y1], u, e0, depth_m, rim_h_m)
+    return stamped
 
 
 def build_heightfield(seed: int) -> tuple[np.ndarray, float, float]:
@@ -345,7 +366,7 @@ def height_at(height_m: np.ndarray, x: float, y: float) -> float:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--seed", type=int, default=869)
+    parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     args = parser.parse_args()
 
     ASSETS.mkdir(parents=True, exist_ok=True)

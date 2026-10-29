@@ -1,9 +1,9 @@
 <mujoco>
-  <!-- Five fixed bodies, no joints. All geoms are visible collision geometry in group 1.
+  <!-- Ten fixed bodies, no joints. All geoms are visible collision geometry in group 1.
        World +y is beyond the demo's far corner. Ground datum for each body is the
        committed hfield PNG's centre sample minus 0.04 m; supports extend below it.
        Coordinates, clearances, and provenance: moon_base_provenance.md. -->
-  <body name="moon_base_habitat" pos="0 6.8 -0.042010">
+  <body name="moon_base_habitat" pos="-2 6.6 -0.050982" euler="0 0 0.464">
     <geom
       name="moon_base_habitat_shell"
       type="cylinder"
@@ -104,9 +104,59 @@
       contype="1"
       conaffinity="1"
     />
+    <geom
+      name="moon_base_airlock"
+      type="cylinder"
+      fromto="1.05 0.3 1.3 2.3 0.3 1.3"
+      size="0.62"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_airlock_ring"
+      type="cylinder"
+      fromto="2.2 0.3 1.3 2.34 0.3 1.3"
+      size="0.66"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_airlock_hatch"
+      type="box"
+      pos="2.36 0.3 1.3"
+      size="0.02 0.35 0.4"
+      material="moon_base_dark"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_airlock_support"
+      type="box"
+      pos="1.8 0.3 0.33"
+      size="0.35 0.35 0.4"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_radiator"
+      type="box"
+      pos="-1.18 0.2 1.7"
+      size="0.05 1.1 0.55"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
   </body>
 
-  <body name="moon_base_solar_array" pos="-4 6 -0.059955">
+  <body name="moon_base_solar_array" pos="-12.3 6.5 -0.046032" euler="0 0 1.57">
     <geom
       name="moon_base_solar_frame"
       type="box"
@@ -180,9 +230,19 @@
       contype="1"
       conaffinity="1"
     />
+    <geom
+      name="moon_base_solar_cabinet"
+      type="box"
+      pos="0 0 0.45"
+      size="0.5 0.35 0.45"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
   </body>
 
-  <body name="moon_base_antenna" pos="-2.8 8.1 -0.030794">
+  <body name="moon_base_antenna" pos="12.6 3 -0.042619" euler="0 0 1.2">
     <geom
       name="moon_base_antenna_foundation"
       type="box"
@@ -223,9 +283,19 @@
       contype="1"
       conaffinity="1"
     />
+    <geom
+      name="moon_base_antenna_shelter"
+      type="box"
+      pos="0.8 0 0.47"
+      size="0.45 0.35 0.53"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
   </body>
 
-  <body name="moon_base_landing_pad" pos="6 6.4 -0.042010">
+  <body name="moon_base_landing_pad" pos="7 6.6 0.000610">
     <geom
       name="moon_base_pad_slab"
       type="cylinder"
@@ -259,7 +329,7 @@
   </body>
 
   <!-- Same sampled datum as the pad. Foot bottoms meet its top at local z=0.18. -->
-  <body name="moon_base_lander" pos="6 6.4 -0.042010">
+  <body name="moon_base_lander" pos="7 6.6 0.000610">
     <geom
       name="moon_base_lander_deck"
       type="cylinder"
@@ -366,6 +436,297 @@
       pos="1.15 1.15 0.23"
       size="0.22 0.05"
       material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+
+  <body
+    name="moon_base_vertical_solar"
+    pos="-5.5 6.6 -0.037524"
+    euler="0 0 -0.6"
+  >
+    <geom
+      name="moon_base_vertical_solar_cabinet"
+      type="box"
+      pos="0 0 0.45"
+      size="0.35 0.35 0.45"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_vertical_solar_mast"
+      type="cylinder"
+      fromto="0 0 0.9 0 0 4.7"
+      size="0.08"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_vertical_solar_panel"
+      type="box"
+      pos="0 -0.12 3.3"
+      size="0.7 0.03 1.3"
+      material="moon_base_cells"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+
+  <body name="moon_base_cargo" pos="-5 8.4 -0.035280" euler="0 0 0.3">
+    <geom
+      name="moon_base_cargo_a"
+      type="box"
+      pos="0 0 0.37"
+      size="0.6 0.4 0.53"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_cargo_b"
+      type="box"
+      pos="1.3 0.15 0.37"
+      euler="0 0 0.15"
+      size="0.6 0.4 0.53"
+      material="moon_base_insulation"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_cargo_c"
+      type="box"
+      pos="0.6 0.05 1.32"
+      euler="0 0 -0.1"
+      size="0.55 0.38 0.42"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+  <!-- Pressurized-rover shelter: two long walls, a back wall and a slatted half-cylinder roof, open at
+       the front, which faces the base. Wall skirts reach below the datum so uneven ground shows no gap. -->
+  <body name="moon_base_garage" pos="12.4 -9.5 -0.062495" euler="0 0 3.4416">
+    <geom
+      name="moon_base_garage_wall_left"
+      type="box"
+      pos="0 -1.1 0.675"
+      size="2.0 0.08 0.925"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_garage_wall_right"
+      type="box"
+      pos="0 1.1 0.675"
+      size="2.0 0.08 0.925"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_garage_wall_back"
+      type="box"
+      pos="2.0 0 0.675"
+      size="0.08 1.1 0.925"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_garage_roof_0"
+      type="box"
+      pos="0 1.1325 1.7997"
+      euler="-1.3963 0 0"
+      size="2.0 0.2107 0.03"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_garage_roof_1"
+      type="box"
+      pos="0 0.9959 2.1750"
+      euler="-1.0472 0 0"
+      size="2.0 0.2107 0.03"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_garage_roof_2"
+      type="box"
+      pos="0 0.7392 2.4810"
+      euler="-0.6981 0 0"
+      size="2.0 0.2107 0.03"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_garage_roof_3"
+      type="box"
+      pos="0 0.3933 2.6806"
+      euler="-0.3491 0 0"
+      size="2.0 0.2107 0.03"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_garage_roof_4"
+      type="box"
+      pos="0 0.0000 2.7500"
+      euler="0.0000 0 0"
+      size="2.0 0.2107 0.03"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_garage_roof_5"
+      type="box"
+      pos="0 -0.3933 2.6806"
+      euler="0.3491 0 0"
+      size="2.0 0.2107 0.03"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_garage_roof_6"
+      type="box"
+      pos="0 -0.7392 2.4810"
+      euler="0.6981 0 0"
+      size="2.0 0.2107 0.03"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_garage_roof_7"
+      type="box"
+      pos="0 -0.9959 2.1750"
+      euler="1.0472 0 0"
+      size="2.0 0.2107 0.03"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_garage_roof_8"
+      type="box"
+      pos="0 -1.1325 1.7997"
+      euler="1.3963 0 0"
+      size="2.0 0.2107 0.03"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+  <!-- Fission surface power unit: a reactor can between two radiator wings, on a pad. -->
+  <body name="moon_base_power" pos="-12.6 -4 -0.030276" euler="0 0 0">
+    <geom
+      name="moon_base_power_reactor"
+      type="cylinder"
+      pos="0 0 0.9"
+      size="0.55 0.9"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_power_radiator_left"
+      type="box"
+      pos="0.95 0 0.9"
+      size="0.4 0.04 0.85"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_power_radiator_right"
+      type="box"
+      pos="-0.95 0 0.9"
+      size="0.4 0.04 0.85"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_power_pad"
+      type="box"
+      pos="0 0 -0.05"
+      size="1.4 0.7 0.15"
+      material="moon_base_pad"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+  <!-- Logistics module on skids, its hatch at the east end. -->
+  <body name="moon_base_logistics" pos="-4 -12.4 -0.044122" euler="0 0 0.15">
+    <geom
+      name="moon_base_logistics_module"
+      type="box"
+      pos="0 0 0.95"
+      size="1.6 0.75 0.75"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_logistics_skid_left"
+      type="box"
+      pos="0 -0.55 0.02"
+      size="1.6 0.08 0.22"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_logistics_skid_right"
+      type="box"
+      pos="0 0.55 0.02"
+      size="1.6 0.08 0.22"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_logistics_hatch"
+      type="box"
+      pos="1.62 0 0.95"
+      size="0.04 0.35 0.45"
+      material="moon_base_dark"
       group="1"
       contype="1"
       conaffinity="1"
