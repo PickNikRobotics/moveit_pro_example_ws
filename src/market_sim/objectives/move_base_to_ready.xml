@@ -3,11 +3,10 @@
   <!-- Nav2 drives the base, so the same Objective serves mock and sim. -->
   <BehaviorTree
     ID="Move Base to Ready"
-    _description="Stow the arms, then drive the mobile base to the map origin, the Base Ready pose, with Nav2"
+    _description="Drive the A300 to the map origin, the Base Ready pose, with Nav2"
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Stow Arms for Navigation" _collapsed="true" />
       <Action
         ID="CreatePoseStamped"
         reference_frame="map"
@@ -15,7 +14,10 @@
         orientation_xyzw="0;0;0;1"
         pose_stamped="{base_ready}"
       />
-      <Action ID="SwitchController" activate_controllers="base_jgvc" />
+      <Action
+        ID="SwitchController"
+        activate_controllers="platform_velocity_controller"
+      />
       <Action
         ID="NavigateToPoseAction"
         action_name="/navigate_to_pose"

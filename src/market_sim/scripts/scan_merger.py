@@ -50,6 +50,7 @@ projection below is vectorized: one matrix multiply per source instead of a
 do_transform_point call per beam.
 """
 
+import copy
 import math
 
 import numpy as np
@@ -124,6 +125,8 @@ class ScanMerger(Node):
         self.scan_pub = self.create_publisher(
             LaserScan, self.get_parameter("output_topic").value, qos_pub
         )
+
+        self.mapping_pub = self.create_publisher(LaserScan, "/scan_mapping", qos_pub)
 
         merge_period = 1.0 / self.get_parameter("merge_rate_hz").value
         self.create_timer(merge_period, self._merge_and_publish)
@@ -263,6 +266,16 @@ class ScanMerger(Node):
         out.ranges = ranges_out.astype(np.float32).tolist()
 
         self.scan_pub.publish(out)
+        # The Simulator renders both lidars together. SLAM needs one instant and
+        # must skip empty bins instead of tracing phantom free-space rays.
+        if front.header.stamp == rear.header.stamp:
+            mapping_scan = copy.deepcopy(out)
+            mapping_scan.ranges = (
+                np.where(np.isfinite(ranges_out), ranges_out, 0.0)
+                .astype(np.float32)
+                .tolist()
+            )
+            self.mapping_pub.publish(mapping_scan)
 
 
 def main(args=None):

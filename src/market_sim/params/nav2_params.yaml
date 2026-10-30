@@ -1,5 +1,4 @@
-# Nav2 and Beluga AMCL for the Mobile FR3 Duo in the supermarket.
-# Structure follows hangar_sim; robot limits and the stowed-arms footprint are the Mobile FR3 Duo's.
+# Market navigation for the lunar_sim A300 differential-drive base.
 # The simulator stamps wall time, so use_sim_time is false throughout.
 
 amcl:
@@ -11,12 +10,12 @@ amcl:
       x: 0.0
       y: 0.0
       yaw: 0.0
-    # Odometry drifts on purpose (scripts/odometry_joint_state_publisher.py), so keep motion noise.
-    alpha1: 0.05
-    alpha2: 0.05
-    alpha3: 0.1
-    alpha4: 0.05
-    alpha5: 0.05
+    # Yaw and rolling scale are calibrated; lateral skid during turns remains unobserved.
+    alpha1: 0.02
+    alpha2: 0.001
+    alpha3: 0.001
+    alpha4: 0.1
+    alpha5: 0.001
     base_frame_id: "base_link"
     global_frame_id: "map"
     odom_frame_id: "odom"
@@ -26,28 +25,29 @@ amcl:
     laser_min_range: 0.1
     laser_model_type: "likelihood_field"
     # Beluga subsamples the merged scan's rays evenly.
-    max_beams: 800
-    max_particles: 2000
-    min_particles: 500
+    max_beams: 1440
+    max_particles: 6000
+    min_particles: 4000
     pf_err: 0.05
     pf_z: 0.99
-    # Random-particle recovery, as in hangar_sim; both at 0 would disable it.
-    recovery_alpha_fast: 0.1
-    recovery_alpha_slow: 0.001
+    # Disable random injection for this known, static simulation map.
+    recovery_alpha_fast: 0.0
+    recovery_alpha_slow: 0.0
     resample_interval: 1
+    # Allow lateral skid uncertainty while the controller remains differential drive.
     robot_model_type: "nav2_amcl::OmniMotionModel"
     save_pose_rate: 0.5
-    sigma_hit: 0.2
+    sigma_hit: 0.04
     tf_broadcast: true
     transform_tolerance: 1.0
-    update_min_a: 0.05
-    update_min_d: 0.25
-    z_hit: 0.5
+    update_min_a: 0.01
+    update_min_d: 0.02
+    z_hit: 0.95
     z_max: 0.05
-    z_rand: 0.5
+    z_rand: 0.05
     z_short: 0.05
-    # Both lidars' scans, merged into one 360 deg scan by the persist launch file.
-    scan_topic: /scan
+    # Both lidars must have matching acquisition stamps for one coherent observation.
+    scan_topic: /scan_mapping
 
 map_server:
   ros__parameters:
@@ -60,7 +60,7 @@ bt_navigator:
     use_sim_time: false
     global_frame: map
     robot_base_frame: base_link
-    odom_topic: /odom
+    odom_topic: /odom_filtered
     bt_loop_duration: 10
     default_server_timeout: 500
     wait_for_service_timeout: 1000
@@ -69,11 +69,11 @@ bt_navigator:
 controller_server:
   ros__parameters:
     use_sim_time: false
-    odom_topic: /odom
+    odom_topic: /odom_filtered
     controller_frequency: 20.0
     costmap_update_timeout: 0.30
     min_x_velocity_threshold: 0.001
-    # The base is holonomic, so sideways odometry must reach the controller.
+    # Differential drive has no lateral command.
     min_y_velocity_threshold: 0.001
     min_theta_velocity_threshold: 0.001
     failure_tolerance: 0.3
@@ -94,12 +94,14 @@ controller_server:
       plugin: "nav2_rotation_shim_controller::RotationShimController"
       primary_controller: "nav2_mppi_controller::MPPIController"
       # Turn rate and acceleration within the base's limits (wz_max, the velocity smoother).
-      rotate_to_heading_angular_vel: 0.5
-      max_angular_accel: 0.3
+      rotate_to_heading_angular_vel: 1.2
+      max_angular_accel: 1.2
       # Aim at the path well ahead and turn until nearly aligned, so the base drives the aisles straight.
       forward_sampling_distance: 1.5
       angular_dist_threshold: 0.35
       angular_disengage_threshold: 0.1
+      # Replans to the same goal must not restart the initial heading alignment.
+      rotate_to_heading_once: true
       time_steps: 56
       model_dt: 0.05
       batch_size: 2000
@@ -109,21 +111,21 @@ controller_server:
       ay_min: -3.0
       az_max: 3.5
       vx_std: 0.2
-      vy_std: 0.2
+      vy_std: 0.0
       wz_std: 0.4
-      # The URDF planar joint velocity limits.
-      vx_max: 0.35
-      vx_min: -0.35
-      vy_max: 0.35
-      wz_max: 0.5
+      # Simulation navigation speeds within the A300 controller limits.
+      vx_max: 1.2
+      vx_min: -1.2
+      vy_max: 0.0
+      wz_max: 1.2
       iteration_count: 1
       # Seed rollouts from the last command, not lagging odometry; needs MPPI 1.3.13 (Dockerfile).
       open_loop: true
-      prune_distance: 1.7
+      prune_distance: 4.0
       transform_tolerance: 0.1
       temperature: 0.3
       gamma: 0.015
-      motion_model: "Omni"
+      motion_model: "DiffDrive"
       visualize: true
       regenerate_noises: true
       TrajectoryVisualizer:
@@ -205,11 +207,11 @@ local_costmap:
       global_frame: odom
       robot_base_frame: base_link
       rolling_window: true
-      width: 5
-      height: 5
+      width: 8
+      height: 8
       resolution: 0.05
-      # The base with both arms and the spine at the Stow waypoint; a test keeps both costmaps equal.
-      footprint: "[[-0.441, -0.326], [0.294, -0.326], [0.294, -0.399], [0.693, -0.399], [0.819, -0.326], [0.861, -0.147], [0.861, 0.147], [0.819, 0.326], [0.693, 0.399], [0.294, 0.399], [0.294, 0.326], [-0.441, 0.326]]"
+      # The A300 bumpers and wheels; a test keeps both costmaps equal.
+      footprint: "[[-0.60, -0.40], [0.60, -0.40], [0.60, 0.40], [-0.60, 0.40]]"
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
@@ -250,7 +252,7 @@ local_costmap:
         # A slower decay keeps a cost gradient across the wider inflation, pushing the controller off the racks.
         cost_scaling_factor: 2.0
         # The footprint's circumscribed radius, rounded up to the next 0.1 m.
-        inflation_radius: 0.9
+        inflation_radius: 0.8
       always_send_full_costmap: true
       transform_tolerance: 0.3
 
@@ -262,8 +264,8 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
-      # The base with both arms and the spine at the Stow waypoint; a test keeps both costmaps equal.
-      footprint: "[[-0.441, -0.326], [0.294, -0.326], [0.294, -0.399], [0.693, -0.399], [0.819, -0.326], [0.861, -0.147], [0.861, 0.147], [0.819, 0.326], [0.693, 0.399], [0.294, 0.399], [0.294, 0.326], [-0.441, 0.326]]"
+      # The A300 bumpers and wheels; a test keeps both costmaps equal.
+      footprint: "[[-0.60, -0.40], [0.60, -0.40], [0.60, 0.40], [-0.60, 0.40]]"
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
@@ -308,7 +310,7 @@ global_costmap:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 4.0
         # The footprint's circumscribed radius, rounded up to the next 0.1 m.
-        inflation_radius: 0.9
+        inflation_radius: 0.8
       always_send_full_costmap: true
       transform_tolerance: 0.3
 
@@ -318,17 +320,29 @@ planner_server:
     expected_planner_frequency: 20.0
     # GridBased (NavFn) serves Nav2's stock tree and the Navigate to Aisle Objectives;
     # SmacLattice serves the tree the driver launch file writes for Navigate with SMAC.
-    planner_plugins: ["GridBased", "SmacLattice"]
+    planner_plugins: ["GridBased", "Smac2D", "ThetaStar", "SmacLattice"]
     GridBased:
       plugin: "nav2_navfn_planner::NavfnPlanner"
       tolerance: 0.5
       use_astar: false
       allow_unknown: true
-    # State Lattice with Nav2's omnidirectional primitives at the costmap resolution:
+    # Cost-aware grid alternatives share the same obstacle/inflation costmap.
+    Smac2D:
+      plugin: "nav2_smac_planner::SmacPlanner2D"
+      tolerance: 0.5
+      allow_unknown: true
+      max_planning_time: 3.0
+    ThetaStar:
+      plugin: "nav2_theta_star_planner::ThetaStarPlanner"
+      how_many_corners: 8
+      allow_unknown: true
+      w_euc_cost: 1.0
+      w_traversal_cost: 2.0
+    # State Lattice with Nav2's differential-drive primitives at the costmap resolution:
     # it checks the footprint polygon at every pose of the plan.
     SmacLattice:
       plugin: "nav2_smac_planner::SmacPlannerLattice"
-      lattice_filepath: "/opt/ros/jazzy/share/nav2_smac_planner/sample_primitives/5cm_resolution/0.5m_turning_radius/omni/output.json"
+      lattice_filepath: "/opt/ros/jazzy/share/nav2_smac_planner/sample_primitives/5cm_resolution/0.5m_turning_radius/diff/output.json"
       allow_unknown: true
       # Cross-store plans on the fine grid need longer than the default.
       max_planning_time: 10.0
@@ -367,8 +381,8 @@ behavior_server:
     robot_base_frame: base_link
     transform_tolerance: 0.1
     simulate_ahead_time: 2.0
-    # Kept within the planar_theta velocity limit.
-    max_rotational_vel: 0.5
+    # Kept within the A300 controller yaw limit.
+    max_rotational_vel: 1.2
     min_rotational_vel: 0.2
     rotational_acc_lim: 3.2
 
@@ -389,11 +403,78 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [0.35, 0.35, 0.5]
-    min_velocity: [-0.35, -0.35, -0.5]
-    max_accel: [0.4, 0.4, 0.3]
-    max_decel: [-0.4, -0.4, -0.3]
-    odom_topic: "odom"
+    max_velocity: [1.2, 0.0, 1.2]
+    min_velocity: [-1.2, 0.0, -1.2]
+    max_accel: [1.0, 0.0, 1.2]
+    max_decel: [-2.0, 0.0, -1.2]
+    odom_topic: "/odom_filtered"
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0
+
+# SLAM uses wheel/IMU fused odometry, scan matching and loop closures.
+slam_toolbox:
+  ros__parameters:
+    use_sim_time: false
+
+    # Plugin params
+    solver_plugin: solver_plugins::CeresSolver
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+
+    # ROS Parameters
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_link
+    scan_topic: /scan_mapping
+    mode: mapping
+
+    debug_logging: true
+    throttle_scans: 1
+    transform_publish_period: 0.02
+    map_update_interval: 1.0
+    resolution: 0.05
+    max_laser_range: 25.4
+    minimum_time_interval: 0.2
+    tf_buffer_duration: 30.0
+    stack_size_to_use: 40000000
+    enable_interactive_mode: true
+
+    # General Parameters
+    use_scan_matching: true
+    use_scan_barycenter: true
+    minimum_travel_distance: 0.3
+    minimum_travel_heading: 0.3
+    scan_buffer_size: 10
+    scan_buffer_maximum_scan_distance: 10.0
+    link_match_minimum_response_fine: 0.1
+    link_scan_maximum_distance: 1.5
+    loop_search_maximum_distance: 3.0
+    do_loop_closing: true
+    loop_match_minimum_chain_size: 10
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.55
+    loop_match_minimum_response_fine: 0.65
+
+    # Correlation Parameters
+    correlation_search_space_dimension: 0.02
+    correlation_search_space_resolution: 0.01
+    correlation_search_space_smear_deviation: 0.1
+
+    # Loop Closure Parameters
+    loop_search_space_dimension: 8.0
+    loop_search_space_resolution: 0.05
+    loop_search_space_smear_deviation: 0.03
+
+    # Scan Matcher Parameters
+    distance_variance_penalty: 0.0001
+    angle_variance_penalty: 0.000001
+    fine_search_angle_offset: 0.0001
+    coarse_search_angle_offset: 0.0002
+    coarse_angle_resolution: 0.0002
+    minimum_angle_penalty: 0.001
+    minimum_distance_penalty: 0.001
+    use_response_expansion: false

@@ -172,6 +172,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     done && \
     rm -f "${ldd_out}"
 
+# Install the optional Nyx color-camera renderer.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    if [ -f /opt/nyx_shim/lib/liboidn_device_shim.so ]; then \
+      /opt/nyx_shim/install_runtime.sh; \
+    elif [ -f /etc/vulkan/icd.d/nvidia_icd.json ]; then \
+      pip install --break-system-packages --only-binary=:all: --index-url https://download.pytorch.org/whl/cu130 torch==2.10.0+cu130 && pip install --break-system-packages --only-binary=:all: gs_nyx==0.1.3 && pip check; \
+    fi
+
 # Install additional dependencies
 # You can also add any necessary apt-get install, pip install, etc. commands at this point.
 # NOTE: The /opt/overlay_ws folder contains MoveIt Pro binary packages and the source file.

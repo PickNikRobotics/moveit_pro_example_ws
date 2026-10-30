@@ -1,0 +1,416 @@
+<mujoco model="husky_a300">
+  <compiler angle="radian" meshdir="assets" autolimits="true" />
+
+  <!-- No timestep here on purpose: it lives in husky_scene.xml, which includes this file. A
+       timestep set here would silently override the scene's. -->
+  <option integrator="implicitfast" />
+
+  <asset>
+    <material name="husky_dark_grey" rgba="0.15 0.15 0.15 1" />
+    <material name="husky_chassis_yellow" rgba="0.85 0.65 0.05 1" />
+    <mesh name="chassis_collision" file="a300/chassis_collision.stl" />
+    <mesh name="outdoor_left" file="a300/outdoor_left.stl" />
+    <mesh name="outdoor_right" file="a300/outdoor_right.stl" />
+    <!-- Visual-only body meshes, converted from the vendored chassis.dae/livery.dae/
+         status_lights.dae/attachments/bumper.dae (COLLADA has no native MuJoCo loader) via
+         trimesh+pycollada, geometry only - see AGENTS.md's "Vendored A300 visual meshes" note.
+         Each keeps the source mesh's own local frame, so it drops onto chassis_link with the
+         same pos/quat math as the URDF composes it (see the geoms below). -->
+    <mesh name="chassis_visual" file="a300/chassis.obj" />
+    <mesh name="livery" file="a300/livery.obj" />
+    <mesh name="status_lights" file="a300/status_lights.obj" />
+    <mesh name="bumper" file="a300/bumper.obj" />
+    <!-- Vendored attachment STLs (already MuJoCo-compatible, no conversion needed), millimeter
+         scale per their own URDF mesh tags. -->
+    <mesh
+      name="observer_enclosure"
+      file="a300/observer_enclosure.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="observer_access_panels"
+      file="a300/observer_access_panels.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="observer_arch"
+      file="a300/observer_arch.stl"
+      scale="0.001 0.001 0.001"
+    />
+  </asset>
+
+  <!-- Wheel offsets relative to chassis_link (==base_link for the diff_4wd control mode
+       clearpath_platform_description uses here, chassis_x/y/z all 0) are the FK sum of
+       a300.urdf.xacro's suspension-mount chain: chassis_suspension_mount(0, 0.192, 0.03763)
+       -> suspension_beam spacer(0, +-0.0159, 0) -> beam front/rear mount(+-0.256, 0.0095,
+       -0.0085) -> motor_mount(0, +-0.0655, 0). Sum: x=+-0.256, y=+0.2829 (left) / -0.2639 (right),
+       z=0.02913 - the y is NOT sign-symmetric because the 0.0095 beam-mount term does not flip
+       with side; see the wheel-body comment below. Matches the URDF's own FK (front wheel
+       centers at z=0.0291 above base_link).
+       See a300_outdoor_wheel_radius=0.1651 in
+       clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro. -->
+  <worldbody>
+    <body name="chassis_link" pos="0 0 0.13597">
+      <freejoint />
+      <!-- Body-aligned IMU, using the same real MuJoCo sensor contract as hangar_sim. -->
+      <site name="imu_site" pos="0 0 0" size="0.01" rgba="0 1 0 0" />
+      <inertial pos="0 0 0.1148" mass="70" diaginertia="1.1409 4.6217 5.1478" />
+      <!-- Collision proxy only. Geom group 3 is hidden by MuJoCo's own default visualization
+           options (mjv_defaultOption enables geom groups 0-2 only); nothing in husky_scene.xml
+           sets geomgroup. Same visual/group=2 vs collision/group=3 split as hangar_sim. The
+           detailed visual meshes below sit at the same pose and would z-fight with this if both
+           were shown. -->
+      <geom
+        name="chassis_collision"
+        mesh="chassis_collision"
+        type="mesh"
+        contype="1"
+        conaffinity="1"
+        group="3"
+      />
+      <!-- Visual body: chassis.dae/livery.dae/status_lights.dae are layered in the URDF at
+           chassis_link's own origin (identity), so no pos/quat is needed here either. -->
+      <geom
+        name="chassis_visual"
+        mesh="chassis_visual"
+        material="husky_chassis_yellow"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="livery"
+        mesh="livery"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="status_lights"
+        mesh="status_lights"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <!-- Bumpers: bumper.dae's own local-frame vertices already land at the front-bumper pose
+           relative to chassis_link (its URDF visual origin exactly cancels the front mount
+           offset - see AGENTS.md), so the front instance needs no transform. The rear instance
+           reuses the same asset 180 deg about Z, which by the same cancellation lands it at the
+           mirrored pose - both verified against husky_a300.xml's own front/rear FK derivation. -->
+      <geom
+        name="front_bumper"
+        mesh="bumper"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="rear_bumper"
+        mesh="bumper"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+        quat="0 0 0 1"
+      />
+      <!-- Sensor enclosure + access panels: identity offset from chassis_link (amp_enclosure is
+           mounted on base_link with no origin in husky_a300_mujoco.xacro's macro call). -->
+      <geom
+        name="enclosure"
+        mesh="observer_enclosure"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="access_panels"
+        mesh="observer_access_panels"
+        material="husky_chassis_yellow"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <!-- Sensor arch: mounted on the enclosure's antenna frame, (-0.4028, 0, 0.4074593) from
+           chassis_link (enclosure_antenna_mount's own offset, per amp_enclosure.urdf.xacro). -->
+      <geom
+        name="sensor_arch"
+        mesh="observer_arch"
+        material="husky_chassis_yellow"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+        pos="-0.4028 0 0.4074593"
+      />
+
+      <!-- Clearpath amp_enclosure's front_lidar_mount is (0.4, 0, 0.2708593).
+           A 50 mm forward/up bracket puts the scan above the front mounting shelf.
+           The rear scanner hangs 60 mm below amp_sensor_arch's lidar_mount:
+           (-0.4028,0,0.4074593) + (0.130,0,0.30256), at the arch's underside.
+           These are A300 accessory mounts, not symmetric bumper mounts. -->
+      <body name="lidar_front_link" pos="0.45 0 0.3208593">
+        <geom
+          name="lidar_front_bracket"
+          type="box"
+          size="0.045 0.035 0.008"
+          pos="-0.025 0 -0.05"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+        <camera
+          name="lidar_front"
+          mode="fixed"
+          xyaxes="0 -1 0 0 0 1"
+          fovy="70"
+          resolution="811 3"
+          user="2 270 0.05 25"
+        />
+        <site
+          name="lidar_front_optical_frame"
+          xyaxes="0 -1 0 0 0 -1"
+          rgba="0 0 0 0"
+        />
+        <!-- Visual-only housing caps above and below the scan plane. They sit inside
+             the renderer's near clip (vis.map.znear * stat.extent, about 0.28 m), so
+             the depth render never sees them; that clip is also the effective
+             minimum range of the scan. -->
+        <geom
+          name="lidar_front_upper"
+          type="cylinder"
+          size="0.03 0.018"
+          pos="0 0 0.024"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+        <geom
+          name="lidar_front_lower"
+          type="cylinder"
+          size="0.03 0.018"
+          pos="0 0 -0.024"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+      </body>
+      <body name="lidar_rear_link" pos="-0.2728 0 0.6500193">
+        <geom
+          name="lidar_rear_bracket"
+          type="cylinder"
+          size="0.02 0.009"
+          pos="0 0 0.051"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+        <camera
+          name="lidar_rear"
+          mode="fixed"
+          xyaxes="0 1 0 0 0 1"
+          fovy="70"
+          resolution="811 3"
+          user="2 270 0.05 25"
+        />
+        <site
+          name="lidar_rear_optical_frame"
+          xyaxes="0 1 0 0 0 -1"
+          rgba="0 0 0 0"
+        />
+        <geom
+          name="lidar_rear_upper"
+          type="cylinder"
+          size="0.03 0.018"
+          pos="0 0 0.024"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+        <geom
+          name="lidar_rear_lower"
+          type="cylinder"
+          size="0.03 0.018"
+          pos="0 0 -0.024"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+      </body>
+
+      <!-- On the arch's real front camera mount: upstream puts it at (0.0775, 0, 0.40896) from
+           the arch, which sits at (-0.4028, 0, 0.4074593) from chassis_link. A test checks it. -->
+      <camera
+        name="oakd_color"
+        pos="-0.3253 0 0.8164193"
+        xyaxes="0 -1 0 0 0 1"
+        fovy="50.53401584672457"
+        mode="fixed"
+        resolution="1280 721"
+      />
+      <site
+        name="oakd_color_optical_frame"
+        pos="-0.3253 0 0.8164193"
+        xyaxes="0 -1 0 0 0 -1"
+      />
+      <camera
+        name="oakd_left"
+        pos="-0.3253 0.0375 0.8164193"
+        xyaxes="0 -1 0 0 0 1"
+        fovy="50.53401584672457"
+        mode="fixed"
+        resolution="1280 721"
+        user="1"
+      />
+      <site
+        name="oakd_left_optical_frame"
+        pos="-0.3253 0.0375 0.8164193"
+        xyaxes="0 -1 0 0 0 -1"
+      />
+      <camera
+        name="oakd_right"
+        pos="-0.3253 -0.0375 0.8164193"
+        xyaxes="0 -1 0 0 0 1"
+        fovy="50.53401584672457"
+        mode="fixed"
+        resolution="1280 721"
+        user="1"
+      />
+      <site
+        name="oakd_right_optical_frame"
+        pos="-0.3253 -0.0375 0.8164193"
+        xyaxes="0 -1 0 0 0 -1"
+      />
+
+      <!-- Visual-only housing. Everything stays at or behind the optical plane, or it would
+           occlude all three images (group 2 is what the offscreen pass renders). -->
+      <geom
+        name="oakd_housing"
+        type="box"
+        size="0.0125 0.05 0.015"
+        pos="-0.3378 0 0.8164193"
+        material="husky_dark_grey"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="oakd_left_lens"
+        type="cylinder"
+        fromto="-0.3453 0.0375 0.8164193 -0.3263 0.0375 0.8164193"
+        size="0.011"
+        rgba="0.05 0.05 0.06 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="oakd_color_lens"
+        type="cylinder"
+        fromto="-0.3453 0 0.8164193 -0.3263 0 0.8164193"
+        size="0.011"
+        rgba="0.05 0.05 0.06 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="oakd_right_lens"
+        type="cylinder"
+        fromto="-0.3453 -0.0375 0.8164193 -0.3263 -0.0375 0.8164193"
+        size="0.011"
+        rgba="0.05 0.05 0.06 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <!-- The IR projector is what makes this a Pro. Cosmetic: MuJoCo projects no IR pattern. -->
+      <geom
+        name="oakd_ir_projector"
+        type="cylinder"
+        fromto="-0.3453 0.019 0.8164193 -0.3283 0.019 0.8164193"
+        size="0.007"
+        rgba="0.35 0.05 0.05 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+
+      <!-- MuJoCo's <include> splices in only the included file's children, discarding its
+           own wrapping element - so the real body name/pos live here, and each *_wheel_link.xml
+           file's outer <body> tag is a throwaway wrapper (just satisfies "one root element" for
+           valid standalone XML).
+
+           Right-side y is NOT the left side's mirrored sign: FK through the vendored xacro chain
+           (a300.urdf.xacro's chassis_suspension_mount_y=0.192 -> suspension_beam.urdf.xacro's
+           side-conditional spacer_offset (+/-0.0159) -> its own front/rear_mount_joint, whose
+           y=0.0095 is a literal, non-side-conditional offset applied in both beams' unrotated local
+           frames, so it does NOT flip sign with side -> motor.urdf.xacro's side-conditional
+           translation_y (+/-0.0655)) gives left=+0.2829 but right=-0.2639, not -0.2829: the
+           un-mirrored 0.0095 term breaks the naive left/right symmetry by 19 mm. -->
+      <body name="front_left_wheel_link" pos="0.256 0.2829 0.02913">
+        <include file="front_left_wheel_link.xml" />
+      </body>
+      <body name="front_right_wheel_link" pos="0.256 -0.2639 0.02913">
+        <include file="front_right_wheel_link.xml" />
+      </body>
+      <body name="rear_left_wheel_link" pos="-0.256 0.2829 0.02913">
+        <include file="rear_left_wheel_link.xml" />
+      </body>
+      <body name="rear_right_wheel_link" pos="-0.256 -0.2639 0.02913">
+        <include file="rear_right_wheel_link.xml" />
+      </body>
+    </body>
+  </worldbody>
+
+  <!-- kv=500 with the wheel joints' armature=1.0 (see front_left_wheel_link.xml) gives
+       tau = armature/kv = 0.002 s, below husky_scene.xml's 0.003 s timestep. See AGENTS.md's
+       "Velocity actuators: armature/kv time-constant must stay below the timestep". -->
+  <actuator>
+    <velocity
+      name="front_left_wheel_joint"
+      joint="front_left_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="front_right_wheel_joint"
+      joint="front_right_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="rear_left_wheel_joint"
+      joint="rear_left_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="rear_right_wheel_joint"
+      joint="rear_right_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+  </actuator>
+  <sensor>
+    <framequat objtype="site" objname="imu_site" />
+    <gyro site="imu_site" />
+    <accelerometer site="imu_site" />
+  </sensor>
+</mujoco>

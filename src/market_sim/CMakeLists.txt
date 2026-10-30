@@ -12,16 +12,15 @@ install(
     mjcf
     objectives
     params
-    waypoints
   DESTINATION
     share/${PROJECT_NAME}
 )
 
 install(
   PROGRAMS
-    scripts/base_twist_to_planar.py
+    scripts/navigation_scan_relay.py
+    scripts/stamp_nav_velocity.py
     scripts/lidar_flattener.py
-    scripts/odometry_joint_state_publisher.py
     scripts/reset_relocalizer.py
     scripts/scan_merger.py
   DESTINATION
@@ -33,6 +32,15 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           reset_relocalizer_test test/test_reset_relocalizer.py
           TIMEOUT 30)
+  ament_add_pytest_test(
+          camera_renderer_test test/test_camera_renderer.py
+          TIMEOUT 30)
+  ament_add_pytest_test(
+          ground_truth_navigation_test test/test_ground_truth_navigation.py
+          TIMEOUT 30)
+  ament_add_pytest_test(
+          scan_merger_test test/test_scan_merger.py
+          TIMEOUT 30)
   # The generated scene, map and Objectives against the generator, and the compiled MuJoCo model.
   ament_add_pytest_test(
           market_scene_test test/test_market_scene.py
@@ -41,12 +49,6 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           nav2_footprint_test test/test_nav2_footprint.py
           TIMEOUT 60)
-  ament_add_pytest_test(
-          base_twist_to_planar_test test/test_base_twist_to_planar.py
-          TIMEOUT 30)
-  ament_add_pytest_test(
-          odometry_joint_state_publisher_test test/test_odometry_joint_state_publisher.py
-          TIMEOUT 30)
 endif()
 
 ament_package()

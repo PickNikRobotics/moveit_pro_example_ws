@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="husky_a300">
+  <!-- A300 platform body from clearpathrobotics/clearpath_common's clearpath_platform_description
+       package (BSD-licensed), vendored under ../../external_dependencies and kept byte-identical to
+       upstream. This file supplies its own MuJoCo ros2_control block below, so
+       use_platform_controllers:=false keeps the upstream ros2_control include out of the build. -->
+  <xacro:arg name="use_platform_controllers" default="false" />
+  <!-- a300.urdf.xacro declares this arg with a default that resolves $(find clearpath_control), a
+       package this config never uses (no Gazebo) and does not vendor. Declaring it first wins: xacro
+       only applies an <xacro:arg> default for a name it has not already seen, so the upstream
+       default is never evaluated. -->
+  <xacro:arg name="gazebo_controllers" default="unused" />
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/common.urdf.xacro" />
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/a300.urdf.xacro" />
+  <xacro:a300 control="diff_4wd" front_wheels="outdoor" rear_wheels="outdoor" />
+
+  <!-- FRAME NAMING: see README.md for the full footprint-vs-base_footprint explanation.
+       Unchanged by the MuJoCo migration. -->
+  <link name="footprint" />
+  <joint name="footprint_joint" type="fixed">
+    <parent link="footprint" />
+    <child link="base_link" />
+    <origin xyz="0 0 0.13597" rpy="0 0 0" />
+  </joint>
+
+  <!-- Standard A300 accessory kit. The arch carries an OAK-D Pro and the lidar bodies below match
+       husky_a300.xml; MujocoSystem publishes their optical-frame sites. -->
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/bumper.urdf.xacro" />
+  <xacro:bumper name="front_bumper" model="default" parent_link="front_bumper_mount" extension="0.0">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:bumper>
+  <xacro:bumper name="rear_bumper" model="default" parent_link="rear_bumper_mount" extension="0.0">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:bumper>
+
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/amp_enclosure.urdf.xacro" />
+  <xacro:amp_enclosure name="enclosure" model="amp_enclosure" parent_link="base_link">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:amp_enclosure>
+
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/amp_sensor_arch.urdf.xacro" />
+  <xacro:amp_sensor_arch name="sensor_arch" model="amp_sensor_arch" parent_link="enclosure_antenna_mount">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:amp_sensor_arch>
+
+  <!-- Positions compose the vendored enclosure_front_lidar_mount and
+       sensor_arch_lidar_mount chains, plus the brackets documented in the MJCF. -->
+  <xacro:macro name="lunar_lidar_body" params="name xyz">
+    <link name="${name}_link">
+      <visual>
+        <geometry><cylinder radius="0.03" length="0.084" /></geometry>
+        <material name="sensor_grey"><color rgba="0.15 0.15 0.15 1" /></material>
+      </visual>
+    </link>
+    <joint name="${name}_joint" type="fixed">
+      <parent link="chassis_link" /><child link="${name}_link" />
+      <origin xyz="${xyz}" />
+    </joint>
+  </xacro:macro>
+  <xacro:lunar_lidar_body name="lidar_front" xyz="0.45 0 0.3208593" />
+  <xacro:lunar_lidar_body name="lidar_rear" xyz="-0.2728 0 0.6500193" />
+
+  <!-- MuJoCo hardware: real physics, driven by mjcf/scene.xml (see that file and
+       husky_a300.xml for the body/wheel/actuator model). Wheel joint names match
+       clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro
+       (front_left_wheel_joint etc.), same names the mock hardware block used, and the same
+       names the MJCF wheel joints in husky_a300.xml declare. -->
+  <xacro:arg name="mujoco_model" default="mjcf/scene.xml" />
+  <xacro:arg name="mujoco_viewer" default="false" />
+  <!-- Names the keyframe (the market scene's <keyframe>) that the MoveIt Pro UI's built-in
+       "Reset Simulation" control and MujocoBehaviorsLoader's ResetMujocoKeyframe Behavior use by
+       default - same pattern as moveit_pro_kinova_configs' space_satellite_sim.xacro. -->
+  <xacro:arg name="mujoco_keyframe" default="default" />
+  <!-- Renders and publishes the OAK-D's stereo pair. Off unless a visual odometry consumer is
+       running; see the <sensor> blocks below. -->
+  <xacro:arg name="enable_vo" default="false" />
+  <!-- Match the Runtime camera launch: Nyx owns color only; MuJoCo keeps depth and lidar. -->
+  <xacro:arg name="camera_renderer" default="$(optenv MOVEIT_PRO_CAMERA_RENDERER opengl)" />
+  <xacro:property name="camera_renderer" value="$(arg camera_renderer)" />
+  <xacro:if value="${camera_renderer not in ('', 'opengl', 'nyx', 'both')}">
+    ${xacro.fatal("Unknown MOVEIT_PRO_CAMERA_RENDERER '" + camera_renderer + "'; choose opengl, nyx or both.")}
+  </xacro:if>
+  <xacro:macro name="camera_renderer_sensor" params="camera">
+    <xacro:if value="${camera_renderer == 'nyx'}">
+      <sensor name="${camera}">
+        <param name="color_enabled">false</param>
+      </sensor>
+    </xacro:if>
+    <xacro:if value="${camera_renderer == 'both'}">
+      <sensor name="${camera}">
+        <param name="rgb_topic">${camera}/opengl/color</param>
+        <param name="camera_info_topic">${camera}/opengl/camera_info</param>
+      </sensor>
+    </xacro:if>
+  </xacro:macro>
+  <ros2_control name="husky_a300_hardware" type="system">
+    <xacro:camera_renderer_sensor camera="scene_camera" />
+    <xacro:camera_renderer_sensor camera="oakd_color" />
+    <!-- The stereo pair is for visual odometry and has no consumer yet; MuJoCo would render it
+         every tick regardless. camera_enabled drops it. oakd_color is never gated. -->
+    <xacro:unless value="$(arg enable_vo)">
+      <sensor name="oakd_left">
+        <param name="camera_enabled">false</param>
+      </sensor>
+      <sensor name="oakd_right">
+        <param name="camera_enabled">false</param>
+      </sensor>
+    </xacro:unless>
+    <!-- Name the renders like a real OAK-D's raw streams. The per-camera camera_info carries no
+         stereo baseline, hence "monocular"; producing rectified stereo for VO is a separate step. -->
+    <xacro:if value="$(arg enable_vo)">
+      <sensor name="oakd_left">
+        <param name="rgb_topic">/oakd/left/image_raw</param>
+        <param name="camera_info_topic">/oakd/left/monocular_camera_info</param>
+      </sensor>
+      <sensor name="oakd_right">
+        <param name="rgb_topic">/oakd/right/image_raw</param>
+        <param name="camera_info_topic">/oakd/right/monocular_camera_info</param>
+      </sensor>
+    </xacro:if>
+    <hardware>
+      <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
+      <param name="mujoco_model">$(arg mujoco_model)</param>
+      <param name="mujoco_model_package">market_sim</param>
+      <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
+      <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param>
+      <!-- Fuse owns odom -> footprint and the active localizer owns map -> odom. The market launch connects world -> mj_world for scene-camera TF. -->
+      <param name="publish_mj_world_tf">false</param>
+      <param name="publish_object_tf">false</param>
+      <param name="odom_frame">world</param>
+      <param name="base_link_name">chassis_link</param>
+      <param name="tf_publish_rate">60</param>
+      <!-- Limit camera rendering to the market stream cadence. -->
+      <param name="render_publish_rate">20</param>
+      <param name="point_cloud_publish_rate">20</param>
+      <!-- World-frame chassis ground truth for reset relocalization; never publishes odometry TF. -->
+      <param name="publish_odom">true</param>
+      <param name="odom_topic">/ground_truth/odom</param>
+      <param name="odom_child_frame">chassis_link</param>
+      <param name="odom_rate">100</param>
+      <param name="odom_publish_tf">false</param>
+      <param name="odom_planar">false</param>
+      <param name="odom_pos_cov">1e-9 1e-9 1e-9 1e-9 1e-9 1e-9</param>
+      <param name="odom_vel_cov">1e-9 1e-9 1e-9 1e-9 1e-9 1e-9</param>
+    </hardware>
+    <sensor name="imu_site">
+      <state_interface name="orientation.x" />
+      <state_interface name="orientation.y" />
+      <state_interface name="orientation.z" />
+      <state_interface name="orientation.w" />
+      <state_interface name="angular_velocity.x" />
+      <state_interface name="angular_velocity.y" />
+      <state_interface name="angular_velocity.z" />
+      <state_interface name="linear_acceleration.x" />
+      <state_interface name="linear_acceleration.y" />
+      <state_interface name="linear_acceleration.z" />
+    </sensor>
+    <sensor name="lidar_front">
+      <param name="points_topic">/lidar_front/points</param>
+    </sensor>
+    <sensor name="lidar_rear">
+      <param name="points_topic">/lidar_rear/points</param>
+    </sensor>
+    <joint name="front_left_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="front_right_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="rear_left_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="rear_right_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+  </ros2_control>
+</robot>

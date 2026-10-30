@@ -1,6 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
   <include
-    file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
+    file="$(find-pkg-share moveit_studio_agent)/launch/runtime_services.launch.xml"
   />
+  <!-- One Nyx node per color camera, using the same wall clock as ros_global_params. -->
+  <let name="camera_renderer" value="$(env MOVEIT_PRO_CAMERA_RENDERER '')" />
+  <let
+    name="nyx_enabled"
+    value="$(eval '&quot;$(var camera_renderer)&quot; in (&quot;nyx&quot;, &quot;both&quot;)')"
+  />
+  <let
+    name="nyx_namespace"
+    value="$(eval '&quot;nyx&quot; if &quot;$(var camera_renderer)&quot; == &quot;both&quot; else &quot;&quot;')"
+  />
+  <include
+    file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
+    if="$(var nyx_enabled)"
+  >
+    <arg name="mjcf" value="$(find-pkg-share market_sim)/mjcf/scene.xml" />
+    <arg
+      name="scene_dir"
+      value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/market_sim_visual_refresh_odd_rows"
+    />
+    <arg name="camera" value="scene_camera" />
+    <arg name="topic_namespace" value="$(var nyx_namespace)" />
+    <arg name="use_sim_time" value="false" />
+  </include>
+  <include
+    file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
+    if="$(var nyx_enabled)"
+  >
+    <arg name="mjcf" value="$(find-pkg-share market_sim)/mjcf/scene.xml" />
+    <arg
+      name="scene_dir"
+      value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/market_sim_visual_refresh_odd_rows"
+    />
+    <arg name="camera" value="oakd_color" />
+    <arg name="topic_namespace" value="$(var nyx_namespace)" />
+    <arg name="use_sim_time" value="false" />
+  </include>
 </launch>

@@ -1,0 +1,116 @@
+# Hangar-style wheel + IMU fusion. Wheel BODY velocities only: integrating its drifting
+# world-frame position would rotate translation using the erroneous wheel yaw.
+# MuJoCo framequat/gyro own orientation; no ground truth topic is consumed.
+state_estimator:
+  ros__parameters:
+    optimization_frequency: 20.0
+    transaction_timeout: 0.01
+    lag_duration: 0.5
+    motion_models:
+      mobile_base_motion:
+        type: fuse_models::Omnidirectional3D
+    mobile_base_motion:
+      process_noise_diagonal:
+      - 1.0
+      - 1.0
+      - 0.0001
+      - 0.0001
+      - 0.0001
+      - 0.5
+      - 0.5
+      - 0.5
+      - 0.0001
+      - 0.0001
+      - 0.0001
+      - 0.25
+      - 1.0e-05
+      - 1.0e-05
+      - 1.0e-05
+      velocity_decay: 1.0
+    sensor_models:
+      initial_localization_sensor:
+        type: fuse_models::Omnidirectional3DIgnition
+        motion_models:
+        - mobile_base_motion
+        ignition: true
+      wheel_odom_sensor:
+        type: fuse_models::Odometry3D
+        motion_models:
+        - mobile_base_motion
+      imu_sensor:
+        type: fuse_models::Imu3D
+        motion_models:
+        - mobile_base_motion
+    initial_localization_sensor:
+      publish_on_startup: true
+      initial_state:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      initial_sigma:
+      - 0.1
+      - 0.1
+      - 0.001
+      - 0.01
+      - 0.01
+      - 0.1
+      - 0.1
+      - 0.1
+      - 0.001
+      - 0.01
+      - 0.01
+      - 0.1
+      - 0.001
+      - 0.001
+      - 0.001
+    wheel_odom_sensor:
+      topic: /odom
+      queue_size: 10
+      pose_loss:
+        type: fuse_loss::HuberLoss
+        a: 1.0
+      linear_velocity_loss:
+        type: fuse_loss::HuberLoss
+        a: 1.0
+      linear_velocity_dimensions:
+      - x
+      - 'y'
+      differential: true
+      independent: false
+      use_twist_covariance: true
+      throttle_period: 0.02
+    imu_sensor:
+      topic: /imu_sensor_broadcaster/imu
+      orientation_dimensions:
+      - roll
+      - pitch
+      - yaw
+      angular_velocity_dimensions:
+      - yaw
+      queue_size: 10
+      throttle_period: 0.02
+    publishers:
+      filtered_publisher:
+        type: fuse_models::Odometry3DPublisher
+    filtered_publisher:
+      topic: odom_filtered
+      base_link_frame_id: footprint
+      base_link_output_frame_id: footprint
+      odom_frame_id: odom
+      map_frame_id: map
+      world_frame_id: odom
+      publish_tf: true
+      publish_frequency: 50.0
+      predict_to_current_time: false

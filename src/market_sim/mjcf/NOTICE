@@ -1,23 +1,5 @@
 market_sim/mjcf
 
-Unless otherwise noted, the files in this directory are licensed under the
-BSD 3-Clause License in the repository's LICENSE. scene.xml, sensors.xml and
-market/ are PickNik's own; sensors.xml is copied from moveit_pro_franka_ws.
+The scene and generated store are Copyright (c) 2026 PickNik Inc., licensed under the BSD 3-Clause License in the repository LICENSE.
 
-Third-party files:
-
-- mobile_fr3_duo.xml is copied from moveit_pro_franka_ws
-  (src/mobile_fr3_duo_sim/mjcf/mobile_fr3_duo.xml at 940aa42), with the
-  planar base travel widened for the store, and says so in a comment at its
-  top. Its sources:
-  - franka_description 2.9.0, Copyright 2023 Franka Robotics GmbH, licensed
-    under the Apache License, Version 2.0 (LICENSE-franka_description, which
-    also contains a BSD license section): the kinematics, inertials and
-    dynamics of the FR3 v2 arms, spine, head and TMR base, converted by
-    PickNik Inc.
-  - MuJoCo Menagerie Franka FR3 model (franka_fr3), licensed under the Apache
-    License, Version 2.0 (LICENSE-mujoco_menagerie_franka_fr3, which also
-    contains a BSD license section): the actuator settings.
-  - MuJoCo Menagerie Franka Emika Panda model (franka_emika_panda), licensed
-    under the Apache License, Version 2.0: the finger coupling (tendon and
-    equality constraints) from its hand.xml.
+husky_a300.xml and the wheel includes are derived from lunar_sim in this workspace. The A300 meshes in assets/a300 are byte-identical copies from lunar_sim/description/assets. The STL meshes originate in clearpathrobotics/clearpath_common at commit 811baf06a32747be0653ea18db2c8868860d193f. The OBJ chassis, livery, status-light, and bumper meshes are lunar_sim's geometry-only conversions of the same upstream DAE meshes. Copyright (c) 2023, clearpathrobotics; BSD 3-Clause License, reproduced in LICENSE-clearpath_common.

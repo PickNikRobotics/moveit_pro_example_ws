@@ -49,13 +49,12 @@
         index="0"
         element="{clicked_pose}"
       />
-      <!--Sim only: world coincides with map, so the placed pose is read as map coordinates. On hardware, place the marker against the map instead.-->
+      <!-- The UI returns the marker in the robot model frame; transform it into the map. -->
       <Action
-        ID="ReinterpretPoseFrame"
+        ID="TransformPoseFrame"
         name="Read the placed pose as map coordinates"
         input_pose="{clicked_pose}"
-        expected_input_frame_id="world"
-        frame_id="map"
+        target_frame_id="map"
         output_pose="{initial_pose}"
       />
       <!--On rejection, the subtree restores the estimate held before this run.-->

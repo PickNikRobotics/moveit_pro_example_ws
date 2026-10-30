@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Navigate to Demo Dock D4">
+  <BehaviorTree
+    ID="Navigate to Demo Dock D4"
+    _description="Drive to the virtual dock D4 at map (25, 0). Simulation only."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="SwitchController"
+        activate_controllers="platform_velocity_controller"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="25;0;0"
+        orientation_xyzw="0;0;0.0;1.0"
+        pose_stamped="{demo_goal}"
+      />
+      <Action
+        ID="NavigateToPoseAction"
+        name="Return to dock D4"
+        action_name="/navigate_to_pose"
+        behavior_tree_path="/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+        ignore_stamp_time="true"
+        pose_stamped="{demo_goal}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Navigate to Demo Dock D4">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

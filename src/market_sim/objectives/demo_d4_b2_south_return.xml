@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Demo D4 B2 South and Return">
+  <BehaviorTree
+    ID="Demo D4 B2 South and Return"
+    _description="Back straight away from the simulated D4 dock, refine localization in place, drive B2 south side, and return. Simulation only."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="SwitchController"
+        activate_controllers="platform_velocity_controller"
+      />
+      <Action
+        ID="GetLatestTransform"
+        name="Read the simulator dock pose for initialisation"
+        target_frame_id="world"
+        source_frame_id="chassis_link_ground_truth"
+        transform="{dock_truth_transform}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{dock_truth_transform}"
+        pose_stamped="{dock_world_pose}"
+      />
+      <Action
+        ID="ReinterpretPoseFrame"
+        input_pose="{dock_world_pose}"
+        expected_input_frame_id="world"
+        frame_id="map"
+        output_pose="{dock_seed_pose}"
+      />
+      <Action
+        ID="SetInitialPose"
+        name="Initialize the known simulated dock pose"
+        robot_frame_id="base_link"
+        xy_variance="0.01"
+        yaw_variance="0.01"
+        pose="{dock_seed_pose}"
+      />
+      <Action
+        ID="LogMessage"
+        log_level="info"
+        message="D4 demo phase: undock"
+      />
+      <SubTree ID="Undock From D4" />
+      <Action
+        ID="LogMessage"
+        log_level="info"
+        message="D4 demo phase: relocalize"
+      />
+      <SubTree ID="Refine Localization In Place" num_updates="150" />
+      <Action ID="LogMessage" log_level="info" message="D4 demo phase: route" />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="6;0;0"
+        orientation_xyzw="0;0;1.0;6.123233995736766e-17"
+        pose_stamped="{demo_goal}"
+      />
+      <Action
+        ID="NavigateToPoseAction"
+        name="Use the centre of the south cross aisle"
+        action_name="/navigate_to_pose"
+        behavior_tree_path="/tmp/market_sim/behavior_trees/navigate_to_pose_smac.xml"
+        ignore_stamp_time="true"
+        pose_stamped="{demo_goal}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="6;10.6;0"
+        orientation_xyzw="0;0;1.0;6.123233995736766e-17"
+        pose_stamped="{demo_goal}"
+      />
+      <Action
+        ID="NavigateToPoseAction"
+        name="Enter B2 from the east cross aisle"
+        action_name="/navigate_to_pose"
+        behavior_tree_path="/tmp/market_sim/behavior_trees/navigate_to_pose_smac.xml"
+        ignore_stamp_time="true"
+        pose_stamped="{demo_goal}"
+      />
+      <Action ID="ResetVector" vector="{b2_run_poses}" />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="3.0;10.6;0"
+        orientation_xyzw="0;0;1.0;6.123233995736766e-17"
+        pose_stamped="{b2_waypoint}"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{b2_run_poses}"
+        element="{b2_waypoint}"
+        output_vector="{b2_run_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="-1.0;10.6;0"
+        orientation_xyzw="0;0;1.0;6.123233995736766e-17"
+        pose_stamped="{b2_waypoint}"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{b2_run_poses}"
+        element="{b2_waypoint}"
+        output_vector="{b2_run_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="-5.0;10.6;0"
+        orientation_xyzw="0;0;1.0;6.123233995736766e-17"
+        pose_stamped="{b2_waypoint}"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{b2_run_poses}"
+        element="{b2_waypoint}"
+        output_vector="{b2_run_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="-9.0;10.6;0"
+        orientation_xyzw="0;0;1.0;6.123233995736766e-17"
+        pose_stamped="{b2_waypoint}"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{b2_run_poses}"
+        element="{b2_waypoint}"
+        output_vector="{b2_run_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="-13.0;10.6;0"
+        orientation_xyzw="0;0;1.0;6.123233995736766e-17"
+        pose_stamped="{b2_waypoint}"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{b2_run_poses}"
+        element="{b2_waypoint}"
+        output_vector="{b2_run_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="-17.0;10.6;0"
+        orientation_xyzw="0;0;1.0;6.123233995736766e-17"
+        pose_stamped="{b2_waypoint}"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{b2_run_poses}"
+        element="{b2_waypoint}"
+        output_vector="{b2_run_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="-21.0;10.6;0"
+        orientation_xyzw="0;0;1.0;6.123233995736766e-17"
+        pose_stamped="{b2_waypoint}"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{b2_run_poses}"
+        element="{b2_waypoint}"
+        output_vector="{b2_run_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="-24.5;10.6;0"
+        orientation_xyzw="0;0;1.0;6.123233995736766e-17"
+        pose_stamped="{b2_waypoint}"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{b2_run_poses}"
+        element="{b2_waypoint}"
+        output_vector="{b2_run_poses}"
+      />
+      <Action
+        ID="NavigateThroughPosesAction"
+        name="Drive B2 south side without intermediate alignment stops"
+        action_name="/navigate_through_poses"
+        poses="{b2_run_poses}"
+        behavior_tree_path="/tmp/market_sim/behavior_trees/navigate_through_poses.xml"
+        ignore_stamp_time="true"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="-24.5;0;0"
+        orientation_xyzw="0;0;0.0;1.0"
+        pose_stamped="{demo_goal}"
+      />
+      <Action
+        ID="NavigateToPoseAction"
+        name="Return to the south cross aisle"
+        action_name="/navigate_to_pose"
+        behavior_tree_path="/tmp/market_sim/behavior_trees/navigate_to_pose_smac.xml"
+        ignore_stamp_time="true"
+        pose_stamped="{demo_goal}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="25;0;0"
+        orientation_xyzw="0;0;0.0;1.0"
+        pose_stamped="{demo_goal}"
+      />
+      <Action
+        ID="NavigateToPoseAction"
+        name="Return to dock D4"
+        action_name="/navigate_to_pose"
+        behavior_tree_path="/tmp/market_sim/behavior_trees/navigate_to_pose_smac.xml"
+        ignore_stamp_time="true"
+        pose_stamped="{demo_goal}"
+      />
+      <Action ID="WaitForDuration" delay_duration="3.0" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Demo D4 B2 South and Return">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
