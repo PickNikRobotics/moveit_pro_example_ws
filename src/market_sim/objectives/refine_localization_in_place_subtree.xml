@@ -10,7 +10,13 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="root">
-      <Action ID="SetInitialPose" name="Seed the filter" pose="{seed_pose}" />
+      <Action
+        ID="SetInitialPose"
+        name="Seed the filter"
+        pose="{seed_pose}"
+        xy_variance="{xy_variance}"
+        yaw_variance="{yaw_variance}"
+      />
       <!--Any failure after the seed restores restore_pose.-->
       <Control ID="Fallback" name="Refine and verify, or restore">
         <Control ID="Sequence" name="Refine and verify">
@@ -128,6 +134,12 @@
         type="geometry_msgs::msg::PoseStamped"
       >
         Pose to restore if the result is rejected, in map.
+      </input_port>
+      <input_port name="xy_variance" default="1.0" type="double">
+        Position variance in square metres.
+      </input_port>
+      <input_port name="yaw_variance" default="0.25" type="double">
+        Heading variance in square radians.
       </input_port>
       <input_port name="num_updates" default="20" type="int">
         Number of filter updates.

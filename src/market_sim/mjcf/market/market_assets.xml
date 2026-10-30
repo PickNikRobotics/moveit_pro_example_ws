@@ -14,7 +14,41 @@
       specular="0.6"
       shininess="0.7"
     />
-    <material name="market_wall" rgba="0.86 0.85 0.8 1" />
+    <material
+      name="cart_frame"
+      rgba="0.70 0.72 0.74 1"
+      specular="0.6"
+      shininess="0.7"
+      reflectance="0.15"
+    />
+    <material
+      name="cart_hub"
+      rgba="0.55 0.57 0.6 1"
+      specular="0.5"
+      shininess="0.6"
+      reflectance="0.1"
+    />
+    <material
+      name="cart_shelf"
+      rgba="0.45 0.47 0.5 1"
+      specular="0.3"
+      shininess="0.4"
+      reflectance="0.05"
+    />
+    <material
+      name="cart_rubber"
+      rgba="0.06 0.06 0.06 1"
+      specular="0.1"
+      shininess="0.2"
+      reflectance="0"
+    />
+    <material
+      name="cart_tote"
+      rgba="0.12 0.36 0.68 1"
+      specular="0.3"
+      shininess="0.4"
+      reflectance="0"
+    />
     <mesh name="market_pair_full" file="market/pair_full.obj" />
     <mesh name="market_pair_empty" file="market/pair_empty.obj" />
     <mesh name="market_unit_real" file="market/unit_real.obj" />

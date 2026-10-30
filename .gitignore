@@ -21,3 +21,6 @@ src/vla_sim/hf_cache/*
 # outside a launch session -- the lidar_flattener tests instantiate LidarFlattener
 # directly, so pytest drops one inside src/hangar_sim/.
 rosout.ndjson
+
+# GPU-specific Nyx scene exports.
+.nyx_scenes/

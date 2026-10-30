@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Undock From D4">
+  <BehaviorTree
+    ID="Undock From D4"
+    _description="Back straight away from the simulated dock before navigation."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="Scripted straight undock">
+      <Decorator ID="Repeat" num_cycles="40">
+        <Control ID="Sequence">
+          <Action
+            ID="CreateTwistStamped"
+            reference_frame="footprint"
+            twist_stamped="{undock_twist}"
+            linear_velocity_xyz="-0.5;0;0"
+            angular_velocity_xyz="0;0;0"
+          />
+          <Action
+            ID="PublishTwistStamped"
+            message="{undock_twist}"
+            topic="/cmd_vel"
+            queue_size="1"
+            use_best_effort="false"
+          />
+          <Action ID="WaitForDuration" delay_duration="0.1" />
+        </Control>
+      </Decorator>
+      <Action
+        ID="CreateTwistStamped"
+        reference_frame="footprint"
+        twist_stamped="{stop_twist}"
+        linear_velocity_xyz="0;0;0"
+        angular_velocity_xyz="0;0;0"
+      />
+      <Action
+        ID="PublishTwistStamped"
+        message="{stop_twist}"
+        topic="/cmd_vel"
+        queue_size="1"
+        use_best_effort="false"
+      />
+      <Action ID="WaitForDuration" delay_duration="0.5" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Undock From D4">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

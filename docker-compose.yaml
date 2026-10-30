@@ -27,6 +27,9 @@ services:
 
   # Starts the robot drivers.
   drivers:
+    environment:
+      - MARKET_SIM_SLAM=${MARKET_SIM_SLAM:-false}
+      - MARKET_SIM_GROUND_TRUTH_NAV=${MARKET_SIM_GROUND_TRUTH_NAV:-false}
     volumes:
       # Allow access to host hardware e.g. RealSense cameras
       - /dev:/dev

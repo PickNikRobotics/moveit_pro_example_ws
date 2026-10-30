@@ -4,7 +4,7 @@
   <version>10.2.0</version>
 
   <description>
-    MoveIt Pro configuration for a Franka Mobile FR3 Duo in a simulated
+    MoveIt Pro configuration for a Husky A300 in a simulated
     supermarket, with Beluga AMCL localization and Nav2 navigation.
   </description>
 
@@ -12,30 +12,39 @@
 
   <license>BSD-3-Clause</license>
 
-  <license>Apache-2.0</license>
-
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>beluga_amcl</exec_depend>
-  <exec_depend>franka_description</exec_depend>
+  <exec_depend>fuse_optimizers</exec_depend>
+  <exec_depend>fuse_models</exec_depend>
+  <exec_depend>fuse_loss</exec_depend>
+  <exec_depend>imu_sensor_broadcaster</exec_depend>
+  <exec_depend>lunar_sim</exec_depend>
+  <exec_depend>laser_filters</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>moveit_studio_utils_py</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>nav2_common</exec_depend>
   <exec_depend>nav2_lifecycle_manager</exec_depend>
   <exec_depend>nav2_map_server</exec_depend>
   <exec_depend>nav2_smac_planner</exec_depend>
   <exec_depend>nav2_rotation_shim_controller</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
+  <exec_depend>picknik_nyx_renderer</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>slam_toolbox</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
 
   <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>xacro</test_depend>
   <test_depend>python3-numpy</test_depend>
   <test_depend>python3-pil</test_depend>
   <test_depend>python3-yaml</test_depend>

@@ -13,6 +13,7 @@ See the package README for the layout rules and the loose-product budget.
 """
 
 import argparse
+import copy
 import json
 import math
 import re
@@ -62,8 +63,8 @@ FLOOR_PLAN = r"""
 # One text column is one shelf asset's width. Every '-' and every '}{' is a gondola: two
 # shelf units back to back, facing north and south ('-') or west and east ('}{').
 COLUMN_PITCH = 1.304
-GONDOLA_DEPTH = 1.114
-AISLE_WIDTH = 1.6
+GONDOLA_DEPTH = 2.0
+AISLE_WIDTH = 4.0
 # North-south depth of each kind of text line.
 LINE_PITCH = {
     "open": 3.0,
@@ -92,6 +93,9 @@ KEYFRAMES = (("default", "a_d"), ("loose_e_i", "e_i"), ("loose_a_d", "a_d"))
 WALL_THICKNESS = 0.2
 WALL_HEIGHT = 2.5
 REGISTER_HALF_SIZE = (0.5, 1.3, 0.45)
+# Simulation dock: front face is 0.2 m beyond the A300 footprint at D4 (25, 0).
+DOCK_CENTER = (26.05, 0.0, 0.45)
+DOCK_HALF_SIZE = (0.25, 1.0, 0.45)
 # The robot boots here, on the open floor south of row 1; world and map share this origin.
 START_LINE_INDEX = 19
 
@@ -115,32 +119,16 @@ LOOSE_ITEMS = (
     "coffee_can_3",
 )
 
-# Grippy enough for the simulated Franka Hand's light squeeze to hold a product, as in lab_sim.
+# Preserve the market products' contact friction.
 LOOSE_FRICTION = "2.0 0.1 0.01"
 
-# Robot part of every keyframe: the Mobile FR3 Duo's default pose.
-# Order: planar joints, 9 passive wheel joints, spine, then each arm with its two fingers.
-ROBOT_QPOS = (
-    [0.0] * 3
-    + [0.0] * 9
-    + [0.0]
-    + [0.0, -0.7853981633974483, 0.0, -2.356194490192345]
-    + [0.0, 1.5707963267948966, 0.7853981633974483, 0.0, 0.0]
-    + [0.0, -0.7853981633974483, 0.0, -2.356194490192345]
-    + [0.0, 1.5707963267948966, 0.7853981633974483, 0.0, 0.0]
-)
-ROBOT_CTRL = (
-    [0.0] * 3
-    + [0.0]
-    + [0.0, -0.7853981633974483, 0.0, -2.356194490192345]
-    + [0.0, 1.5707963267948966, 0.7853981633974483, 0.0]
-    + [0.0, -0.7853981633974483, 0.0, -2.356194490192345]
-    + [0.0, 1.5707963267948966, 0.7853981633974483, 0.0]
-)
+# A300 chassis freejoint followed by its four wheel hinges, as in lunar_sim.
+ROBOT_QPOS = [0.0, 0.0, 0.13597, 1.0, 0.0, 0.0, 0.0] + [0.0] * 4
+ROBOT_CTRL = [0.0] * 4
 
 # Distance from a shelf's front face to the base centre in a "Navigate to Aisle" goal. It keeps
-# the stowed-arms Nav2 footprint clear of both racks while it turns to face the shelf.
-AISLE_STANDOFF = 0.96
+# the A300 Nav2 footprint clear of both racks while it turns to face the shelf.
+AISLE_STANDOFF = 0.80
 NAV_TO_POSE_TREE = (
     "/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/"
     "navigate_to_pose_w_replanning_and_recovery.xml"
@@ -201,6 +189,91 @@ def yaw_quat(yaw):
 
 def fmt(values):
     return " ".join(f"{v:.6g}" for v in values)
+
+
+# Stocking carts stay off the demo's y=0 cross aisle and its x=6 entry.
+STOCKING_CART_POSITIONS = ((0.0, 2.5, 0.0), (20.0, 2.5, 0.0))
+STORE_CEILING_HEIGHT = 3.45
+
+
+def xml_element(node):
+    return element(node.tag, node.attrib.items(), [xml_element(c) for c in node])
+
+
+def store_visuals(layout, world):
+    """Store lighting/enclosure and physical carts absent from the static maps."""
+    nodes = []
+    template = ET.parse(ASSET_DIR / "visuals/stocking_cart.xml").getroot()
+    for index, position in enumerate(STOCKING_CART_POSITIONS):
+        cart = copy.deepcopy(template)
+        cart.set("pos", fmt(position))
+        cart.set("quat", "1 0 0 0")
+        for geom in cart.iter("geom"):
+            geom.set("group", "2")
+        for node in cart.iter():
+            if node.get("name"):
+                node.set("name", f"stocking_{index}_" + node.get("name"))
+        nodes.append(xml_element(cart))
+    cx, cy = layout.to_world(layout.width / 2, layout.depth / 2)
+    nodes.append(
+        element(
+            "geom",
+            [
+                ("name", "store_ceiling"),
+                ("type", "box"),
+                ("pos", fmt((cx, cy, STORE_CEILING_HEIGHT))),
+                ("size", fmt((layout.width / 2, layout.depth / 2, 0.03))),
+                ("material", "store_ceiling"),
+                ("contype", "0"),
+                ("conaffinity", "0"),
+                ("group", "2"),
+            ],
+        )
+    )
+    # Extend only the visible wall tops; the original lidar-height faces do not move.
+    for tag, attributes, _ in world:
+        attrs = dict(attributes)
+        if tag != "geom" or not attrs.get("name", "").startswith("wall_"):
+            continue
+        pos, size = np.fromstring(attrs["pos"], sep=" "), np.fromstring(
+            attrs["size"], sep=" "
+        )
+        pos[2] = (WALL_HEIGHT + STORE_CEILING_HEIGHT) / 2
+        size[2] = (STORE_CEILING_HEIGHT - WALL_HEIGHT) / 2
+        nodes.append(
+            element(
+                "geom",
+                [
+                    ("name", attrs["name"] + "_upper"),
+                    ("type", "box"),
+                    ("pos", fmt(pos)),
+                    ("size", fmt(size)),
+                    ("material", "market_wall"),
+                    ("contype", "0"),
+                    ("conaffinity", "0"),
+                    ("group", "2"),
+                ],
+            )
+        )
+    for x in np.arange(4, layout.width, 8):
+        for y in np.arange(4, layout.depth, 8):
+            wx, wy = layout.to_world(x, y)
+            nodes.append(
+                element(
+                    "geom",
+                    [
+                        ("name", f"ceiling_light_panel_{int(x)}_{int(y)}"),
+                        ("type", "box"),
+                        ("pos", fmt((wx, wy, STORE_CEILING_HEIGHT - 0.04))),
+                        ("size", "0.3 0.6 0.01"),
+                        ("material", "ceiling_light_panel"),
+                        ("contype", "0"),
+                        ("conaffinity", "0"),
+                        ("group", "2"),
+                    ],
+                )
+            )
+    return nodes
 
 
 # ---------------------------------------------------------------- floor plan
@@ -566,6 +639,10 @@ def write_png(path, image):
 
 def load_products():
     catalog = json.loads((ASSET_DIR / "products" / "product_catalog.json").read_text())
+    geometry = json.loads((ASSET_DIR / "shelf" / "shelf_geometry.json").read_text())
+    depth_scale = shelf_depth_scale(geometry)
+    for entry in catalog["stocked_scene"]:
+        entry["pos"][1] *= depth_scale
     materials = {}
     for mat in ET.parse(ASSET_DIR / "products" / "products_assets.xml").iter(
         "material"
@@ -575,6 +652,12 @@ def load_products():
     for path in sorted((ASSET_DIR / "products" / "bodies").glob("*.xml")):
         bodies[path.stem] = ET.parse(path).getroot().find("body")
     return catalog, materials, bodies
+
+
+def shelf_depth_scale(geometry):
+    return (GONDOLA_DEPTH / 2) / (
+        geometry["overall"]["y"][1] - geometry["overall"]["y"][0]
+    )
 
 
 def load_shelf():
@@ -599,7 +682,20 @@ def load_shelf():
     ]
     collisions = [g for g in body.iter("geom") if g.get("type") == "box"]
     geometry = json.loads((ASSET_DIR / "shelf" / "shelf_geometry.json").read_text())
-    full = [load_obj(path) + (rgb,) for path, rgb in visuals]
+    # Deepen the decks, backs and brackets together; the paired backs still meet.
+    # Product dimensions remain in metres; stocking positions follow the deeper decks.
+    depth_scale = shelf_depth_scale(geometry)
+    geometry["overall"]["y"] = [y * depth_scale for y in geometry["overall"]["y"]]
+    for geom in collisions:
+        for attribute in ("pos", "size"):
+            values = [float(value) for value in geom.get(attribute).split()]
+            values[1] *= depth_scale
+            geom.set(attribute, fmt(values))
+    full = []
+    for path, rgb in visuals:
+        vertices, faces = load_obj(path)
+        vertices[:, 1] *= depth_scale
+        full.append((vertices, faces, rgb))
     low = []
     for geom in collisions:
         v, f = box_mesh([float(c) for c in geom.get("size").split()])
@@ -842,6 +938,25 @@ def build_world(layout, shelf, products):
             [(wx + sx * hx, wy + sy * hy, 0) for sx in (-1, 1) for sy in (-1, 1)]
         )
 
+    nodes.append(
+        element(
+            "geom",
+            [
+                ("name", "demo_dock_d4"),
+                ("type", "box"),
+                ("pos", fmt(DOCK_CENTER)),
+                ("size", fmt(DOCK_HALF_SIZE)),
+                ("material", "market_steel"),
+                ("group", "2"),
+            ],
+        )
+    )
+    dx, dy, _ = DOCK_CENTER
+    hx, hy, _ = DOCK_HALF_SIZE
+    footprints.append(
+        [(dx + sx * hx, dy + sy * hy, 0) for sx in (-1, 1) for sy in (-1, 1)]
+    )
+
     t = WALL_THICKNESS
     first, last = layout.bottom_wall_columns
     walls = {
@@ -957,8 +1072,8 @@ def write_aisle_objective(path, aisle, goal):
     x, y, yaw = goal
     name = f"Navigate to Aisle {aisle}"
     description = (
-        f"Stow the arms, then drive the base with Nav2 to the middle of aisle {aisle}, "
-        "facing its shelves, where the products are loose and can be picked."
+        f"Drive the A300 with Nav2 to the middle of aisle {aisle}, "
+        "facing its shelves."
     )
     tree = element(
         "BehaviorTree",
@@ -981,17 +1096,11 @@ def write_aisle_objective(path, aisle, goal):
                             ("pose_stamped", "{goal}"),
                         ],
                     ),
-                    # The Nav2 footprint covers the robot only with its arms stowed.
-                    element(
-                        "SubTree",
-                        [("ID", "Stow Arms for Navigation"), ("_collapsed", "true")],
-                    ),
-                    # Nav2 drives the base through base_jgvc; a base jog leaves it inactive.
                     element(
                         "Action",
                         [
                             ("ID", "SwitchController"),
-                            ("activate_controllers", "base_jgvc"),
+                            ("activate_controllers", "platform_velocity_controller"),
                         ],
                     ),
                     element(
@@ -1140,7 +1249,9 @@ def main(output_root=PACKAGE_DIR):
     palette.write_png(mesh_out / "palette.png")
 
     world, loose, shelves, footprints = build_world(layout, shelf, products)
+    decor = store_visuals(layout, world)
     write_xml(mjcf_out / "market_world.xml", world)
+    write_xml(mjcf_out / "store_visuals_world.xml", decor)
 
     used_materials = sorted(
         {item["body"].find("geom[@group='3']").get("material") for item in loose}
@@ -1168,7 +1279,12 @@ def main(output_root=PACKAGE_DIR):
                 ("shininess", "0.7"),
             ],
         ),
-        element("material", [("name", "market_wall"), ("rgba", "0.86 0.85 0.8 1")]),
+    ]
+    assets += [
+        xml_element(m)
+        for m in ET.parse(ASSET_DIR / "visuals/cart_materials.xml")
+        .getroot()
+        .iter("material")
     ]
     for name in meshes:
         assets.append(

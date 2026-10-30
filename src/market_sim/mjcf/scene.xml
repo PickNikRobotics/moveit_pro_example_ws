@@ -1,88 +1,118 @@
 <mujoco model="market_sim scene">
-  <!-- The robot comes first, so its joints lead every keyframe's qpos. -->
-  <include file="mobile_fr3_duo.xml" />
+  <include file="husky_a300.xml" />
   <include file="market/market_assets.xml" />
-
-  <!-- Sleep lets the resting products cost almost nothing per step; see the README. -->
-  <!-- impratio and noslip keep a grasped product from creeping out of the fingers, as in lab_sim. -->
+  <size nuser_cam="4" />
   <option
     timestep="0.003"
     sleep_tolerance="0.001"
     impratio="10"
     noslip_iterations="3"
   >
-    <flag sleep="enable" />
+    <flag sleep="enable" multiccd="enable" />
   </option>
-
   <visual>
-    <headlight
-      diffuse="0.5 0.5 0.5"
-      ambient="0.25 0.25 0.25"
-      specular="0 0 0"
-    />
-    <rgba haze="0.15 0.25 0.35 1" />
-    <global azimuth="90" elevation="-30" />
-    <!-- znear and zfar scale with the model extent; this keeps the near clip under the lidars' 0.10 m minimum range. -->
+    <headlight diffuse="0.5 0.5 0.5" ambient="0.3 0.3 0.3" specular="0 0 0" />
+    <rgba haze="0.82 0.84 0.86 1" />
+    <!-- An odd render height puts the horizontal lidar ring on a pixel centre. -->
+    <global offwidth="1280" offheight="721" azimuth="90" elevation="-30" />
     <map znear="0.0004" zfar="4" />
+    <quality offsamples="4" shadowsize="4096" />
   </visual>
-
   <asset>
     <texture
+      type="skybox"
+      builtin="flat"
+      rgb1="0.86 0.87 0.88"
+      rgb2="0.86 0.87 0.88"
+      width="64"
+      height="384"
+    />
+    <texture
       type="2d"
-      name="market_floor"
-      builtin="checker"
-      rgb1="0.8 0.8 0.78"
-      rgb2="0.72 0.72 0.7"
-      width="300"
-      height="300"
+      name="floor_tiles_albedo"
+      file="assets/store_visuals/floor_tiles_albedo.png"
     />
-    <material
-      name="market_floor"
-      texture="market_floor"
-      texuniform="true"
-      texrepeat="0.8333 0.8333"
-      reflectance="0"
+    <texture
+      type="2d"
+      name="floor_tiles_normal"
+      file="assets/store_visuals/floor_tiles_normal.png"
     />
+    <texture
+      type="2d"
+      name="floor_tiles_orm"
+      file="assets/store_visuals/floor_tiles_orm.png"
+    />
+    <material name="market_floor" texuniform="true" texrepeat="1 1">
+      <layer role="rgb" texture="floor_tiles_albedo" />
+      <layer role="normal" texture="floor_tiles_normal" />
+      <layer role="orm" texture="floor_tiles_orm" />
+    </material>
+    <texture
+      type="2d"
+      name="wall_plaster_albedo"
+      file="assets/store_visuals/wall_plaster_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="wall_plaster_normal"
+      file="assets/store_visuals/wall_plaster_normal.png"
+    />
+    <texture
+      type="2d"
+      name="wall_plaster_orm"
+      file="assets/store_visuals/wall_plaster_orm.png"
+    />
+    <material name="store_ceiling" rgba="0.86 0.86 0.85 1" emission="0.2" />
+    <material name="market_wall" texuniform="true" texrepeat="0.5 0.5">
+      <layer role="rgb" texture="wall_plaster_albedo" />
+      <layer role="normal" texture="wall_plaster_normal" />
+      <layer role="orm" texture="wall_plaster_orm" />
+    </material>
+    <material name="ceiling_light_panel" rgba="1 1 0.96 1" emission="3" />
   </asset>
-
   <worldbody>
     <light
       pos="0 0 10"
-      dir="0 0.3 -1"
+      dir="0.2 -0.2 -1"
       directional="true"
+      diffuse="0.35 0.35 0.35"
       castshadow="false"
-      diffuse="0.5 0.5 0.5"
     />
     <light
-      pos="0 0 10"
-      dir="0 -0.3 -1"
-      directional="true"
+      pos="24 0 3.2"
+      dir="0.3 0.1 -1"
+      directional="false"
+      diffuse="0.6 0.6 0.57"
+      attenuation="1 0.05 0"
+      castshadow="true"
+    />
+    <light
+      pos="-0.6 -3 3.2"
+      dir="0.2 0.3 -1"
+      directional="false"
+      diffuse="0.55 0.55 0.52"
+      attenuation="1 0.05 0"
       castshadow="false"
-      diffuse="0.3 0.3 0.3"
     />
     <geom name="floor" type="plane" size="0 0 0.05" material="market_floor" />
-
-    <!-- Overview camera over the start pose, looking north along the aisles (RGB only). -->
     <camera
       name="scene_camera"
       mode="fixed"
-      pos="0 -2 10"
-      xyaxes="1 0 0 0 0.7071 0.7071"
-      fovy="75"
-      resolution="640 480"
+      pos="2 -3 1.8"
+      xyaxes="0.894427 0.447214 0 -0.133588 0.267176 0.954479"
+      fovy="65"
+      resolution="1280 721"
       user="1 0 0 0"
     />
     <site
       name="scene_camera_optical_frame"
-      pos="0 -2 10"
-      xyaxes="1 0 0 0 -0.7071 -0.7071"
+      pos="2 -3 1.8"
+      xyaxes="0.894427 0.447214 0 0.133588 -0.267176 -0.954479"
       size="0.01"
       group="3"
     />
-
     <include file="market/market_world.xml" />
+    <include file="market/store_visuals_world.xml" />
   </worldbody>
-
-  <!-- Last, because a key's qpos must cover every joint declared above. -->
   <include file="market/keyframes.xml" />
 </mujoco>

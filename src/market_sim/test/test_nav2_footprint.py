@@ -64,7 +64,7 @@ def footprint(params, name):
     )
 
 
-def test_costmaps_share_the_stowed_arms_footprint():
+def test_costmaps_share_the_a300_footprint():
     market = yaml.safe_load(PARAMS.read_text())
     local, global_ = (footprint(market, name) for name in COSTMAPS)
     assert np.array_equal(local, global_)
@@ -103,7 +103,7 @@ def interior_samples(polygon):
     return points[inside]
 
 
-def test_aisle_goals_clear_the_racks_with_arms_stowed():
+def test_aisle_goals_clear_the_racks_with_the_a300():
     """At each goal, and on a quarter turn into it from either aisle direction."""
     occupied, resolution, (origin_x, origin_y) = store_map()
     samples = interior_samples(
@@ -122,7 +122,7 @@ def test_aisle_goals_clear_the_racks_with_arms_stowed():
             rows = ((world_y - origin_y) / resolution).astype(int)
             if occupied[rows, columns].any():
                 hits.append((name, turn))
-    assert not hits, f"The stowed footprint overlaps a rack (goal, turn in deg): {hits}"
+    assert not hits, f"The A300 footprint overlaps a rack (goal, turn in deg): {hits}"
 
 
 def test_inflation_radius_is_the_circumscribed_radius_rounded_up():
@@ -134,3 +134,95 @@ def test_inflation_radius_is_the_circumscribed_radius_rounded_up():
         assert costmap(params, name)["inflation_layer"][
             "inflation_radius"
         ] == pytest.approx(expected), name
+
+
+def test_demo_b2_south_run_keeps_the_a300_footprint_in_free_space():
+    """Check the shelf-side run continuously, including between navigation goals."""
+    tree = ET.parse(PACKAGE / "objectives" / "demo_d4_b2_south_return.xml")
+    poses = tree.findall(".//Action[@ID='CreatePoseStamped']")
+    run = []
+    for pose in poses:
+        x, y, _ = map(float, pose.get("position_xyz").split(";"))
+        if -21.0 <= x <= 3.0 and abs(y - 10.6) < 1e-6:
+            run.append((x, y))
+    assert len(run) >= 2, "The demo must include a shelf-side B2 run."
+    occupied, resolution, origin = store_map()
+    samples = interior_samples(
+        footprint(yaml.safe_load(PARAMS.read_text()), "global_costmap")
+    )
+    for start, end in zip(run, run[1:]):
+        for fraction in np.linspace(0, 1, int(math.dist(start, end) / resolution) + 2):
+            centre = np.array(start) * (1 - fraction) + np.array(end) * fraction
+            # The base drives west, so rotate its footprint by pi.
+            world = centre - samples
+            columns = ((world[:, 0] - origin[0]) / resolution).astype(int)
+            rows = ((world[:, 1] - origin[1]) / resolution).astype(int)
+            assert not occupied[
+                rows, columns
+            ].any(), f"B2 demo footprint overlaps an obstacle at {centre.tolist()}"
+
+
+def test_demo_does_not_reseed_localization_after_leaving_the_dock():
+    """Navigation must use lidar localization throughout both route variants."""
+    for filename in (
+        "demo_d4_b2_south_return.xml",
+        "continue_b2_south_return_d4.xml",
+    ):
+        actions = list(ET.parse(PACKAGE / "objectives" / filename).iter("Action"))
+        first_navigation = next(
+            i
+            for i, action in enumerate(actions)
+            if action.get("ID")
+            in ("NavigateToPoseAction", "NavigateThroughPosesAction")
+        )
+        assert all(
+            action.get("ID") != "SetInitialPose"
+            for action in actions[first_navigation:]
+        ), filename
+        if filename.startswith("continue_"):
+            assert all(action.get("ID") != "SetInitialPose" for action in actions)
+            assert all(
+                action.get("source_frame_id") != "chassis_link_ground_truth"
+                for action in actions
+            )
+
+
+def test_dock_demo_undocks_and_refines_before_navigation():
+    """A dock departure must back straight out and stop before relocalizing."""
+    sequence = ET.parse(PACKAGE / "objectives/demo_d4_b2_south_return.xml").find(
+        ".//BehaviorTree/Control"
+    )
+    steps = list(sequence)
+    undock = next(i for i, n in enumerate(steps) if n.get("ID") == "Undock From D4")
+    refine = next(
+        i for i, n in enumerate(steps) if n.get("ID") == "Refine Localization In Place"
+    )
+    navigate = next(
+        i for i, n in enumerate(steps) if n.get("ID") == "NavigateToPoseAction"
+    )
+    assert undock < refine < navigate
+    subtree = ET.parse(PACKAGE / "objectives/undock_from_d4.xml")
+    twists = subtree.findall(".//Action[@ID='CreateTwistStamped']")
+    assert all(n.get("angular_velocity_xyz") == "0;0;0" for n in twists)
+    assert float(twists[0].get("linear_velocity_xyz").split(";")[0]) < 0
+    assert twists[-1].get("linear_velocity_xyz") == "0;0;0"
+
+
+def test_waypoint_pruning_cannot_skip_a_passed_goal_at_the_speed_limit() -> None:
+    """A robot crossing a waypoint must get a pruning tick inside its acceptance radius."""
+    params = yaml.safe_load(PARAMS.read_text())
+    tree = ET.parse(PACKAGE / "params/navigate_through_poses.xml")
+    parents = {child: parent for parent in tree.iter() for child in parent}
+    prune = tree.find(".//RemovePassedGoals")
+    radius = float(prune.get("radius"))
+    period = params["bt_navigator"]["ros__parameters"]["bt_loop_duration"] / 1000.0
+    ancestor = parents.get(prune)
+    while ancestor is not None:
+        if ancestor.tag == "RateController":
+            period = max(period, 1.0 / float(ancestor.get("hz")))
+        ancestor = parents.get(ancestor)
+    speed = params["controller_server"]["ros__parameters"]["FollowPath"]["vx_max"]
+    assert period * speed < 2 * radius, (
+        f"The base can travel {period * speed:.2f} m between pruning ticks, "
+        f"skipping the waypoint's {2 * radius:.2f} m acceptance window."
+    )
