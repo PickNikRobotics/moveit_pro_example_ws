@@ -206,7 +206,12 @@ RUN mkdir -p /home/${USERNAME}/.colcon/repositories && \
     colcon mixin update && \
     colcon metadata add default file:///home/${USERNAME}/.colcon/repositories/metadata/index.yaml && \
     colcon metadata update
-COPY colcon-defaults.yaml /home/${USERNAME}/.colcon/defaults.yaml
+# Own the file as the workspace user. A plain COPY keeps the host checkout's
+# mode and makes root the owner, so a checkout whose files are mode 0640 (for
+# example, umask 0027) leaves colcon unable to read its defaults until the
+# entrypoint re-chowns the home directory. Runs that skip the entrypoint, such
+# as docker run --entrypoint, would otherwise build without these defaults.
+COPY --chown=${USER_UID}:${USER_GID} colcon-defaults.yaml /home/${USERNAME}/.colcon/defaults.yaml
 
 # hadolint ignore=DL3002
 USER root

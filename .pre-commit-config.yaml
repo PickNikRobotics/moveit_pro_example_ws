@@ -93,6 +93,15 @@ repos:
 
   - repo: local
     hooks:
+      - id: no-coverage-mixins
+        name: Keep coverage mixins out of the workspace colcon defaults
+        description: >-
+          The MoveIt Pro image ships without pytest-cov, so coverage-pytest
+          makes every ament_add_pytest_test warn. Opt in through
+          COLCON_DEFAULTS_FILE instead.
+        entry: '^\s*-\s*coverage-'
+        language: pygrep
+        files: ^colcon-defaults\.yaml$
       - id: check-objective-favorites
         name: Validate Objective favorites
         entry: ./scripts/check_objective_favorites.sh
