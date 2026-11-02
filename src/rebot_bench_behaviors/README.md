@@ -109,6 +109,16 @@ the bench scene camera's pose and intrinsics, with depth ray-cast from the mask.
 it sits, such as `blue cube at x=0.277 y=0.253 is outside the arm's reach`. The
 stack Objectives run it when a reach check fails, before any motion.
 
+`SetRebotMotorGain` writes one arm motor's `kp` (Nm/rad) or `kd` (Nm·s/rad)
+through the existing driver's `set_data_to_robstride` service. It accepts only
+IDs 1–6 and finite nonnegative values within the RS06/RS00 encoding ranges;
+there is no jaw, register-write, mode-change or torque-enable path. The standard
+service-client base bounds discovery to 3 s and the response to 0.5 s. Success
+acknowledges the driver's pending-value queue, not a motor-register readback.
+Cancellation/timeout cannot undo a delivered write. The **Start Gravity Comp**
+and **Stop Gravity Comp** Objectives use sequential requests; before restoring
+kp they re-anchor the trajectory controller at the current measured pose.
+
 Build and run the behavior tests in a MoveIt Pro development environment:
 
 ```sh

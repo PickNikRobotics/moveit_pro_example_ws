@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Start Gravity Comp">
+  <BehaviorTree
+    ID="Start Gravity Comp"
+    _description="Re-anchor the supported reBot arm at its measured pose, switch spring gains to damped float, then finish. JTAC and fitted gravity compensation must already be active and stay active. Use Stop Gravity Comp to restore spring gains; attended, thermally protected use only."
+  >
+    <Control ID="Sequence" name="start_gravity_comp">
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="GetJointState"
+        planning_scene="{planning_scene}"
+        planning_group_name="manipulator_and_gripper"
+        joint_state="{measured_joints}"
+      />
+      <Action
+        ID="CreateStationaryTrajectory"
+        joint_state="{measured_joints}"
+        trajectory_duration="0.2"
+        joint_trajectory_msg="{hold_trajectory}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        joint_trajectory_msg="{hold_trajectory}"
+        controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        execution_pipeline="jtac"
+      />
+      <Action ID="SetRebotMotorGain" motor_id="1" gain="kd" value="1.5" />
+      <Action ID="SetRebotMotorGain" motor_id="2" gain="kd" value="3.5" />
+      <Action ID="SetRebotMotorGain" motor_id="3" gain="kd" value="5.0" />
+      <Action ID="SetRebotMotorGain" motor_id="4" gain="kd" value="1.25" />
+      <Action ID="SetRebotMotorGain" motor_id="5" gain="kd" value="1.0" />
+      <Action ID="SetRebotMotorGain" motor_id="6" gain="kd" value="1.0" />
+      <Action ID="SetRebotMotorGain" motor_id="1" gain="kp" value="0.0" />
+      <Action ID="SetRebotMotorGain" motor_id="2" gain="kp" value="0.0" />
+      <Action ID="SetRebotMotorGain" motor_id="3" gain="kp" value="0.0" />
+      <Action ID="SetRebotMotorGain" motor_id="4" gain="kp" value="0.0" />
+      <Action ID="SetRebotMotorGain" motor_id="5" gain="kp" value="0.0" />
+      <Action ID="SetRebotMotorGain" motor_id="6" gain="kp" value="0.0" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Start Gravity Comp">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

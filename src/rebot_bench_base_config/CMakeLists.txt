@@ -5,7 +5,7 @@ install(DIRECTORY config description docs launch objectives waypoints DESTINATIO
 install(FILES README.md LICENSE thumbnail.png DESTINATION share/${PROJECT_NAME})
 install(PROGRAMS scripts/scale_depth.py test/verify_mock_execution.py test/verify_mock_gripper_jog.py
   scripts/rebot_leader.py scripts/rebot_leader_bridge.py scripts/rebot_leader_tune.py
-  scripts/rebot_thermal_guard.py
+  scripts/rebot_thermal_guard.py scripts/fit_gravity.py
   DESTINATION lib/${PROJECT_NAME})
 install(FILES scripts/rebot_leader_state.py scripts/rebot_leader_collision.py
   DESTINATION lib/${PROJECT_NAME})
@@ -50,6 +50,8 @@ if(BUILD_TESTING)
   target_compile_definitions(test_jaw_legs PRIVATE
     TEST_URDF="${TEST_URDF}" PACKAGE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
   find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(test_gravity_collection test/test_gravity_collection.py TIMEOUT 120)
+  ament_add_pytest_test(test_gravity_fit test/test_gravity_fit.py TIMEOUT 120)
   ament_add_pytest_test(test_stack_legs test/test_stack_legs.py TIMEOUT 60)
   ament_add_pytest_test(test_scale_depth test/test_scale_depth.py TIMEOUT 60)
   ament_add_pytest_test(test_hardware_selection test/test_hardware_selection.py TIMEOUT 60)

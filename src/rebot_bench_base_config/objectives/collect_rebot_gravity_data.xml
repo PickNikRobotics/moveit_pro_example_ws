@@ -1,0 +1,606 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Collect reBot Gravity Data">
+  <BehaviorTree
+    ID="Collect reBot Gravity Data"
+    _description="Record measured position and effort at 48 named gravity waypoints, including leaned-back shoulders to 2.4 rad, at normal speed. Start HOME with the empty jaw closed and cubes removed; finish HOME. Collection only; no model activation."
+  >
+    <Control ID="Sequence" name="Collect at gravity waypoints">
+      <SubTree ID="reBot Fixed Bench Scene" />
+      <Action
+        ID="RecordEpisode"
+        dataset_name="{dataset_name}"
+        task="static gravity identification; raw measured joint effort"
+        config_name="{training_config}"
+        num_episodes="1"
+      />
+      <Action ID="WaitForDuration" delay_duration="3.0" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Raised"
+        joint_group_name="manipulator"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 01"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 01: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 02"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 02: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 03"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 03: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 04"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 04: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 05"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 05: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 06"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 06: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 07"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 07: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 08"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 08: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 09"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 09: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 10"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 10: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 11"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 11: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 12"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 12: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 13"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 13: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 14"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 14: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 15"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 15: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 16"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 16: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 17"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 17: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 18"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 18: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 19"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 19: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 20"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 20: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 21"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 21: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 22"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 22: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 23"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 23: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 24"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 24: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 25"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 25: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 26"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 26: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 27"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 27: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 28"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 28: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 29"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 29: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 30"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 30: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 31"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 31: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 32"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 32: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 33"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 33: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity Elbow Clearance"
+        joint_group_name="manipulator"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 34"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 34: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 35"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 35: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 36"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 36: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 37"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 37: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 38"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 38: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 39"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 39: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 40"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 40: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 41"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 41: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 42"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 42: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 43"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 43: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 44"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 44: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 45"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 45: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 46"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 46: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 47"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 47: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity 48"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action
+        ID="LogMessage"
+        message="Gravity waypoint 48: static window begins"
+      />
+      <Action ID="WaitForDuration" delay_duration="{sample_seconds}" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Gravity Retreat"
+        joint_group_name="manipulator"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Raised"
+        joint_group_name="manipulator"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Zeroed Rest"
+        joint_group_name="manipulator"
+      />
+      <Action ID="WaitForDuration" delay_duration="1.5" />
+      <Action ID="SaveEpisode" />
+      <Action ID="StopRecording" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Collect reBot Gravity Data">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Gravity Identification" />
+      </MetadataFields>
+      <input_port
+        name="dataset_name"
+        default="rebot_gravity_raw"
+        type="std::string"
+      >
+        New recording dataset. Keep the raw MCAP, not a converted training
+        dataset.
+      </input_port>
+      <input_port
+        name="training_config"
+        default="rebot_bench_jpeg"
+        type="std::string"
+      >
+        Existing Trainer config for joint states, controller state and camera
+        streams.
+      </input_port>
+      <input_port name="settle_seconds" default="1.5" type="double">
+        Settling wait after reaching each waypoint, seconds.
+      </input_port>
+      <input_port name="sample_seconds" default="2.1" type="double">
+        Additional static recording time, seconds; two one-second extraction
+        attempts.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
