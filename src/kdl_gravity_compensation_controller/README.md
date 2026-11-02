@@ -1,16 +1,109 @@
 # KDL gravity compensation controller
 
 A ros2_control **chainable** downstream controller for a URDF serial chain.
-It reads measured joint positions and writes, per joint:
+It adds model-based gravity effort to an upstream effort command, or runs by
+itself as gravity-only.
+
+## Why a soft spring sags under load
+
+A joint in spring/impedance mode needs position error to generate spring torque.
+For a revolute joint, the idealized motor law is:
+
+```text
+torque = kp * (desired position - measured position)
+       + kd * (desired velocity - measured velocity) + feedforward torque
+```
+
+At rest with a stationary target, damping contributes nothing. For positive
+stiffness `kp`, the local, unsaturated balance is approximately:
+
+```text
+position error = (load torque - feedforward torque) / kp
+```
+
+Without feedforward, a soft spring must deflect to carry the arm's weight.
+Increasing stiffness reduces that error but also makes the joint less compliant.
+Gravity feedforward instead estimates the predictable load so the spring does
+not have to provide all the holding torque through sag. This is an equilibrium
+approximation, not a guarantee through friction, contact, saturation or motion.
+Model errors still leave a residual load for the spring to carry.
+
+This motivation applies to spring/impedance mode, not every position controller.
+The reBot configuration still defaults to mock hardware and `position_csp`;
+its optional effort path requires explicitly selected real motion mode. Nothing
+in this package changes those defaults or enables motors.
+
+## Follow the position and effort paths
+
+The controller reads **measured** joint positions `q`, not the position target,
+and writes, per joint:
 
 ```text
 hardware effort = upstream effort + gains[i] * gravity(q)[i] + offsets[i]
 ```
 
-Gravity comes from KDL `ChainDynParam::JntToGravity`. Gains and offsets apply
-only to the gravity contribution, never to upstream effort. The controller
-adds gravity once per update; it does not accumulate commands or change the
-driver, motor gains, torque limits, or motion policy.
+Gravity comes from KDL `ChainDynParam::JntToGravity`, using the URDF chain,
+gravity vector and optional payload. Gains and offsets apply only to the
+gravity contribution, never to upstream effort. An upstream producer should
+supply the remaining effort, not a second copy of the same gravity term.
+
+```mermaid
+flowchart TB
+    U["Upstream effort controller<br/>trajectory feedforward or spring-damper"] --> R["Gravity reference interfaces<br/>gravity_compensation_controller/jointN/effort"]
+    R --> S["Gravity controller sums once<br/>upstream + gain * G(q) + offset"]
+    Q["Measured joint/position state: q"] --> G["KDL gravity model: G(q)"]
+    URDF["URDF chain, gravity vector, payload"] --> G
+    G --> S
+    S --> H["Hardware jointN/effort<br/>claimed only by gravity"]
+    H --> D["Unchanged driver<br/>map joint effort to motor sign"]
+    P["Optional position controller<br/>jointN/position command: target"] -. "only if hardware supports both" .-> D
+    D --> W["reBot motion-mode SDK<br/>clamp feedforward to wire range and encode"]
+    W --> M["Motor<br/>spring + damping + feedforward"]
+```
+
+**Commands ask; states report.** A `joint/position` command holds a desired
+position; its separate state interface reports the measured position. The
+gravity reference is another command interface, written by an upstream
+controller rather than hardware. It is not a topic or a torque measurement.
+The last three boxes illustrate reBot's motion-mode path; other effort drivers
+have their own command interpretation and limits.
+
+### What the unchanged driver does, and does not, limit
+
+In reBot motion mode, the [driver's `write()`](../external_dependencies/robstride_hardware_interface/robstride_hardware_interface/src/robstride_hardware_interface.cpp)
+maps the summed joint effort to motor sign and passes it to
+[`EncodeMotionCommand`](../external_dependencies/robstride_sdk/robstride_sdk/include/robstride_sdk/robstride_motor.hpp).
+The SDK's [`FloatToUint16`](../external_dependencies/robstride_sdk/robstride_sdk/include/robstride_sdk/robstride_protocol.hpp)
+clamps and quantizes that feedforward field to the motor model's wire range.
+The diagram shows the normal command path; existing freeze/fault handling can
+suppress it. CSP takes a different branch and writes a position target, not
+this feedforward field.
+
+There is **no added controller clamp or separate driver feedforward cap** here.
+A historical optional driver-side `max_feedforward_effort` clamp is not part
+of this implementation. Do not confuse that separate policy, a URDF effort
+limit, or the SDK's encoding range with a certified continuous-hold limit.
+Clamping the feedforward field does not bound the motor's total spring +
+damping + feedforward torque. `~/commanded_effort` reports the sum **before**
+driver/SDK limiting, not measured motor torque or proof of physical balance.
+
+## Why the gravity model belongs in a chainable controller
+
+The controller owns the robot-specific chain, payload, mounting gravity and
+trim; the driver keeps its existing transport and motor-command mapping.
+Putting the model in the driver would couple those robot assumptions to a
+hardware plugin and require another way to configure and test them. Here the
+same plugin can be exercised with fake hardware, using the normal lifecycle
+and parameter APIs, without changing driver code.
+
+ros2_control gives each command interface one claimant. Two controllers cannot
+both write hardware `joint/effort`, even if the intent is to add their torques.
+Chaining makes the addition explicit: the upstream controller claims gravity's
+references; gravity alone claims hardware effort. Controller manager handles
+those claims and orders upstream before gravity. No new mux, bridge or driver
+mixing policy is needed. This controller adds gravity once per update; it does
+not accumulate commands, change motor gains or torque limits, or supply motion
+control and safety policy.
 
 ## Interfaces and ownership
 
@@ -41,7 +134,31 @@ and effort commands. An effort-only driver needs only the downstream effort
 claim. This controller does not turn a position-only driver into an effort
 driver, and it does not provide position holding, damping or trajectory control.
 
-## Standalone gravity-only setup
+## Standalone versus chained operation
+
+Both modes use the same measured positions, gravity model and hardware effort
+claims. Only the source of the upstream term changes:
+
+```mermaid
+flowchart TB
+    subgraph Standalone["Standalone: no upstream claimant"]
+        direction TB
+        Z["No input topic needed<br/>references ignored; upstream = 0"] --> GS["Gravity controller<br/>gain * G(q) + offset"]
+        GS --> HS["Hardware effort"]
+    end
+    subgraph Chained["Chained: upstream claims gravity references"]
+        direction TB
+        U["Synchronous upstream producer<br/>writes each cycle"] --> GC["Gravity controller<br/>upstream + gain * G(q) + offset"]
+        GC --> HC["Hardware effort"]
+    end
+```
+
+Controller manager selects chained mode when an upstream controller claims the
+references. Deactivating that upstream controller through controller manager
+returns gravity to standalone. Mode/lifecycle changes clear references; do not
+switch a loaded robot on the assumption that zero effort is a safe hold.
+
+### Standalone gravity-only setup
 
 Add the plugin type and parameters to a controller manager's configuration:
 
@@ -86,7 +203,7 @@ nonzero gravity requires deliberate configuration and commissioning. The
 library preserves the original parameter default of unit gains when `gains`
 is omitted, so **do not omit gains to disable gravity**.
 
-## Chaining an upstream effort controller
+### Chaining an upstream effort controller
 
 Configure the upstream controller's command interface names to use the exported
 references. For example, the standard `forward_command_controller` can forward
@@ -122,10 +239,10 @@ on update; activation order within a switch request is not update order.
 **Producers must write every claimed reference on every gravity cycle**,
 synchronously at gravity's update rate. Each update consumes the references and
 clears them to NaN, so a skipped cycle contributes zero effort, not the last
-value; asynchronous/multi-rate producers are not supported. A trajectory or spring-mass-damper controller must likewise
-support separate command-interface names; adding another direct hardware
-`effort` claimant is not chaining. No production upstream controller is added
-by this package.
+value; asynchronous/multi-rate producers are not supported. A trajectory or
+spring-mass-damper controller must likewise support separate command-interface
+names; adding another direct hardware `effort` claimant is not chaining. No
+production upstream controller is added by this package.
 
 The forward controller is only an interface example, not a safe motion
 controller: it holds its last array and provides no command timeout, damping,
@@ -133,13 +250,42 @@ position/velocity limits or collision checking. Commands above are for fake
 hardware only. Use a commissioned effort producer and hardware-specific safety
 procedures on a real robot.
 
+## Every cycle consumes and clears its input
+
+References are single-cycle inputs, not a hold-last-command buffer. NaN means
+**no upstream input this cycle**, so that joint gets zero upstream effort while
+its gravity contribution remains. A valid zero is also accepted. An unreadable
+handle is a different failure: it is not treated as a missing command.
+
+```mermaid
+flowchart TB
+    A["Start of cycle<br/>references are NaN"] --> B["Upstream runs first<br/>writes claimed references, or misses a write"]
+    B --> C["Gravity reads every reference once<br/>and immediately clears it to NaN"]
+    C --> D{"Read result for each joint?"}
+    D -->|"Finite value"| E["Use value as upstream effort"]
+    D -->|"NaN: no input"| F["Use zero upstream effort"]
+    D -->|"Unreadable, infinite, or clear failed"| X["Return ERROR<br/>attempt to zero all hardware efforts"]
+    E --> G["Add gain * G(q) + offset<br/>validate positions, solver and complete sum"]
+    F --> G
+    G -->|"Valid"| H["Write hardware efforts"]
+    G -->|"Invalid"| X
+    H -->|"Write failed"| X
+    H -->|"Success; next cycle"| A
+```
+
+Clearing happens even on failed updates, before any error return. Thus a
+six-joint producer replaced by a three-joint producer cannot leave its old
+commands on the released joints: those three references stay NaN and contribute
+zero next cycle. The replacement must still write its three claimed references
+every cycle. This rule prevents stale **reference** reuse; it does not detect
+stale commands inside an upstream controller that keeps rewriting its last
+value (as the forward-controller example does).
+
 ## Lifecycle, missing data and diagnostics
 
 - Reference handles start as NaN, the standard ros2_control "no command"
-  value. Every update reads each reference once and clears it to NaN;
-  activation, deactivation and chained-mode switches clear them too. A NaN
-  reference (unclaimed, released, or not written this cycle) contributes zero,
-  so gravity-only output continues. Standalone ignores references entirely.
+  value. Activation, deactivation and chained-mode switches clear them too.
+  Standalone clears and ignores all upstream references on every update.
 - Controller manager performs mode switches while gravity is inactive. To
   return to standalone, deactivate the upstream controller through controller
   manager; to stop the chain, deactivate upstream and gravity together. It
@@ -150,8 +296,8 @@ procedures on a real robot.
 - Activation requires finite measured positions and complete, correctly named
   double interfaces. Missing/non-finite positions, unreadable or infinite
   references, solver errors, non-finite output (including arithmetic
-  overflow), and failed command writes return `ERROR`. Invalid updates attempt to zero **all** hardware efforts and
-  do not publish a successful output. A failed zero write is still an error,
+  overflow), and failed command writes return `ERROR`. Invalid updates attempt
+  to zero **all** hardware efforts and do not publish a successful output. A failed zero write is still an error,
   not evidence that hardware reached zero. Controller manager handles error
   deactivation of the chain.
 - Deactivation and shutdown attempt to zero effort. **Zero effort is not a
