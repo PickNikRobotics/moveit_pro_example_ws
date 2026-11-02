@@ -13,3 +13,7 @@ hardware:
     urdf_params:
       # Force mock regardless of the base config's default.
       - hardware_interface: "mock"
+
+objectives:
+  # Lets a run force a Behavior's result while debugging. Simulation only: never set it on hardware.
+  allow_node_substitution: true
