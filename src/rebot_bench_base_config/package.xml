@@ -38,6 +38,8 @@
   <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>rebot_bench_behaviors</exec_depend>
   <exec_depend>control_msgs</exec_depend>
+  <exec_depend>moveit_pro_controllers_msgs</exec_depend>
+  <exec_depend>trajectory_msgs</exec_depend>
   <exec_depend>controller_manager_msgs</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
