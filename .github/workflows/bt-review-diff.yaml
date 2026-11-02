@@ -1,0 +1,17 @@
+# Demo for PickNikRobotics/moveit_pro#21717. Remove before merging, or replace the ref with a moveit_pro_ci release.
+name: Behavior Tree review diff
+
+on:
+  pull_request:
+    paths:
+      - '**.xml'
+
+permissions:
+  contents: read
+
+jobs:
+  bt-review-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: PickNikRobotics/moveit_pro_ci/.github/actions/bt_review_diff@feat/21717-bt-review-diff
