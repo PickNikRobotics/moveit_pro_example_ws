@@ -58,7 +58,7 @@
         <Control ID="Sequence">
           <Action
             ID="Script"
-            code="capture_error := 'No fresh point cloud on ' + topic_name + ' within ' + timeout_ms + ' ms. Check the publisher and timestamp clock.'"
+            code="capture_error := 'No fresh point cloud on ' .. topic_name .. ' within ' .. timeout_ms .. ' ms. Check the publisher and timestamp clock.'"
           />
           <Action ID="LogMessage" log_level="error" message="{capture_error}" />
           <Action ID="AlwaysFailure" />
