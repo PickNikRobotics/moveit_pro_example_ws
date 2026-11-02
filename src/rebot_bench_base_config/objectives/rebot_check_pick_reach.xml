@@ -5,11 +5,13 @@
     _description="Compute the pick hover and pick poses for a cube and check both for collision-free inverse kinematics. Reports nothing of its own when one is out of reach. No motion is executed."
   >
     <Sequence>
-      <!-- gripper_end is the fingertip plane; +X points out of the fingers. -->
+      <!-- gripper_end is the fingertip plane; +X points out of the fingers.
+           LOCAL attended spring-mode session: 114 mm approach/post-grasp
+           fingertip height for a 50 mm cube; keep grasp depth unchanged. -->
       <Action
         ID="TransformPose"
         input_pose="{cube_top}"
-        translation_xyz="0;0;0.025"
+        translation_xyz="0;0;0.064"
         quaternion_xyzw="0;0.7071067811865475;0;0.7071067811865475"
         output_pose="{pick_hover}"
       />
@@ -45,7 +47,7 @@
         ID="IsPlannedJointAtMost"
         robot_state="{goal}"
         joint_name="joint2"
-        maximum="2.4"
+        maximum="2.6"
         reason="heat budget: too far from the base"
       />
       <Action ID="ResetVector" vector="{path}" />
@@ -72,7 +74,7 @@
         ID="IsPlannedJointAtMost"
         robot_state="{goal}"
         joint_name="joint2"
-        maximum="2.4"
+        maximum="2.6"
         reason="heat budget: too far from the base"
       />
     </Sequence>

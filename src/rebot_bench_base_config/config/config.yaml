@@ -17,7 +17,7 @@ hardware:
     urdf_params:
       # "mock" or "real". Real drives the seven RobStride motors over SocketCAN
       # and only works in a non-instanced deployment, where host can0 is visible.
-      - hardware_interface: "mock"
+      - hardware_interface: "real"
       # Real only. The single 1 Mbps bus the bench arm is wired to.
       - can_interface: "can0"
       # Real only. Startup engages torque at HOME. "false" retains the existing
@@ -28,7 +28,7 @@ hardware:
       - thermal_clear_c: "75.0"
       # Real only. joint1-joint6 control: "position_csp" (the motor's own
       # position loop) or "motion" (impedance, the Xacro default). See the README.
-      - arm_control_mode: "position_csp"
+      - arm_control_mode: "motion"
       # Bench-specific placements in the printed TF frame (world, z = 0 on the
       # mat top), from the 2026-10-11 ChArUco calibration; re-measure and
       # override them for any other installation (README.md). base_link: x, y
@@ -48,7 +48,7 @@ ros_global_params:
   use_sim_time: false
   # Enable the calibrated FashionStar USB leader for mock, real or the sim overlay.
   # Backend drivers own the reader and bridge; no separate ros2 launch command.
-  rebot_leader_enabled: false
+  rebot_leader_enabled: true
   rebot_leader_port: "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0"
   # Existing bench calibration, installed with this package; never recalibrated.
   rebot_leader_calibration_file: "config/leader_calibration/rebot_arm_102_leader.json"
@@ -84,6 +84,7 @@ ros2_control:
   controllers_active_at_startup:
   - joint_state_broadcaster
   - joint_trajectory_admittance_controller
+  - gravity_compensation_controller
   controllers_inactive_at_startup:
   - leader_position_controller
   - joint_velocity_controller

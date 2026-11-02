@@ -4,6 +4,7 @@
 #ifndef ROBSTRIDE_HARDWARE_INTERFACE__ROBSTRIDE_HARDWARE_INTERFACE_HPP_
 #define ROBSTRIDE_HARDWARE_INTERFACE__ROBSTRIDE_HARDWARE_INTERFACE_HPP_
 
+#include <algorithm>
 #include <atomic>
 #include <memory>
 #include <string>
@@ -56,8 +57,22 @@ struct JointHandle
   double wrap_center = 0.0;
   // No URDF position limits: targets take the shortest way round.
   bool continuous = false;
+  // Bound on the motion-mode torque feedforward (N*m, joint frame).
+  double max_feedforward_effort = 0.0;
   robstride_sdk::RobstrideMotor * motor;  // owned by RobstrideHardware::motors_
 };
+
+// A quarter of the model's MIT torque range: RS00 3.5 N*m, RS06 9 N*m.
+inline double DefaultMaxFeedforwardEffort(robstride_sdk::ActuatorType type)
+{
+  return 0.25 * robstride_sdk::GetActuatorLimits(type).torque_max;
+}
+
+inline double MotorFeedforward(const JointHandle & jh, double joint_effort)
+{
+  return jh.direction *
+         std::clamp(joint_effort, -jh.max_feedforward_effort, jh.max_feedforward_effort);
+}
 
 // ros2_control SystemInterface for RobStride actuators over SocketCAN.
 // Owns one CanBus per distinct can_interface, so multi-bus rigs work.

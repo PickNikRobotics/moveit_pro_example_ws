@@ -706,11 +706,21 @@ The RobStride driver detects any motor at or above that temperature and latches
 torque for recovery; automatic re-enable and further torque-enable requests are
 blocked while latched. Initial hot feedback prevents startup enable.
 
-The backend's `rebot_thermal_guard` cancels the current Objective, requests
-**Return reBot Leader Home**, waits for successful completion and fresh measured
-stationary HOME for 0.5 s, then calls the owning driver's `set_torque` service
-with false. The leader bridge latches off without sending a competing HOME goal.
-No separate guard command is needed, including when the leader is disabled.
+On every new latch, the backend's `rebot_thermal_guard` first sends the active
+trajectory controller a stamped stationary goal with two identical fresh measured
+poses (all seven joints, including the current jaw position). It waits for two
+advancing controller reference samples matching that pose before restoring arm
+motor IDs 1–6: configured `kd` first, then `kp`, one acknowledged request at a time
+through `/robstride_hardware_interface/set_data_to_robstride`. The values come
+from the initial `/robot_description` GPIO configuration, not float-modified
+runtime gains; jaw gains and gravity compensation are untouched. JTAC must stay
+active: merely activating it does not replace its previous target.
+
+Only then does the guard cancel the current Objective, request **Return reBot
+Leader Home**, wait for successful completion and fresh measured stationary HOME
+for 0.5 s, and call the owning driver's `set_torque` service with false. The
+leader bridge latches off without sending a competing HOME goal. No separate
+guard command is needed, including when the leader is disabled.
 
 The split is deliberate. The driver owns the YAML threshold, detection, the
 latch and refusing re-enable. The HOME-then-OFF response stays in this backend
@@ -719,10 +729,17 @@ never lose torque away from HOME. An arm already fully OFF when the latch trips
 (hot at startup) stays OFF and is reported as such, without waiting for the
 Objective server.
 
-If cancellation, HOME, hardware health, or fresh HOME verification fails, or a
-step exceeds its own time bound (120 s for native HOME, a few seconds for each
-other step), the system keeps the latch and reports intervention required; it never disables
-away from HOME. Reachable joints retain torque under the existing loss/fault
+If the anchor, gain restoration, cancellation, HOME, hardware health, or fresh
+HOME verification fails, or a step exceeds its own time bound (120 s for native
+HOME, a few seconds for each other step), the system keeps the latch and reports
+intervention required; it never disables away from HOME. Gain requests have a
+0.5 s response bound and are not retried or rolled back. The stationary goal is
+bounded to 10 s, remains observable while gains are restored, and is superseded
+by native HOME. A failed/preempted goal or stale/changed reference prevents further
+gain requests. A service ACK means the driver queued a write, not motor gain
+readback or atomic restoration. This sequence assumes no competing motion or gain
+writer; it cannot exclude an independently delayed request or guarantee a physical
+no-snap transition over asynchronous ROS/CAN transport. Reachable joints retain torque under the existing loss/fault
 policy. Existing collision checks and motor fault handling remain active.
 After successful HOME-then-OFF recovery, the guard continues checking fresh
 stationary measured HOME and healthy all-seven OFF feedback. While those hold,

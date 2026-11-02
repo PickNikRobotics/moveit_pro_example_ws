@@ -39,6 +39,7 @@
 #include <rebot_bench_behaviors/plan_to_joint_goal_from_bounded_start.hpp>
 #include <rebot_bench_behaviors/record_rebot_trajectory.hpp>
 #include <rebot_bench_behaviors/report_unreachable_cube.hpp>
+#include <rebot_bench_behaviors/set_rebot_motor_gain.hpp>
 
 namespace rebot_bench_behaviors
 {
@@ -49,6 +50,7 @@ public:
                          const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& context) override
   {
     moveit_pro::behaviors::registerBehavior<CallRebotLeaderService>(factory, "CallRebotLeaderService", context);
+    moveit_pro::behaviors::registerBehavior<SetRebotMotorGain>(factory, "SetRebotMotorGain", context);
     moveit_pro::behaviors::registerBehavior<RecordRebotTrajectory>(factory, "RecordRebotTrajectory", context);
     moveit_pro::behaviors::registerBehavior<AnchorTrajectoryToCommand>(factory, "AnchorTrajectoryToCommand", context);
     moveit_pro::behaviors::registerBehavior<ClampRobotStateToBounds>(factory, "ClampRobotStateToBounds", context);

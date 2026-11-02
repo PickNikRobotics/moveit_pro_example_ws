@@ -6,12 +6,14 @@
   >
     <Sequence>
       <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+      <!-- LOCAL attended spring-mode session: +100 mm carry/approach margin.
+           Keep both IK-tested orientations and the release pose unchanged. -->
       <Fallback>
         <Sequence>
           <Action
             ID="TransformPose"
             input_pose="{red_top}"
-            translation_xyz="0;0;0.06"
+            translation_xyz="0;0;0.16"
             quaternion_xyzw="0;0.5372996083468239;0;0.8433914458128857"
             output_pose="{place_hover}"
           />
@@ -39,7 +41,7 @@
           <Action
             ID="TransformPose"
             input_pose="{red_top}"
-            translation_xyz="0;0;0.06"
+            translation_xyz="0;0;0.16"
             quaternion_xyzw="0;0.7071067811865475;0;0.7071067811865475"
             output_pose="{place_hover}"
           />

@@ -29,7 +29,7 @@
         ID="IsPlannedJointAtMost"
         robot_state="{goal}"
         joint_name="joint2"
-        maximum="2.4"
+        maximum="2.6"
         reason="heat budget: too far from the base"
       />
     </Sequence>

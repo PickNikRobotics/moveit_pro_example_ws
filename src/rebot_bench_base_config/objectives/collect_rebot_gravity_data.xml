@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Collect reBot Gravity Data">
+  <BehaviorTree ID="Collect reBot Gravity Data" _description="Record raw measured position and effort while visiting 24 static poses from opposing directions at normal configured speed. Empty closed jaw, HOME start/end, fixed bench/wall, no cubes. Data collection only: no fit, gains, or controller-model activation.">
+    <Sequence>
+      <Action ID="AlwaysSuccess" _failureIf="!(approval == 'COLLECT GRAVITY')" />
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{preflight_scene}" />
+      <Inverter><Action ID="IsCollisionObjectInPlanningScene" planning_scene="{preflight_scene}" collision_object_name="rebot_blue" /></Inverter>
+      <Inverter><Action ID="IsCollisionObjectInPlanningScene" planning_scene="{preflight_scene}" collision_object_name="rebot_red" /></Inverter>
+      <Action ID="GetJointState" planning_scene="{preflight_scene}" planning_group_name="manipulator_and_gripper" joint_state="{measured_joints}" robot_joint_state="{commanded_state}" />
+      <Action ID="UnpackJointStateMessage" joint_state="{measured_joints}" position="{positions}" />
+      <Action ID="GetElementOfVector" vector_in="{positions}" index="0" element="{j1}" />
+      <Action ID="GetElementOfVector" vector_in="{positions}" index="1" element="{j2}" />
+      <Action ID="GetElementOfVector" vector_in="{positions}" index="2" element="{j3}" />
+      <Action ID="GetElementOfVector" vector_in="{positions}" index="3" element="{j4}" />
+      <Action ID="GetElementOfVector" vector_in="{positions}" index="4" element="{j5}" />
+      <Action ID="GetElementOfVector" vector_in="{positions}" index="5" element="{j6}" />
+      <Action ID="GetElementOfVector" vector_in="{positions}" index="6" element="{j7}" />
+      <Action ID="AlwaysSuccess" _failureIf="!(j1 &gt;= -0.08 &amp;&amp; j1 &lt;= 0.08 &amp;&amp; j2 &gt;= -0.02 &amp;&amp; j2 &lt;= 0.08 &amp;&amp; j3 &gt;= -0.01 &amp;&amp; j3 &lt;= 0.08 &amp;&amp; j4 &gt;= -0.08 &amp;&amp; j4 &lt;= 0.08 &amp;&amp; j5 &gt;= -0.08 &amp;&amp; j5 &lt;= 0.08 &amp;&amp; j6 &gt;= -0.08 &amp;&amp; j6 &lt;= 0.08 &amp;&amp; j7 &gt;= -0.05 &amp;&amp; j7 &lt;= 0.05 &amp;&amp; settle_seconds &gt;= 1.5)" />
+      <!-- Start a rest-to-rest profile from the measured HOME coordinates; do not
+           seed it with quantized/jittering measured velocity. -->
+      <Action ID="CreateRobotState" joint_names="joint1;joint2;joint3;joint4;joint5;joint6;joint7" positions="{positions}" velocities="0;0;0;0;0;0;0" joint_state_msg="{commanded_state}" />
+      <SubTree ID="reBot Fixed Bench Scene" />
+      <Action ID="RecordEpisode" dataset_name="{dataset_name}" task="static gravity identification; raw measured joint effort" config_name="{training_config}" num_episodes="1" />
+      <Fallback>
+        <Sequence>
+          <Action ID="WaitForDuration" delay_duration="3.0" />
+          <Action ID="SwitchController" activate_controllers="joint_trajectory_admittance_controller" automatic_deactivation="true" strictness="2" />
+          <SubTree ID="reBot Gravity Collection Move" positions="0;0.65;0.85;0.3;0;0" commanded_state="{commanded_state}" />
+          <SubTree ID="reBot Gravity Collection Sequence" settle_seconds="{settle_seconds}" commanded_state="{commanded_state}" />
+          <SubTree ID="reBot Gravity Collection Move" positions="0;0.65;0.85;0.3;0;0" commanded_state="{commanded_state}" />
+          <SubTree ID="reBot Gravity Collection Move" positions="0;0;0;0;0;0" commanded_state="{commanded_state}" />
+          <Action ID="WaitForDuration" delay_duration="1.5" />
+          <Action ID="SaveEpisode" />
+          <Action ID="WaitForDuration" delay_duration="1.0" />
+          <Action ID="StopRecording" />
+        </Sequence>
+        <Sequence>
+          <!-- Preserve partial raw evidence on ordinary failure, unlike training demonstrations. -->
+          <ForceSuccess><Action ID="SaveEpisode" /></ForceSuccess>
+          <ForceSuccess><Action ID="StopRecording" /></ForceSuccess>
+          <ForceSuccess><SubTree ID="Return reBot Leader Home" /></ForceSuccess>
+          <Action ID="LogMessage" message="Gravity collection failed. HOME recovery was attempted, not guaranteed. Retain torque; inspect measured HOME before any disable." />
+          <AlwaysFailure />
+        </Sequence>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Collect reBot Gravity Data">
+      <MetadataFields><Metadata runnable="true" /><Metadata subcategory="reBot Gravity Identification" /></MetadataFields>
+      <input_port name="approval" default="" type="std::string">Only after physical-run approval, type COLLECT GRAVITY.</input_port>
+      <input_port name="dataset_name" default="rebot_gravity_raw" type="std::string">New raw recording dataset; keep the MCAP, do not convert it for fitting.</input_port>
+      <input_port name="training_config" default="rebot_bench_jpeg" type="std::string">Existing recorder captures joint states/commands and the configured cameras without downsampling raw messages.</input_port>
+      <input_port name="settle_seconds" default="1.5" type="double">At least 1.5 s before each static measurement window.</input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
