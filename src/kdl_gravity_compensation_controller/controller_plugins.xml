@@ -1,0 +1,12 @@
+<library path="kdl_gravity_compensation_controller">
+  <class
+    name="kdl_gravity_compensation_controller/GravityCompensationController"
+    type="kdl_gravity_compensation_controller::GravityCompensationController"
+    base_class_type="controller_interface::ChainableControllerInterface"
+  >
+    <description>
+      Adds gain * KDL gravity torque + offset to upstream effort references
+      and writes the sum to each chain joint's hardware effort interface.
+    </description>
+  </class>
+</library>

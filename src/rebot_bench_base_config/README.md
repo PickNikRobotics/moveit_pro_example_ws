@@ -779,8 +779,10 @@ velocity and effort.
 joint1-joint6 run in the mode set by the `arm_control_mode` entry under
 `urdf_params` in `config/config.yaml`: `position_csp`, which it ships, or `motion`
 (impedance, the Xacro argument's default when no value is passed). Impedance computes `kp * error + kd * velocity error` and the
-driver sends no gravity feedforward, so a loaded joint settles short by load
-torque / kp - joint4 stopped about 50 mrad short lifting 0.3 rad. `position_csp`
+default configuration sends no gravity feedforward, so a loaded joint settles short by
+load torque / kp - joint4 stopped about 50 mrad short lifting 0.3 rad. Optional
+[chainable gravity compensation](#optional-gravity-compensation) adds effort
+feedforward without changing the driver's impedance gains. `position_csp`
 uses the motor's own position loop, which settles on target, capped by the speed
 limit stored in each motor (`0x7017`). Switching needs a restart of both the
 runtime and the drivers process, at home. The gripper always uses motion mode,
@@ -802,9 +804,9 @@ on it.
 
 ### Controllers
 
-Unchanged from mock, and that is the point: every controller in
-`config/control/rebot.ros2_control.yaml` already commands `position` only, which
-is what both the CSP and motion modes are driven through. One
+The normal motion controllers in `config/control/rebot.ros2_control.yaml`
+command `position` on both mock and real hardware. The optional gravity
+controller is separate and starts inactive. One
 `joint_trajectory_admittance_controller` owns all seven joints and accepts partial
 goals, so the arm and gripper planning groups both work through it. The joints a partial
 goal leaves out are commanded to their measured positions when the goal arrives. A goal
@@ -813,11 +815,9 @@ measured position is rejected before anything moves. The 0.16 rad path tolerance
 accommodates the measured 0.1514 rad jaw lag; the 0.1 rad goal tolerance
 accommodates motion mode's gravity sag (up to 0.088 rad measured).
 
-The real branch declares `position` as the **only** command interface per joint,
-where mock also declares `velocity`. The driver exports whatever the description
-declares, so a stray `velocity` declaration would be claimed by a controller and
-then never written - a joint that accepts commands and does not move, with
-nothing in the log to explain why.
+By default the real branch declares only `position` command interfaces; mock
+also declares `velocity`. The explicit `arm_effort_command` option adds effort
+to real motion-mode arm joints only, never to CSP or the gripper.
 
 Motor health (`id`, `enabled`, `run_state`, `fault_bits`) is published on the
 hardware component's own `~/robstride_state` topic every read cycle. Its services
@@ -829,6 +829,44 @@ writing its held setpoint regardless, so deactivate it first. `~/set_zero_robstr
 deserves particular care: it moves nothing itself, but it redefines where zero is,
 and a controller still chasing its old setpoint number will then drive the motor
 to match.
+
+### Optional gravity compensation
+
+`gravity_compensation_controller` is configured **inactive**, with all gravity
+gains and offsets zero. It uses the existing nominal URDF, not fitted inertials
+or benchmark gains. The default mock selector, CSP mode, motor gains, limits,
+thermal handling and motion Objectives are unchanged.
+
+For a separately commissioned real motion-mode installation, set
+`arm_control_mode: "motion"` and `arm_effort_command: "true"` under
+`hardware.robot_description.urdf_params` before startup at supported HOME.
+This only exposes `joint1/effort` through `joint6/effort`; it does not activate
+gravity or enable any motor. Mock, MuJoCo, CSP and `joint7` never gain an effort
+interface from this option, so activation there is intentionally unavailable.
+
+Gravity alone computes `gain * KDL gravity + offset`. In chained mode it adds
+upstream effort without scaling it. An upstream effort controller must claim
+`gravity_compensation_controller/jointN/effort`, not compete with gravity for
+`jointN/effort`, and write it every cycle at gravity's rate: a skipped cycle
+contributes zero upstream effort. Position remains owned by the normal position
+controller.
+
+The `base_link` to `gripper_end` chain omits the two finger links
+(`gripper_left` and `gripper_right`, 0.1504 kg together), which hang off
+`gripper_end` through the finger joints. KDL drops those branches, and the
+shipped `payload_mass: 0.0` does not compensate them, so with nonzero gains the
+model undercounts the tool mass.
+`~/commanded_effort` reports the summed controller request, not measured motor
+torque or post-driver-limit effort.
+
+The [controller README](../kdl_gravity_compensation_controller/README.md) gives
+standalone and chained fake-hardware setup examples, parameter semantics and
+tests. No automatic ramp, damping, position hold or gravity tuning is provided.
+Zero gains suppress gravity, **not upstream effort**. Deactivation zeros the
+effort contribution immediately; it is not a safe hold for an unsupported
+load. Establish model validity, the complete summed-torque envelope and the
+robot's stopping procedure before any real activation. Software chain tests
+are not physical float or continuous-hold qualification.
 
 ### Waypoints and Objectives
 

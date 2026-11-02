@@ -50,6 +50,12 @@ Modified by PickNik Inc., 2026-10-14:
   retaining J7's zero lower bound. These are approved operating limits, not
   measured negative hard stops.
 
+Modified by PickNik Inc., 2026-11-01:
+
+- Added the opt-in `arm_effort_command` argument for effort feedforward on
+  real motion-mode arm joints, leaving geometry, inertials, motor gains,
+  limits and the default hardware interfaces unchanged.
+
 Original URDF export notice retained in `rebot.urdf.xacro`: SolidWorks to URDF
 Exporter, Stephen Brawner (brawner@gmail.com), commit `1.6.0-4-g7f85cfe`,
 build `1.6.7995.38578`; http://wiki.ros.org/sw_urdf_exporter.

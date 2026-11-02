@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Derived from Seeed reBot-DevArm; CERN-OHL-W-2.0. Modified by PickNik Inc., 2026-10-09 to 2026-10-14: visual replacements, hardware selectors, world placement, wrist-camera mount arguments and conservative home margins. See NOTICE.md. Original SolidWorks exporter: Stephen Brawner (brawner@gmail.com), 1.6.0-4-g7f85cfe, build 1.6.7995.38578; http://wiki.ros.org/sw_urdf_exporter. -->
+<!-- Derived from Seeed reBot-DevArm; CERN-OHL-W-2.0. Modified by PickNik Inc., 2026-10-09 to 2026-11-01: visual replacements, hardware selectors, world placement, wrist-camera mount arguments, conservative home margins and opt-in arm effort commands. See NOTICE.md. Original SolidWorks exporter: Stephen Brawner (brawner@gmail.com), 1.6.0-4-g7f85cfe, build 1.6.7995.38578; http://wiki.ros.org/sw_urdf_exporter. -->
 <robot name="rebot_b601_rs" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="hardware_interface" default="mock" />
   <!-- Real hardware only; ignored by mock. The bench runs one 1 Mbps bus. -->
@@ -11,12 +11,16 @@
   <xacro:arg name="thermal_cutoff_c" default="100.0" />
   <xacro:arg name="thermal_clear_c" default="75.0" />
   <!-- Real hardware only; joint1-joint6 control mode. "motion" is impedance
-       (MIT): torque = kp * error + kd * velocity error, with no gravity
-       feedforward, so a loaded joint settles short by load torque / kp.
+       (MIT): torque = kp * error + kd * velocity error + effort feedforward.
+       Feedforward is disabled unless arm_effort_command is enabled below.
        "position_csp" is the motor's own position loop, which settles on
        target and is capped by the motor's stored speed limit (0x7017). The
        gripper always uses motion. Unsupported values fail expansion. -->
   <xacro:arg name="arm_control_mode" default="motion" />
+  <!-- Opt-in effort feedforward on real motion-mode joint1-joint6 only.
+       Ignored for mock, MuJoCo, CSP and the gripper. Does not activate a
+       controller or change motor gains/limits. -->
+  <xacro:arg name="arm_effort_command" default="false" />
   <xacro:arg name="jaw_kp" default="12.0" />
   <xacro:arg name="jaw_kd" default="0.5" />
   <!-- Placement of base_link and of the scene camera mount in `world`, as
@@ -524,13 +528,13 @@
         <param name="id">${id}</param>
       </xacro:if>
       <command_interface name="position" />
-      <!--
-        Mock only. Every controller in config/control/rebot.ros2_control.yaml
-        commands `position`, and motion mode is driven through `position`
-        alone; the driver exports whatever is declared, so a velocity
-        declaration here would be claimable and then never written - a joint
-        that accepts commands and does not move, with no error to explain it.
-      -->
+      <xacro:if value="$(arg arm_effort_command)">
+        <xacro:if value="${'$(arg hardware_interface)' == 'real' and mode == 'motion' and name != 'joint7'}">
+          <command_interface name="effort" />
+        </xacro:if>
+      </xacro:if>
+      <!-- Mock retains its velocity interface. Real configurations use
+           position control with optional, separately owned effort feedforward. -->
       <xacro:if value="${'$(arg hardware_interface)' == 'mock'}">
         <command_interface name="velocity" />
       </xacro:if>

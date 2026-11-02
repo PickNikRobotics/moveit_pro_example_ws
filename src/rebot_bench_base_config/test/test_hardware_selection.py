@@ -85,9 +85,8 @@ def test_real_declares_one_motor_per_joint_matched_by_id():
     for joint in joints:
         motor_id, model, kp, kd = MOTORS[joint.get("name")]
         assert params(joint) == {"id": motor_id}
-        # Both modes are driven through position alone. A velocity declaration
-        # would be exported and claimable, then never written - a joint that
-        # accepts commands and does not move, with nothing to explain why.
+        # Both modes retain position-only commands by default. Arm effort
+        # feedforward is a separate, explicit opt-in.
         assert [c.get("name") for c in joint.findall("command_interface")] == [
             "position"
         ]
@@ -121,6 +120,83 @@ def test_arm_control_mode_switches_joint1_to_6_and_never_the_gripper():
     assert modes == {**{str(i): "position_csp" for i in range(1, 7)}, "7": "motion"}
     with pytest.raises(xacro.XacroException):
         expand(hardware_interface="real", arm_control_mode="torque")
+
+
+@pytest.mark.parametrize("hardware", ["mock", "real", "mujoco"])
+@pytest.mark.parametrize("mode", ["motion", "position_csp"])
+@pytest.mark.parametrize("effort", ["false", "true"])
+def test_effort_command_is_opt_in_real_motion_arm_only(hardware, mode, effort):
+    model = expand(
+        hardware_interface=hardware,
+        arm_control_mode=mode,
+        arm_effort_command=effort,
+    )
+    efforts = {
+        joint.get("name")
+        for joint in model.findall("ros2_control/joint")
+        if joint.find("command_interface[@name='effort']") is not None
+    }
+    expected = (
+        {f"joint{i}" for i in range(1, 7)}
+        if (hardware, mode, effort) == ("real", "motion", "true")
+        else set()
+    )
+    assert efforts == expected
+    # Opting in must not alter any motor gains, modes or hardware parameters.
+    default = expand(hardware_interface=hardware, arm_control_mode=mode)
+    assert [params(g) for g in model.findall("ros2_control/gpio")] == [
+        params(g) for g in default.findall("ros2_control/gpio")
+    ]
+    for added in model.findall("ros2_control/joint"):
+        for interface in added.findall("command_interface[@name='effort']"):
+            added.remove(interface)
+
+    def normalized(element):
+        return (
+            element.tag,
+            element.attrib,
+            (element.text or "").strip(),
+            [normalized(child) for child in element],
+        )
+
+    assert normalized(model) == normalized(default)
+
+
+def test_gravity_controller_is_inactive_with_zero_output_defaults(tmp_path):
+    import yaml
+    from moveit_studio_utils_py.system_config import load_system_config
+
+    config = load_system_config("rebot_bench_base_config", tmp_path)[0]
+    assert (
+        "gravity_compensation_controller"
+        in config.ros2_control["controllers_inactive_at_startup"]
+    )
+    assert (
+        "gravity_compensation_controller"
+        not in config.ros2_control["controllers_active_at_startup"]
+    )
+    urdf_params = {
+        key: value
+        for entry in config.hardware.robot_description.urdf_params
+        for key, value in entry.items()
+    }
+    assert urdf_params["hardware_interface"] == "mock"
+    assert urdf_params["arm_effort_command"] == "false"
+    share = Path(get_package_share_directory("rebot_bench_base_config"))
+    control = yaml.safe_load(
+        (share / "config/control/rebot.ros2_control.yaml").read_text()
+    )
+    gravity = control["gravity_compensation_controller"]["ros__parameters"]
+    assert control["controller_manager"]["ros__parameters"][
+        "gravity_compensation_controller"
+    ]["type"] == ("kdl_gravity_compensation_controller/GravityCompensationController")
+    assert gravity["joints"] == [f"joint{i}" for i in range(1, 7)]
+    assert gravity["gains"] == [0.0] * 6
+    assert gravity["offsets"] == [0.0] * 6
+    assert gravity["payload_mass"] == 0.0
+    model = expand()
+    assert model.find(f"link[@name='{gravity['root_link']}']") is not None
+    assert model.find(f"link[@name='{gravity['tip_link']}']") is not None
 
 
 def test_shipped_config_runs_joint1_to_6_in_position_csp(tmp_path):

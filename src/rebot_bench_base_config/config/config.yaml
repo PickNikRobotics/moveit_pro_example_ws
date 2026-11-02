@@ -29,6 +29,8 @@ hardware:
       # Real only. joint1-joint6 control: "position_csp" (the motor's own
       # position loop) or "motion" (impedance, the Xacro default). See the README.
       - arm_control_mode: "position_csp"
+      # Optional real motion-mode effort feedforward; no controller activation.
+      - arm_effort_command: "false"
       # Bench-specific placements in the printed TF frame (world, z = 0 on the
       # mat top), from the 2026-10-11 ChArUco calibration; re-measure and
       # override them for any other installation (README.md). base_link: x, y
@@ -89,6 +91,7 @@ ros2_control:
   - joint_velocity_controller
   - gripper_joint_velocity_controller
   - velocity_force_controller
+  - gravity_compensation_controller
   controllers_not_managed: []
   controller_shared_topics: []
 objectives:

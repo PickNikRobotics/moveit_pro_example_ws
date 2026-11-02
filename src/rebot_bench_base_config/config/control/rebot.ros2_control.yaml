@@ -13,6 +13,8 @@ controller_manager:
       type: joint_velocity_controller/JointVelocityController
     velocity_force_controller:
       type: velocity_force_controller/VelocityForceController
+    gravity_compensation_controller:
+      type: kdl_gravity_compensation_controller/GravityCompensationController
 joint_state_broadcaster:
   ros__parameters:
     joints:
@@ -118,6 +120,22 @@ velocity_force_controller:
     jacobian_damping: 0.005
     command_timeout: 0.2
     joint_limit_position_tolerance: 0.02
+
+# Inactive, zero-output opt-in. Activation needs real motion mode and the
+# arm_effort_command Xacro argument. Upstream effort controllers claim
+# gravity_compensation_controller/<joint>/effort every cycle, never the
+# hardware effort. The base_link-to-gripper_end chain omits the two finger links
+# (0.1504 kg); payload_mass 0.0 does not compensate them.
+gravity_compensation_controller:
+  ros__parameters:
+    joints: [joint1, joint2, joint3, joint4, joint5, joint6]
+    root_link: base_link
+    tip_link: gripper_end
+    gravity_vector: [0.0, 0.0, -9.81]
+    payload_mass: 0.0
+    payload_com: [0.0, 0.0, 0.0]
+    gains: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    offsets: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 # Direct calibrated leader targets, as in native LeRobot teleoperation.
 # Deliberately no velocity/acceleration fields: FCL checks the actual path.
