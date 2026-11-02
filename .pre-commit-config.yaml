@@ -95,12 +95,8 @@ repos:
     hooks:
       - id: no-coverage-mixins
         name: Keep coverage mixins out of the workspace colcon defaults
-        description: >-
-          The MoveIt Pro image ships without pytest-cov, so coverage-pytest
-          makes every ament_add_pytest_test warn. Opt in through
-          COLCON_DEFAULTS_FILE instead.
-        # Any coverage- outside a comment, so block, flow, and quoted forms
-        # are all caught.
+        description: Coverage stays off in the template. Opt in through COLCON_DEFAULTS_FILE.
+        # Matches coverage- anywhere outside a comment, including quoted and flow-style entries.
         entry: '^[^#]*coverage-'
         language: pygrep
         files: ^colcon-defaults\.yaml$

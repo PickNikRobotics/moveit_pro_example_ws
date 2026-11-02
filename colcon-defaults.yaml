@@ -17,14 +17,7 @@ build:
     # Debug info and build testing for dev workflows
     - rel-with-deb-info
     - build-testing-on
-    # No coverage mixins, like the colcon defaults MoveIt Pro installs for
-    # the runtime user. coverage-pytest forces AMENT_CMAKE_PYTEST_WITH_COVERAGE
-    # on, and the MoveIt Pro image ships without pytest-cov, so every
-    # ament_add_pytest_test call warns at configure time. coverage-gcc
-    # instruments every library, Behavior plugins included, which slows builds
-    # and can slow multithreaded code at runtime. To collect coverage, copy
-    # this file, add the mixin you want, and point COLCON_DEFAULTS_FILE at the
-    # copy; --mixin replaces this list rather than extending it.
+    # Coverage is off because the image lacks pytest-cov and gcov slows builds. Opt in through COLCON_DEFAULTS_FILE.
 test:
   event-handlers:
     - console_direct+
