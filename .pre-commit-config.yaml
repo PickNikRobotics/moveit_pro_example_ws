@@ -99,7 +99,9 @@ repos:
           The MoveIt Pro image ships without pytest-cov, so coverage-pytest
           makes every ament_add_pytest_test warn. Opt in through
           COLCON_DEFAULTS_FILE instead.
-        entry: '^\s*-\s*coverage-'
+        # Any coverage- outside a comment, so block, flow, and quoted forms
+        # are all caught.
+        entry: '^[^#]*coverage-'
         language: pygrep
         files: ^colcon-defaults\.yaml$
       - id: check-objective-favorites
