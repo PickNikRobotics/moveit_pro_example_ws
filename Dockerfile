@@ -206,7 +206,8 @@ RUN mkdir -p /home/${USERNAME}/.colcon/repositories && \
     colcon mixin update && \
     colcon metadata add default file:///home/${USERNAME}/.colcon/repositories/metadata/index.yaml && \
     colcon metadata update
-COPY colcon-defaults.yaml /home/${USERNAME}/.colcon/defaults.yaml
+# --chown lets colcon read the defaults even when the entrypoint has not re-chowned $HOME yet.
+COPY --chown=${USER_UID}:${USER_GID} colcon-defaults.yaml /home/${USERNAME}/.colcon/defaults.yaml
 
 # hadolint ignore=DL3002
 USER root
