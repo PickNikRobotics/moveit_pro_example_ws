@@ -81,7 +81,9 @@ def transfer_plans(tmp_path_factory):
     unreachable["name"] = "unreachable"
     unreachable["approach"]["xyz"][0] = 2.5
     cases.append(unreachable)
-    config, _, _ = load_system_config("dual_arm_sim", Path(os.environ["USER_WS"]))
+    config, _, _ = load_system_config(
+        "dual_arm_sim", tmp_path_factory.mktemp("user_ws")
+    )
     description = config.hardware.robot_description
     params = {
         "robot_description": create_xml_from_xacro(
