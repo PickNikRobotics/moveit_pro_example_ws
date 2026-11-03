@@ -120,4 +120,4 @@ moveit_pro run -c dual_arm_sim
 | `maps/`, `params/` | the Nav2 map and parameters |
 | `objectives/`, `waypoints/` | Objectives, drawing paths and saved waypoints |
 | `scripts/` | the odometry and `/cmd_vel` bridges, the map generator, and the SVG drawing tools (see `scripts/README.md`) |
-| `test/` | the scene, bridge and Objectives integration tests |
+| `test/` | the scene, bridge and Objectives integration tests, and the block grasp, surface and transfer regressions with their recorded inputs in `test/data/` |
