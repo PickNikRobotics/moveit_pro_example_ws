@@ -7,17 +7,15 @@ unchanged. The base has five fixed bodies and 35 visible collision geoms.
 
 ## Recorded-state comparison
 
-Measured on the unchanged scene at commit `106bc37f`, then repeated after adding
-the moon base, using `validate_and_render.py` in
-`picknikciuser/moveit-pro:main-jazzy-amd64-cuda13.2-cudnn9`.
+Measured on the scene without the moon base, then repeated with it, using `validate_and_render.py` with MuJoCo 3.6.0. Both runs include the rover's IMU body, which changes this open-loop route; record a new baseline whenever the rover's mass model changes.
 
 | Measurement | Before | After |
 | --- | --- | --- |
-| Closure error, m | 0.6289748929625518 | 0.6289748929625518 |
-| Turn 1, degrees | 112.41969736142369 | 112.41969736142369 |
-| Turn 2, degrees | 89.71613637558676 | 89.71613637558676 |
-| Turn 3, degrees | 94.06058646662831 | 94.06058646662831 |
-| Turn 4, degrees | 41.21809188541886 | 41.21809188541886 |
+| Closure error, m | 1.28100276146052 | 1.28100276146052 |
+| Turn 1, degrees | 117.044049304336 | 117.044049304336 |
+| Turn 2, degrees | 94.2037099372136 | 94.2037099372136 |
+| Turn 3, degrees | 88.0877338907876 | 88.0877338907876 |
+| Turn 4, degrees | 69.45411711271146 | 69.45411711271146 |
 
 These are chassis `xpos` and `xquat` measurements, not wheel odometry. The current
 keyframe starts on the heightfield at -0.30, 0.50 m. Historical numbers elsewhere

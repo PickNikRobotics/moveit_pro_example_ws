@@ -10,3 +10,7 @@ ament_target_dependencies(test_teleoperate_base_twist_mapping ${THIS_PACKAGE_INC
 ament_add_gtest(test_teleoperate_base_ros test_teleoperate_base_ros.cpp)
 target_link_libraries(test_teleoperate_base_ros lunar_sim_behaviors)
 ament_target_dependencies(test_teleoperate_base_ros ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+ament_add_gtest(test_dead_reckon_motion test_dead_reckon_motion.cpp)
+target_link_libraries(test_dead_reckon_motion lunar_sim_behaviors)
+ament_target_dependencies(test_dead_reckon_motion ${THIS_PACKAGE_INCLUDE_DEPENDS})

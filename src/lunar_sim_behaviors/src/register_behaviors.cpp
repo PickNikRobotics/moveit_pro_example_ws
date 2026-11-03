@@ -30,7 +30,7 @@
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 
-#include <lunar_sim_behaviors/publish_twist_stamped.hpp>
+#include <lunar_sim_behaviors/dead_reckon_motion.hpp>
 #include <lunar_sim_behaviors/teleoperate_base.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
@@ -43,8 +43,9 @@ public:
   void registerBehaviors(BT::BehaviorTreeFactory& factory,
                          const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources) override
   {
-    moveit_pro::behaviors::registerBehavior<PublishTwistStamped>(factory, "PublishTwistStamped", shared_resources);
     moveit_pro::behaviors::registerBehavior<TeleoperateBase>(factory, "TeleoperateBase", shared_resources);
+    moveit_pro::behaviors::registerBehavior<DriveDistance>(factory, "DriveDistance", shared_resources);
+    moveit_pro::behaviors::registerBehavior<TurnInPlace>(factory, "TurnInPlace", shared_resources);
   }
 };
 }  // namespace lunar_sim_behaviors

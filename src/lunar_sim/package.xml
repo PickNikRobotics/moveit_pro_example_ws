@@ -6,7 +6,7 @@
   <description>
     MoveIt Pro configuration for a Clearpath Husky A300 running under MuJoCo
     physics on a procedurally cratered lunar regolith heightfield with scattered
-    rocks.
+    rocks, with lidar and IMU state estimation and Nav2 navigation.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
@@ -18,25 +18,45 @@
   <depend>clearpath_platform_description</depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>diff_drive_controller</exec_depend>
+  <exec_depend>fuse_models</exec_depend>
+  <exec_depend>fuse_optimizers</exec_depend>
   <exec_depend>hardware_interface</exec_depend>
+  <exec_depend>imu_sensor_broadcaster</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
+  <exec_depend>laser_filters</exec_depend>
   <exec_depend>lunar_sim_behaviors</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>moveit_studio_utils_py</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>
+  <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>nav2_common</exec_depend>
+  <!-- open_loop, which nav2_params.yaml sets, is silently ignored before 1.3.13. -->
+  <exec_depend version_gte="1.3.13">nav2_mppi_controller</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
+  <exec_depend>rclcpp_components</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
 
+  <test_depend>action_msgs</test_depend>
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_flake8</test_depend>
-  <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>geometry_msgs</test_depend>
+  <test_depend>moveit_pro_test_utils</test_depend>
+  <test_depend>nav2_msgs</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>python3-numpy</test_depend>
   <test_depend>python3-pil</test_depend>
+  <test_depend>python3-yaml</test_depend>
+  <test_depend>rcl_interfaces</test_depend>
+  <test_depend>rclpy</test_depend>
+  <test_depend>tf2_msgs</test_depend>
+  <test_depend>tf2_ros</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

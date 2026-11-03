@@ -5,7 +5,7 @@
 -->
 <robot name="husky_a300">
     <!-- Keep world collision objects in odom while the state monitor tracks the rover
-         through the diff-drive controller's odom -> footprint TF. -->
+         through fuse's odom -> footprint TF. -->
     <virtual_joint name="base_planar_joint" type="planar" parent_frame="odom" child_link="footprint"/>
     <!--GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc-->
     <group name="base">
