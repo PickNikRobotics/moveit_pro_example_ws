@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 460" role="img" aria-labelledby="title description">
+  <title id="title">joint_velocity_controller: a position path parallel to optional gravity</title>
+  <desc id="description">Joint Jog sends requested joint velocities. JVC integrates them into the configured joint1 through joint6 position setpoints. Independently active standalone gravity uses measured positions and the model to write joint1 through joint6 effort. These paths meet in the unchanged driver and motion-mode motor, not in gravity reference interfaces. Gravity is inactive with zero configured gains by default.</desc>
+  <defs>
+    <style>text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill:#1d2a3a; } .math { font-family: Georgia, 'DejaVu Serif', serif; }</style>
+    <marker id="blue-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#275caa"/></marker>
+    <marker id="green-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#157463"/></marker>
+    <marker id="orange-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#a45a0d"/></marker>
+    <marker id="slate-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#536577"/></marker>
+  </defs>
+  <rect x="1" y="1" width="358" height="458" rx="8" fill="#ffffff" stroke="#d9dfe5"/>
+<text x="180" y="26" text-anchor="middle" class="" style="font-size:17px;fill:#1d2a3a;font-weight:650">joint_velocity_controller</text>
+<text x="96" y="83" text-anchor="middle" class="" style="font-size:17px;fill:#275caa;font-weight:400">Joint velocity</text>
+<text x="96" y="104" text-anchor="middle" class="" style="font-size:17px;fill:#275caa;font-weight:400">request</text>
+<text x="266" y="83" text-anchor="middle" class="" style="font-size:17px;fill:#157463;font-weight:400">Measured q</text>
+<text x="266" y="104" text-anchor="middle" class="" style="font-size:17px;fill:#157463;font-weight:400">+ model</text>
+<g id="motion-input"><title>motion input</title><path d="M 96 112 V 133" fill="none" stroke="#275caa" stroke-width="2" marker-end="url(#blue-arrow)"/></g>
+<g id="gravity-input"><title>gravity input</title><path d="M 266 112 V 133" fill="none" stroke="#157463" stroke-width="2" marker-end="url(#green-arrow)"/></g>
+<g id="motion-controller"><title>joint_velocity_controller writes position setpoints</title><rect x="18" y="135" width="156" height="79" rx="6" fill="#eff4fc" stroke="#9db6db"/></g>
+<text x="96" y="164" text-anchor="middle" class="" style="font-size:22px;fill:#275caa;font-weight:650">JVC</text>
+<text x="96" y="191" text-anchor="middle" class="" style="font-size:16px;fill:#275caa;font-weight:400">position setpoints</text>
+<g id="optional-gravity"><title>Standalone gravity, if independently active</title><rect x="190" y="135" width="152" height="79" rx="6" fill="#f3eef8" stroke="#bfaace"/></g>
+<text x="266" y="159" text-anchor="middle" class="" style="font-size:19px;fill:#75509a;font-weight:650">KDL gravity</text>
+<text x="266" y="183" text-anchor="middle" class="" style="font-size:17px;fill:#75509a;font-weight:400">if active</text>
+<text x="266" y="202" text-anchor="middle" class="" style="font-size:16px;fill:#75509a;font-weight:400">standalone</text>
+<g id="position-command"><title>position command</title><path d="M 42 214 V 265" fill="none" stroke="#275caa" stroke-width="2" marker-end="url(#blue-arrow)"/></g>
+<g id="effort-command"><title>effort command</title><path d="M 212 214 V 265" fill="none" stroke="#a45a0d" stroke-width="2" marker-end="url(#orange-arrow)"/></g>
+<text x="106" y="244" text-anchor="middle" class="" style="font-size:16px;fill:#275caa;font-weight:400">J1–6 position</text>
+<text x="281" y="244" text-anchor="middle" class="" style="font-size:16px;fill:#a45a0d;font-weight:400">J1–6 effort</text>
+<g id="driver-sdk"><title>Unchanged driver receives separate position and effort commands</title><rect x="18" y="267" width="324" height="75" rx="6" fill="#f4f6f8" stroke="#bdc6d0"/></g>
+<text x="180" y="295" text-anchor="middle" class="" style="font-size:20px;fill:#1d2a3a;font-weight:650">Unchanged driver + SDK</text>
+<text x="180" y="321" text-anchor="middle" class="" style="font-size:17px;fill:#1d2a3a;font-weight:400">Position target + feedforward</text>
+<g id="motor-command"><title>motor command</title><path d="M 180 342 V 365" fill="none" stroke="#536577" stroke-width="2" marker-end="url(#slate-arrow)"/></g>
+<g id="motion-motor"><title>Motor in reBot motion mode</title><rect x="60" y="367" width="240" height="44" rx="6" fill="#f4f6f8" stroke="#bdc6d0"/></g>
+<text x="180" y="395" text-anchor="middle" class="" style="font-size:19px;fill:#1d2a3a;font-weight:650">Motor · motion mode</text>
+<text x="180" y="443" text-anchor="middle" class="" style="font-size:17px;fill:#1d2a3a;font-weight:400">Not an effort-reference chain</text>
+</svg>

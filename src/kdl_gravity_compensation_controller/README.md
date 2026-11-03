@@ -14,7 +14,7 @@ weight. More stiffness reduces sag, but also makes the joint less compliant.
   <source media="(prefers-color-scheme: dark) and (max-width: 600px)" srcset="docs/figures/spring-sag-dark-mobile.svg">
   <source media="(prefers-color-scheme: dark)" srcset="docs/figures/spring-sag-dark.svg">
   <source media="(max-width: 600px)" srcset="docs/figures/spring-sag-light-mobile.svg">
-  <img alt="Spring and damping motor law: without feedforward, the measured joint angle sags below its dashed desired angle to generate holding torque." src="docs/figures/spring-sag-light.svg" width="780">
+  <img alt="Spring and damping motor law: without feedforward, the measured joint angle sags below its dashed desired angle to generate holding torque." src="docs/figures/spring-sag-light.svg" width="650">
 </picture>
 
 *At a stationary target, q\* is the desired angle and q is the measured angle.
@@ -31,7 +31,7 @@ before gravity, with no topic round-trip between them.
   <source media="(prefers-color-scheme: dark) and (max-width: 600px)" srcset="docs/figures/effort-chain-dark-mobile.svg">
   <source media="(prefers-color-scheme: dark)" srcset="docs/figures/effort-chain-dark.svg">
   <source media="(max-width: 600px)" srcset="docs/figures/effort-chain-light-mobile.svg">
-  <img alt="An upstream effort controller writes gravity's reference. Gravity adds the KDL torque from measured positions and alone writes hardware effort. A position controller uses a separate target path to the unchanged driver." src="docs/figures/effort-chain-light.svg" width="780">
+  <img alt="An upstream effort controller writes gravity's reference. Gravity adds the KDL torque from measured positions and alone writes hardware effort. A position controller uses a separate target path to the unchanged driver." src="docs/figures/effort-chain-light.svg" width="650">
 </picture>
 
 *Orange: effort. Purple: gravity model. Green: measured position. Dashed blue:
@@ -59,7 +59,7 @@ contact forces or the need for damping.
   <source media="(prefers-color-scheme: dark) and (max-width: 600px)" srcset="docs/figures/feedforward-benefit-dark-mobile.svg">
   <source media="(prefers-color-scheme: dark)" srcset="docs/figures/feedforward-benefit-dark.svg">
   <source media="(max-width: 600px)" srcset="docs/figures/feedforward-benefit-light-mobile.svg">
-  <img alt="For the same load and stiffness, gravity feedforward supplies the predicted share of holding torque; the spring still carries a striped residual load. Bar proportions are illustrative, not measured." src="docs/figures/feedforward-benefit-light.svg" width="780">
+  <img alt="For the same load and stiffness, gravity feedforward supplies the predicted share of holding torque; the spring still carries a striped residual load. Bar proportions are illustrative, not measured." src="docs/figures/feedforward-benefit-light.svg" width="650">
 </picture>
 
 *Equal bars: the same required holding torque. Orange is feedforward; hatching
@@ -89,6 +89,62 @@ The reBot configuration still defaults to mock hardware and `position_csp`.
 The optional effort path requires explicitly selected real motion mode; gravity
 starts inactive with zero configured gains/offsets. Nothing here enables motors
 or changes gains, limits or motion policy.
+
+## Which path do reBot's motion controllers use?
+
+In the current [reBot controller configuration](../rebot_bench_base_config/config/control/rebot.ros2_control.yaml),
+all three controllers below write **position**, not gravity's effort references.
+The optional gravity path shown alongside each needs separately activated
+standalone gravity and real motion-mode effort interfaces; it is **off by default**.
+These are parallel commands to the driver, not effort-reference chains.
+
+### Planned motion and Interactive Marker — trajectory controller
+
+`joint_trajectory_admittance_controller` receives the planned trajectory at
+`/joint_trajectory_admittance_controller/follow_joint_trajectory`. It writes
+J1–J7 position setpoints; selecting an Interactive Marker alone is not execution.
+
+<picture>
+  <source media="(prefers-color-scheme: dark) and (max-width: 600px)" srcset="docs/figures/trajectory-position-path-dark-mobile.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/trajectory-position-path-dark.svg">
+  <source media="(max-width: 600px)" srcset="docs/figures/trajectory-position-path-light-mobile.svg">
+  <img alt="Planned motion and Interactive Marker execution send a trajectory action to joint_trajectory_admittance_controller. Its position commands and independently active gravity effort reach the driver in parallel, not through an effort-reference chain." src="docs/figures/trajectory-position-path-light.svg" width="650">
+</picture>
+
+*JTAC commands position; no force/torque sensor is configured for admittance here.*
+
+### Joint Jog — joint velocity controller
+
+`joint_velocity_controller` receives joint velocity requests at
+`/joint_velocity_controller/command`, but integrates them into **position
+setpoints** on J1–J6. Velocity in the input name does not mean a velocity or
+effort hardware command.
+
+<picture>
+  <source media="(prefers-color-scheme: dark) and (max-width: 600px)" srcset="docs/figures/joint-jog-position-path-dark-mobile.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/joint-jog-position-path-dark.svg">
+  <source media="(max-width: 600px)" srcset="docs/figures/joint-jog-position-path-light-mobile.svg">
+  <img alt="Joint Jog sends joint velocities to joint_velocity_controller, which generates J1–J6 position setpoints. Separately active gravity writes effort; both go to the unchanged driver and motor, not gravity reference interfaces." src="docs/figures/joint-jog-position-path-light.svg" width="650">
+</picture>
+
+*Arm Joint Jog uses JVC. Gripper jog uses its separate J7 position controller.*
+
+### Pose Jog — velocity force controller
+
+`velocity_force_controller` receives Cartesian velocity requests at
+`/velocity_force_controller/command` and generates J1–J6 **position setpoints**.
+The reBot configuration has no force/torque sensor; the controller's name does
+not make its output effort.
+
+<picture>
+  <source media="(prefers-color-scheme: dark) and (max-width: 600px)" srcset="docs/figures/pose-jog-position-path-dark-mobile.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/pose-jog-position-path-dark.svg">
+  <source media="(max-width: 600px)" srcset="docs/figures/pose-jog-position-path-light-mobile.svg">
+  <img alt="Pose Jog sends Cartesian velocity requests to velocity_force_controller, which generates J1–J6 position setpoints. Optional standalone gravity uses a parallel effort command path to the driver; VFC does not feed the gravity references." src="docs/figures/pose-jog-position-path-light.svg" width="650">
+</picture>
+
+*VFC's configured output is position. None of these three controllers supplies
+upstream effort to KDL in this configuration.*
 
 ## Interfaces and ownership
 

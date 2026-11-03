@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 320" role="img" aria-labelledby="title description">
+  <title id="title">velocity_force_controller: a position path parallel to optional gravity</title>
+  <desc id="description">Pose Jog sends a Cartesian velocity request. VFC generates the configured joint1 through joint6 position setpoints. No force-torque sensor is configured. Independently active standalone gravity uses measured positions and the model to write joint1 through joint6 effort. These paths meet in the unchanged driver and motion-mode motor, not in gravity reference interfaces. Gravity is inactive with zero configured gains by default.</desc>
+  <defs>
+    <style>text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill:#e6edf3; } .math { font-family: Georgia, 'DejaVu Serif', serif; }</style>
+    <marker id="blue-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#8bbcff"/></marker>
+    <marker id="green-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#7fcebb"/></marker>
+    <marker id="orange-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#efb96d"/></marker>
+    <marker id="slate-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#acbdcf"/></marker>
+  </defs>
+  <rect x="1" y="1" width="648" height="318" rx="8" fill="#0d1117" stroke="#394553"/>
+<text x="20" y="27" text-anchor="start" class="" style="font-size:19px;fill:#e6edf3;font-weight:650">velocity_force_controller</text>
+<text x="169" y="66" text-anchor="middle" class="" style="font-size:18px;fill:#8bbcff;font-weight:400">Cartesian velocity request</text>
+<text x="491" y="66" text-anchor="middle" class="" style="font-size:18px;fill:#7fcebb;font-weight:400">Measured q + model</text>
+<g id="motion-input"><title>motion input</title><path d="M 169 74 V 96" fill="none" stroke="#8bbcff" stroke-width="2" marker-end="url(#blue-arrow)"/></g>
+<g id="gravity-input"><title>gravity input</title><path d="M 491 74 V 96" fill="none" stroke="#7fcebb" stroke-width="2" marker-end="url(#green-arrow)"/></g>
+<g id="motion-controller"><title>velocity_force_controller writes position setpoints</title><rect x="18" y="98" width="302" height="79" rx="6" fill="#14243a" stroke="#526f98"/></g>
+<text x="169" y="127" text-anchor="middle" class="" style="font-size:20px;fill:#8bbcff;font-weight:650">Velocity force controller</text>
+<text x="169" y="156" text-anchor="middle" class="" style="font-size:17px;fill:#8bbcff;font-weight:400">generates position setpoints</text>
+<g id="optional-gravity"><title>Standalone gravity, if independently active</title><rect x="350" y="98" width="282" height="79" rx="6" fill="#291e35" stroke="#86689e"/></g>
+<text x="491" y="127" text-anchor="middle" class="" style="font-size:20px;fill:#c9a3e6;font-weight:650">KDL gravity · if active</text>
+<text x="491" y="157" text-anchor="middle" class="math" style="font-size:22px;fill:#c9a3e6;font-weight:400">gain · G(q) + offset</text>
+<g id="position-command"><title>position command</title><path d="M 169 177 V 229" fill="none" stroke="#8bbcff" stroke-width="2" marker-end="url(#blue-arrow)"/></g>
+<g id="effort-command"><title>effort command</title><path d="M 491 177 V 229" fill="none" stroke="#efb96d" stroke-width="2" marker-end="url(#orange-arrow)"/></g>
+<text x="183" y="209" text-anchor="start" class="" style="font-size:17px;fill:#8bbcff;font-weight:400">joint1–6/position</text>
+<text x="505" y="209" text-anchor="start" class="" style="font-size:17px;fill:#efb96d;font-weight:400">joint1–6/effort</text>
+<g id="driver-sdk"><title>Separate position and effort fields through unchanged driver and SDK to motion-mode motor</title><rect x="18" y="231" width="614" height="58" rx="6" fill="#1b232e" stroke="#66788e"/></g>
+<text x="325" y="266" text-anchor="middle" class="" style="font-size:21px;fill:#e6edf3;font-weight:650">Unchanged driver + SDK → motor (motion mode)</text>
+<text x="325" y="309" text-anchor="middle" class="" style="font-size:17px;fill:#e6edf3;font-weight:400">Parallel commands, not an effort-reference chain</text>
+</svg>
