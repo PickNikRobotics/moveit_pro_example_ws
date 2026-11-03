@@ -1,0 +1,73 @@
+name: Vendored refresh review
+
+# ci.yaml skips integration-test on a draft vendored-refresh PR, because the
+# build holds secrets and the upstream code in it is unread. Marking the PR
+# ready for review is the sign-off. A re-run would replay the draft event and
+# skip again, so this pushes an empty commit; its synchronize event runs CI
+# with the PR no longer a draft. pull_request_target keeps this workflow on
+# the base branch's copy, and nothing here checks out or runs the PR's code.
+on:
+  pull_request_target:
+    types: [ready_for_review]
+
+permissions: {}
+
+# Ready, draft, ready in quick succession would otherwise push two commits
+# and run the GPU integration tests twice.
+concurrency:
+  group: vendored-refresh-ready-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  run-integration-tests:
+    name: Run integration tests after review
+    if: >-
+      startsWith(github.event.pull_request.head.ref, 'vendored-refresh/') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      # A push made with GITHUB_TOKEN starts no workflow run.
+      - name: Generate App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.SISTER_REPOS_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SISTER_REPOS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: moveit_pro_example_ws
+          permission-contents: write
+      # The commit carries the refresh job's own identity, so the weekly job
+      # still treats the branch as its own and force-pushes the next refresh.
+      # A non-forced ref update fails if someone pushed since the PR was
+      # marked ready; that push already ran CI on the ready PR.
+      - name: Push an empty commit to the refresh branch
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # The ref goes into an API path, so accept only the names the
+          # refresh job creates.
+          if ! [[ "$HEAD_REF" =~ ^vendored-refresh/[A-Za-z0-9_-]+$ ]]; then
+            echo "::error::Refusing unexpected head ref '$HEAD_REF'."
+            exit 1
+          fi
+          state=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state,isDraft,headRefOid --jq '"\(.state) \(.isDraft) \(.headRefOid)"')
+          if [ "$state" != "OPEN false $HEAD_SHA" ]; then
+            echo "PR #$PR_NUMBER changed since it was marked ready ($state); pushing nothing."
+            exit 0
+          fi
+          tree=$(gh api "repos/$GITHUB_REPOSITORY/git/commits/$HEAD_SHA" --jq .tree.sha)
+          commit=$(gh api "repos/$GITHUB_REPOSITORY/git/commits" \
+            -f message="ci: run integration tests on the reviewed refresh" \
+            -f tree="$tree" \
+            -f "parents[]=$HEAD_SHA" \
+            -f "author[name]=vendored_dependency.py" \
+            -f "author[email]=noreply@picknik.ai" \
+            -f "committer[name]=vendored_dependency.py" \
+            -f "committer[email]=noreply@picknik.ai" \
+            --jq .sha)
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/heads/$HEAD_REF" -f sha="$commit" -F force=false > /dev/null
+          echo "Pushed $commit to $HEAD_REF; CI on the PR now runs integration-test."
