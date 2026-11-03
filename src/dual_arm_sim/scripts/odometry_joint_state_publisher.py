@@ -28,15 +28,17 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Publish the planar base joints and /odom from simulated odometry, with drift added.
+"""Publish the planar base joints and /odom from the simulator's ground-truth base pose.
 
     ros2 run dual_arm_sim odometry_joint_state_publisher.py
 
 The robot description is rooted at ``odom``, so these joint values ARE ``odom -> base_link``,
-which robot_state_publisher publishes; this node is their only publisher. The input is the
-simulator's ground-truth base pose. Drift grows with distance driven and angle turned, never
-with time, so AMCL has a real correction to make and a parked base stays still. The same
-drifted pose goes to Nav2 on /odom, with the twist expressed in ``base_link``.
+which robot_state_publisher publishes; this node is their only publisher. The same pose goes
+to Nav2 on /odom, with the twist expressed in ``base_link``.
+
+``noise_enabled`` adds wheel-like drift that grows with distance driven and angle turned, never
+with time, so a parked base stays still. This package launches the node with it off, because
+``map -> odom`` is a fixed identity here and there is no AMCL to correct a drifting estimate.
 
 """
 

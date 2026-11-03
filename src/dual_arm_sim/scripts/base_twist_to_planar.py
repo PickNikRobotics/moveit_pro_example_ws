@@ -39,9 +39,9 @@ hinge (planar_theta), while /cmd_vel is in base_link:
     planar_y_vel = vx * sin(yaw) + vy * cos(yaw)
     planar_theta_vel = wz
 
-The yaw is the base's TRUE heading: the simulator's ground-truth odometry,
-not the drifted planar joint values, and the exact /odom on mock hardware. A real base executes
-a body-frame command in its true body frame.
+The yaw is the base's TRUE heading: the simulator's ground-truth odometry, not the bridge's
+published joint values, which drift when its noise is enabled, and the exact /odom on mock
+hardware. A real base executes a body-frame command in its true body frame.
 The velocity controller holds its last command, so a quiet /cmd_vel sends zeros.
 
 """
