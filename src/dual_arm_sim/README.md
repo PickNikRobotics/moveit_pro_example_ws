@@ -90,6 +90,18 @@ rather than overlooked.
 | "Whole Body Move to Pose", "Whole Body Move to Joint State" | the shared subtrees: IK on a `*_manipulator_with_base` group, then plan, switch, execute and switch back |
 | "Move Base to Ready", "Navigate to Clicked Point" | stow the arms, then drive with Nav2 to the Base Ready pose or to a clicked point |
 
+### Sort Blocks grasp assumptions
+
+`Sort Blocks` uses the overhead scene camera to pick the 50 mm blocks from the front table. `Find Red Block` and `Find Green Block` fit the dominant plane before computing its centroid, rejecting mask-edge points on the sides, table or floor. The top must account for at least 60% of the segmented cloud within 1 mm. This covers the default scene and the measured displaced block resting on another face; it does not infer a safe grasp for arbitrary tilted or touching blocks.
+
+A Find Objective still returns failure when it has no pose. Its `detections_empty` output is true only after successful segmentation with no objects, and is cleared on every attempt. `Sort Blocks` checks both colors before reporting exhaustion and propagates perception, pose-conversion and motion errors instead of treating them as an empty table. Inspect the mask and point-cloud capture after a surface-fit error; separate or reset displaced blocks before retrying.
+
+The Simulator uses stiffer block/finger contacts (`solref="0.006 1"`, `solimp="0.95 0.99 0.001"`), finger sliding friction 4, and elliptic constraints with `impratio=10`. Lift and carry use `carry_speed=0.25` and its square for acceleration scaling; empty-hand moves keep their existing settings. Some within-grip movement remains; these are simulation settings, not hardware tuning guidance.
+
+`Plan Block Transfer` plans approach, descent, lift and carry together before pickup, evaluating up to 64 grasp IK solutions for a branch that can finish the transfer. It lifts 100 mm, keeps the grasp orientation while clearing the front table through a corner, then moves to the saved Place pose with 50 mm extra height for the destination stack. The solution splits at gripper closure: pickup ends after descent, carry starts with lift. A planning failure leaves the arm at its starting pose with the gripper open. Joint limits, table geometry and robot collision checks remain unchanged.
+
+Two consecutive default-scene Sort Blocks runs placed all six blocks on the correct tables, with no loss of hand contact or unintended block/table contact during the measured post-lift carries. This is not an object-aware planner: displaced obstacles or arbitrary stacks need a new plan and validation. `test/test_grasp_contacts.py` exercises both hands and replays near/far articulated carries; `test/test_block_transfer.py` plans recorded pickups through the real subtree and checks split continuity and a full-block clearance envelope including 25 mm within-grip displacement. [test/data/README.md](test/data/README.md) describes the regression inputs.
+
 ## Build and run
 
 ```bash
@@ -108,4 +120,4 @@ moveit_pro run -c dual_arm_sim
 | `maps/`, `params/` | the Nav2 map and parameters |
 | `objectives/`, `waypoints/` | Objectives, drawing paths and saved waypoints |
 | `scripts/` | the odometry and `/cmd_vel` bridges, the map generator, and the SVG drawing tools (see `scripts/README.md`) |
-| `test/` | the scene, bridge and Objectives integration tests |
+| `test/` | the scene, bridge and Objectives integration tests, and the block grasp, surface and transfer regressions with their recorded inputs in `test/data/` |

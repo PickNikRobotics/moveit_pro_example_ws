@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Plan Block Transfer">
+  <BehaviorTree
+    ID="Plan Block Transfer"
+    _description="Plans approach, grasp, lift and a clearance-first carry together so the grasp IK branch can complete the transfer. Returns separate pickup and carry solutions for gripper closure between them."
+  >
+    <Control ID="Sequence" name="Plan block transfer">
+      <Control ID="Sequence" name="Build clearance and release poses">
+        <Action
+          ID="TransformPoseFrame"
+          input_pose="{approach_pose}"
+          target_frame_id="odom"
+          output_pose="{approach_in_odom}"
+        />
+        <Action
+          ID="UnpackPoseStampedMessage"
+          pose_stamped="{approach_in_odom}"
+          header="{approach_header}"
+          pose="{approach_geometry}"
+        />
+        <Action
+          ID="UnpackPoseMessage"
+          pose="{approach_geometry}"
+          position="{approach_position}"
+          orientation="{approach_orientation}"
+        />
+        <Action
+          ID="UnpackPointMessage"
+          point="{approach_position}"
+          x="{approach_x}"
+          y="{approach_y}"
+          z="{approach_z}"
+        />
+        <!-- Clear the source table before changing the carried block's orientation. -->
+        <Action
+          ID="CreatePointMessage"
+          point="{corner_position}"
+          x="0.525"
+          y="{corner_y}"
+          z="{approach_z}"
+        />
+        <Action
+          ID="CreatePoseMessage"
+          pose="{corner_geometry}"
+          position="{corner_position}"
+          orientation="{approach_orientation}"
+        />
+        <Action
+          ID="CreatePoseStampedMessage"
+          pose_stamped="{corner_pose}"
+          header="{approach_header}"
+          pose="{corner_geometry}"
+        />
+        <Action
+          ID="RetrieveWaypoint"
+          joint_group_name="{planning_group}"
+          waypoint_joint_state="{place_state}"
+          waypoint_name="{place_waypoint}"
+        />
+        <Action
+          ID="UnpackRobotStateMessage"
+          robot_state="{place_state}"
+          joint_state="{place_joints}"
+          multi_dof_joint_state="{place_multi_dof_joints}"
+        />
+        <Action
+          ID="GetCurrentPlanningScene"
+          planning_scene_msg="{planning_scene}"
+        />
+        <Action
+          ID="ComputeLinkPoseForwardKinematics"
+          joint_state="{place_joints}"
+          link_name="{hand_frame}"
+          link_pose="{place_pose}"
+          planning_scene="{planning_scene}"
+        />
+        <Action
+          ID="TransformPoseFrame"
+          input_pose="{place_pose}"
+          target_frame_id="odom"
+          output_pose="{place_in_odom}"
+        />
+        <!-- Leave one block height above the saved release pose for previously placed blocks. -->
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="odom"
+          position_xyz="0;0;0.05"
+          pose_stamped="{release_offset}"
+        />
+        <Action
+          ID="TransformPoseWithPose"
+          input_pose="{place_in_odom}"
+          transform_pose="{release_offset}"
+          output_pose="{release_pose}"
+        />
+      </Control>
+      <Control ID="Sequence" name="Plan complete transfer before pickup">
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          task_id="{planning_group}"
+          timeout="15"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCPlanToPose"
+          planning_group_name="{planning_group}"
+          ik_frame="{hand_frame}"
+          target_pose="{approach_in_odom}"
+          monitored_stage="current state"
+          max_ik_solutions="64"
+          max_iterations="5000"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="1"
+          acceleration_scale_factor="1"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="SetupMTCMoveAlongFrameAxis"
+          planning_group_name="{planning_group}"
+          hand_frame="{hand_frame}"
+          axis_frame="odom"
+          axis_x="0"
+          axis_y="0"
+          axis_z="-1"
+          min_distance="0.1"
+          max_distance="0.1"
+          velocity_scale="1"
+          acceleration_scale="1"
+          ignore_environment_collisions="false"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="SetupMTCMoveAlongFrameAxis"
+          planning_group_name="{planning_group}"
+          hand_frame="{hand_frame}"
+          axis_frame="odom"
+          axis_x="0"
+          axis_y="0"
+          axis_z="1"
+          min_distance="0.1"
+          max_distance="0.1"
+          velocity_scale="{carry_speed}"
+          acceleration_scale="{carry_acceleration}"
+          ignore_environment_collisions="false"
+          task="{mtc_task}"
+        />
+        <Action ID="ResetVector" vector="{carry_path}" />
+        <Action
+          ID="PushBackVector"
+          input_vector="{carry_path}"
+          element="{corner_pose}"
+          output_vector="{carry_path}"
+        />
+        <Action
+          ID="SetupMTCPathIK"
+          planning_group_name="{planning_group}"
+          tip_links="{hand_frame}"
+          path="{carry_path}"
+          cartesian_constraint="[{constraint_type: position_and_orientation}]"
+          blending_radius="0.005"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="{carry_speed}"
+          acceleration_scale_factor="{carry_acceleration}"
+          ignore_environment_collisions="false"
+          task="{mtc_task}"
+        />
+        <Action ID="ResetVector" vector="{carry_path}" />
+        <Action
+          ID="PushBackVector"
+          input_vector="{carry_path}"
+          element="{release_pose}"
+          output_vector="{carry_path}"
+        />
+        <Action
+          ID="SetupMTCPathIK"
+          planning_group_name="{planning_group}"
+          tip_links="{hand_frame}"
+          path="{carry_path}"
+          cartesian_constraint="[{constraint_type: position_and_orientation}]"
+          blending_radius="0.005"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="{carry_speed}"
+          acceleration_scale_factor="{carry_acceleration}"
+          ignore_environment_collisions="false"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="PlanMTCTask"
+          task="{mtc_task}"
+          max_solutions="1"
+          solution="{complete_solution}"
+        />
+      </Control>
+      <!-- Current state, approach, pose IK and descent precede closure; lift starts the carry half. -->
+      <Action
+        ID="SplitMTCSolution"
+        solution_in="{complete_solution}"
+        index="4"
+        solution_out_1="{pickup_solution}"
+        solution_out_2="{carry_solution}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Plan Block Transfer">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Task Planning" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port name="approach_pose" type="geometry_msgs::msg::PoseStamped" />
+      <input_port name="planning_group" type="std::string" />
+      <input_port name="hand_frame" type="std::string" />
+      <input_port name="place_waypoint" type="std::string" />
+      <input_port name="corner_y" type="double" />
+      <input_port name="carry_speed" type="double" />
+      <input_port name="carry_acceleration" type="double" />
+      <output_port
+        name="pickup_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+      />
+      <output_port
+        name="carry_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

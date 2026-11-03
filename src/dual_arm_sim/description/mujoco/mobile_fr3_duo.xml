@@ -9,6 +9,16 @@
   <compiler angle="radian" meshdir="assets" />
   <size nuser_cam="4" />
 
+  <default>
+    <!-- Both sides of a grasp contact use this stiffness; mixing with a soft block lets the pads interpenetrate. -->
+    <default class="grasp_contact">
+      <geom solref="0.006 1" solimp="0.95 0.99 0.001" />
+      <default class="finger_contact">
+        <geom friction="4 0.01 0.0002" />
+      </default>
+    </default>
+  </default>
+
   <option integrator="implicitfast">
     <flag multiccd="enable" />
   </option>
@@ -1429,6 +1439,7 @@
                                           </body>
                                           <body
                                             name="left_fr3v2_leftfinger"
+                                            childclass="finger_contact"
                                             pos="0 0 0.0584"
                                             gravcomp="1"
                                           >
@@ -1493,6 +1504,7 @@
                                           </body>
                                           <body
                                             name="left_fr3v2_rightfinger"
+                                            childclass="finger_contact"
                                             pos="0 0 0.0584"
                                             quat="0 0 0 1"
                                             gravcomp="1"
@@ -2036,6 +2048,7 @@
                                           </body>
                                           <body
                                             name="right_fr3v2_leftfinger"
+                                            childclass="finger_contact"
                                             pos="0 0 0.0584"
                                             gravcomp="1"
                                           >
@@ -2100,6 +2113,7 @@
                                           </body>
                                           <body
                                             name="right_fr3v2_rightfinger"
+                                            childclass="finger_contact"
                                             pos="0 0 0.0584"
                                             quat="0 0 0 1"
                                             gravcomp="1"

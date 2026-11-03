@@ -34,12 +34,46 @@ if(BUILD_TESTING)
   target_link_libraries(test_sort_blocks tinyxml2::tinyxml2)
   target_compile_definitions(test_sort_blocks PRIVATE
     SORT_BLOCKS_XML="${CMAKE_CURRENT_SOURCE_DIR}/objectives/sort_blocks.xml")
+  find_package(moveit_pro_behavior_interface REQUIRED)
+  find_package(moveit_pro_base REQUIRED)
+  find_package(moveit_pro_task_constructor_core REQUIRED)
+  find_package(nlohmann_json REQUIRED)
+  find_package(pluginlib REQUIRED)
+  find_package(sensor_msgs REQUIRED)
+  find_package(geometry_msgs REQUIRED)
+  find_package(rclcpp REQUIRED)
+  find_package(pcl_conversions REQUIRED)
+  find_package(PCL REQUIRED COMPONENTS common io)
+  ament_add_gtest(test_block_surface test/test_block_surface.cpp)
+  ament_target_dependencies(test_block_surface
+    behaviortree_cpp_picknik moveit_pro_behavior_interface pluginlib
+    sensor_msgs geometry_msgs rclcpp pcl_conversions)
+  target_link_libraries(test_block_surface tinyxml2::tinyxml2 ${PCL_LIBRARIES})
+  target_compile_features(test_block_surface PRIVATE cxx_std_17)
+  target_compile_definitions(test_block_surface PRIVATE
+    FIND_WITH_PROMPT_XML="${CMAKE_CURRENT_SOURCE_DIR}/objectives/find_with_prompt.xml"
+    BLOCK_CLOUD_DATA="${CMAKE_CURRENT_SOURCE_DIR}/test/data")
+  add_executable(block_transfer_plan_probe test/block_transfer_plan_probe.cpp)
+  target_compile_features(block_transfer_plan_probe PRIVATE cxx_std_20)
+  target_link_libraries(block_transfer_plan_probe PRIVATE
+    moveit_pro_behavior_interface::behavior_context
+    moveit_pro_base::robot_model_loader
+    moveit_pro_base::moveit_pro_base_planning_scene
+    moveit_pro_task_constructor_core::moveit_pro_task_constructor_core
+    pluginlib::pluginlib nlohmann_json::nlohmann_json tinyxml2::tinyxml2)
   find_package(ament_lint_auto REQUIRED)
   find_package(ament_cmake_pytest REQUIRED)
   ament_lint_auto_find_test_dependencies()
   ament_add_pytest_test(
           scene_test test/test_scene.py
           TIMEOUT 120)
+  ament_add_pytest_test(
+          grasp_contacts_test test/test_grasp_contacts.py
+          TIMEOUT 120)
+  ament_add_pytest_test(
+          block_transfer_test test/test_block_transfer.py
+          TIMEOUT 210
+          ENV BLOCK_TRANSFER_PROBE=$<TARGET_FILE:block_transfer_plan_probe>)
   ament_add_pytest_test(
           base_twist_to_planar_test test/test_base_twist_to_planar.py
           TIMEOUT 30)
