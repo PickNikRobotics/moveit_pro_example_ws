@@ -103,6 +103,9 @@ controller_server:
       forward_sampling_distance: 1.5
       angular_dist_threshold: 0.35
       angular_disengage_threshold: 0.1
+      # A replan to the same goal must not restart the in-place heading turn, or the base
+      # stutters on every replan instead of following the path.
+      rotate_to_heading_once: true
       time_steps: 56
       model_dt: 0.05
       batch_size: 2000

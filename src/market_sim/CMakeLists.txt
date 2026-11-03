@@ -17,6 +17,18 @@ install(
     share/${PROJECT_NAME}
 )
 
+# market_assets is a build-time input to scripts/generate_market.py, but three consumers also
+# reach into it at RUN time: scene.xml includes the cart materials, the generated store visuals
+# include the cart body, and description/market_racks.urdf names the shelf meshes through a
+# package:// URI. Install the whole directory rather than named subdirectories, so a new asset
+# cannot be referenced at runtime and silently missing from the install tree.
+install(
+  DIRECTORY
+    market_assets
+  DESTINATION
+    share/${PROJECT_NAME}
+)
+
 install(
   PROGRAMS
     scripts/base_twist_to_planar.py
@@ -26,27 +38,6 @@ install(
   DESTINATION
     lib/${PROJECT_NAME}
 )
-
-# Nav2's stock navigate-to-pose tree with SmacLattice as its planner, for Drive Base using Nav2.
-# The build stops if the stock tree no longer selects GridBased by default.
-
-# Not find_package: nav2_bt_navigator's CMake config needs stock BT.CPP, absent from the image.
-ament_index_has_resource(NAV2_BT_NAVIGATOR_PREFIX packages nav2_bt_navigator)
-if(NOT NAV2_BT_NAVIGATOR_PREFIX)
-  message(FATAL_ERROR "nav2_bt_navigator is not installed")
-endif()
-set(STOCK_NAV_TREE "${NAV2_BT_NAVIGATOR_PREFIX}/share/nav2_bt_navigator/behavior_trees/\
-navigate_to_pose_w_replanning_and_recovery.xml")
-file(READ "${STOCK_NAV_TREE}" NAV_TREE)
-string(FIND "${NAV_TREE}" "default_planner=\"GridBased\"" NAVFN_SELECTOR)
-if(NAVFN_SELECTOR EQUAL -1)
-  message(FATAL_ERROR "${STOCK_NAV_TREE} no longer selects GridBased by default")
-endif()
-string(REPLACE "default_planner=\"GridBased\"" "default_planner=\"SmacLattice\""
-  NAV_TREE "${NAV_TREE}")
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/behavior_trees/navigate_to_pose_SmacLattice.xml"
-  "${NAV_TREE}")
-install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/behavior_trees" DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
@@ -66,6 +57,10 @@ if(BUILD_TESTING)
   # Drive Base using Nav2's tree files against the launch file and the installed copies.
   ament_add_pytest_test(
           nav_tree_files_test test/test_nav_tree_files.py
+          TIMEOUT 30)
+  # Every runtime file reference against the installed tree, not the source tree.
+  ament_add_pytest_test(
+          installed_references_test test/test_installed_references.py
           TIMEOUT 30)
   ament_add_pytest_test(
           base_twist_to_planar_test test/test_base_twist_to_planar.py

@@ -1,0 +1,1 @@
+The floor tile PBR textures are Poly Haven anti_skid_tiles by Amal Kumar (CC0 1.0): https://polyhaven.com/a/anti_skid_tiles and https://polyhaven.com/license. The wall plaster textures and the stocking-cart geometry and material templates are Copyright 2023 PickNik Inc., BSD-3-Clause (LICENSE.store_visuals). LICENSE.market preserves the original market assets license.

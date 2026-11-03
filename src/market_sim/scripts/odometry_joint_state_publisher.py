@@ -149,6 +149,7 @@ def twist_in_base(vx, vy, yaw):
 
 def main():
     import rclpy
+    from rclpy.executors import ExternalShutdownException
     from nav_msgs.msg import Odometry
     from rclpy.node import Node
     from rclpy.qos import qos_profile_sensor_data
@@ -213,7 +214,7 @@ def main():
     node = OdometryJointStatePublisher()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     node.destroy_node()
     rclpy.try_shutdown()

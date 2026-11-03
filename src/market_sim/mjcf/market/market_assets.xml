@@ -14,7 +14,6 @@
       specular="0.6"
       shininess="0.7"
     />
-    <material name="market_wall" rgba="0.86 0.85 0.8 1" />
     <mesh name="market_pair_empty" file="market/pair_empty.obj" />
   </asset>
 </mujocoinclude>

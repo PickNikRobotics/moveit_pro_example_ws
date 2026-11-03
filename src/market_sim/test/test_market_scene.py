@@ -34,6 +34,7 @@ ship in the MoveIt Pro image).
 
 import filecmp
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
@@ -65,6 +66,55 @@ def test_generated_files_match_the_generator(tmp_path):
         if not filecmp.cmp(tmp_path / p, PACKAGE / p, shallow=False)
     ]
     assert not stale, f"Rerun scripts/generate_market.py; out of date: {stale}"
+
+
+def test_rack_collision_boxes_enclose_the_shelf_meshes():
+    """Every vertex of a gondola's two shelf units must lie inside its planning-scene box.
+
+    The box is written from shelf_geometry.json's overall extents, the same source the
+    simulator's own box collision uses. This checks that claim against the meshes themselves,
+    so a mesh edit that grows the rack fails here instead of letting the arm plan into it.
+    """
+    shelf = generate_market.load_shelf()
+    geometry = shelf[2]["overall"]
+    back_depth = geometry["y"][1]
+    size = np.array(
+        [
+            geometry["x"][1] - geometry["x"][0],
+            2 * (geometry["y"][1] - geometry["y"][0]),
+            geometry["z"][1] - geometry["z"][0],
+        ]
+    )
+    centre = np.array([0.0, 0.0, size[2] / 2])
+    lower, upper = centre - size / 2, centre + size / 2
+
+    vertices = np.vstack(
+        [v for v, _, _ in generate_market.gondola_parts(shelf[0]["full"], back_depth)]
+    )
+    assert len(vertices)
+    assert np.all(vertices >= lower - 1e-6), (
+        f"shelf mesh reaches below the collision box: "
+        f"{vertices.min(axis=0)} vs {lower}"
+    )
+    assert np.all(vertices <= upper + 1e-6), (
+        f"shelf mesh reaches past the collision box: "
+        f"{vertices.max(axis=0)} vs {upper}"
+    )
+
+
+def test_every_gondola_has_a_rack_collision_box():
+    """The planning-scene URDF must carry one box per gondola, and meshes only where picked."""
+    layout = generate_market.Layout(generate_market.FLOOR_PLAN)
+    root = ET.parse(PACKAGE / "description" / "market_racks.urdf").getroot()
+    links = {link.get("name"): link for link in root.findall("link")}
+    for gondola in layout.gondolas:
+        link = links.get(gondola["name"])
+        assert link is not None, f"no planning-scene link for {gondola['name']}"
+        assert len(link.findall("collision")) == 1
+    visual_aisles = {
+        name.rsplit("_", 1)[0] for name, link in links.items() if link.findall("visual")
+    }
+    assert visual_aisles == set(generate_market.REAL_AISLES)
 
 
 def test_planar_range_matches_the_urdf_travel_limit(model):
@@ -147,14 +197,15 @@ def test_map_marks_every_shelf_and_frees_the_start(model):
         ]
 
     assert cell(0.0, 0.0) == 254
-    # Shelves are the only joint-free bodies hung straight off the world body.
+    # Take the gondolas by the names the generator gave them, rather than by shape: the
+    # stocking carts are also joint-free bodies on the world body, and are deliberately
+    # absent from the maps.
+    layout = generate_market.Layout(generate_market.FLOOR_PLAN)
+    names = [gondola["name"] for gondola in layout.gondolas]
     shelves = [
-        b
-        for b in range(1, model.nbody)
-        if model.body_parentid[b] == 0
-        and model.body_jntnum[b] == 0
-        and model.body_geomnum[b]
+        mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, name) for name in names
     ]
+    assert all(b >= 0 for b in shelves), "a gondola body is missing from the model"
     assert len(shelves) == 404
     poses = [(model.body_pos[b], model.body_quat[b]) for b in shelves]
     for (x, y, _), rotation in poses:

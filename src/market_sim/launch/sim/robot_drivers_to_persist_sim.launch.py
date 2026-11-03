@@ -55,9 +55,34 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-# bt_navigator's working directory under the package share: Drive Base using Nav2 names its
-# non-default planner trees, which CMakeLists.txt installs here, relative to it.
-NAV_TREE_DIR = "behavior_trees"
+# Nav2's own navigate-to-pose tree, and the copy of it this launch file writes with the Smac
+# planner selected instead. BehaviorTree.CPP will not accept a relative tree path, so both are
+# absolute and bt_navigator needs no particular working directory.
+STOCK_NAV_TO_POSE_TREE = (
+    "/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/"
+    "navigate_to_pose_w_replanning_and_recovery.xml"
+)
+SMAC_NAV_TO_POSE_TREE = "/tmp/market_sim/behavior_trees/navigate_to_pose_smac.xml"
+NAVFN_SELECTOR = 'default_planner="GridBased"'
+SMAC_SELECTOR = 'default_planner="SmacLattice"'
+
+
+def write_smac_nav_tree():
+    """Write Nav2's stock navigate-to-pose tree with the Smac planner selected.
+
+    Generated at launch rather than installed, so it cannot drift from the stock tree the
+    installed Nav2 ships. The selector check fails loudly if that tree stops defaulting to NavFn.
+    """
+    with open(STOCK_NAV_TO_POSE_TREE) as stock:
+        tree = stock.read()
+    if tree.count(NAVFN_SELECTOR) != 1:
+        raise RuntimeError(
+            f"{STOCK_NAV_TO_POSE_TREE} no longer selects NavFn by default"
+        )
+    os.makedirs(os.path.dirname(SMAC_NAV_TO_POSE_TREE), exist_ok=True)
+    with open(SMAC_NAV_TO_POSE_TREE, "w") as smac:
+        smac.write(tree.replace(NAVFN_SELECTOR, SMAC_SELECTOR))
+
 
 LOCALIZATION_NODES = ["map_server", "localization_map_server", "amcl"]
 NAVIGATION_NODES = [
@@ -106,6 +131,7 @@ def lifecycle_manager(name, nodes):
 
 def generate_launch_description():
     share = get_package_share_directory("market_sim")
+    write_smac_nav_tree()
     params_file = LaunchConfiguration("params_file")
     map_yaml = LaunchConfiguration("map")
     localization_map_yaml = LaunchConfiguration("localization_map")
@@ -264,9 +290,7 @@ def generate_launch_description():
         nav2_node("nav2_smoother", "smoother_server"),
         nav2_node("nav2_planner", "planner_server"),
         nav2_node("nav2_behaviors", "behavior_server"),
-        nav2_node(
-            "nav2_bt_navigator", "bt_navigator", cwd=os.path.join(share, NAV_TREE_DIR)
-        ),
+        nav2_node("nav2_bt_navigator", "bt_navigator"),
         nav2_node("nav2_waypoint_follower", "waypoint_follower"),
         nav2_node(
             "nav2_velocity_smoother",
