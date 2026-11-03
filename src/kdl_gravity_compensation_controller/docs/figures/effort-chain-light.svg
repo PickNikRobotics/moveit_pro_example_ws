@@ -42,7 +42,7 @@
   <g id="hardware-effort"><title>Gravity alone claims hardware joint effort</title><rect x="574" y="255" width="182" height="84" rx="7" fill="#fff8ef" stroke="#d5b99a"/></g>
   <text x="665" y="282" text-anchor="middle" class="" style="fill:#1d2a3a;font-size:20px;font-weight:650">Hardware effort</text>
   <text x="665" y="307" text-anchor="middle" class="" style="fill:#a45a0d;font-size:19px">joint/effort</text>
-  <text x="665" y="329" text-anchor="middle" class="" style="fill:#a45a0d;font-size:17px">gravity only</text>
+  <text x="665" y="329" text-anchor="middle" class="" style="fill:#a45a0d;font-size:17px">one writer</text>
   <g id="hardware-to-driver"><title>hardware to driver</title><path d="M 665 339 V 385" class="wire" stroke="#a45a0d" style="stroke-width:2" marker-end="url(#arrow-orange)"/></g>
   <g id="position-controller"><title>Position command remains a separate path on compatible hardware</title><rect x="24" y="386" width="250" height="70" rx="7" fill="#eff4fc" stroke="#9db6db"/></g>
   <text x="149" y="414" text-anchor="middle" class="" style="fill:#275caa;font-size:19px;font-weight:650">Position-only controller</text>
