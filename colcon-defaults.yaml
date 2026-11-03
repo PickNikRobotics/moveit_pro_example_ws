@@ -17,8 +17,7 @@ build:
     # Debug info and build testing for dev workflows
     - rel-with-deb-info
     - build-testing-on
-    - coverage-gcc
-    - coverage-pytest
+    # Coverage is off because the image lacks pytest-cov and gcov slows builds. Opt in through COLCON_DEFAULTS_FILE.
 test:
   event-handlers:
     - console_direct+
