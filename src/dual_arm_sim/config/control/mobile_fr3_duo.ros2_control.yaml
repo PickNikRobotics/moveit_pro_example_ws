@@ -45,7 +45,7 @@ controller_manager:
 
 # Every robot joint except the three planar base joints and the scene's free cylinder.
 # MuJoCo exports a state for every MJCF joint, so without this list the true planar values
-# would reach /joint_states next to the odometry bridge's drifted ones.
+# would reach /joint_states next to the odometry bridge's own.
 joint_state_broadcaster:
   ros__parameters:
     joints:
