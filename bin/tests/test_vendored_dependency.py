@@ -3,6 +3,7 @@
 import importlib.util
 import io
 import json
+import re
 import subprocess
 import textwrap
 from pathlib import Path
@@ -777,7 +778,7 @@ def test_refresh_workflow_only_prepares_pr_for_completed_updates(
     )
     step = workflow.split("      - name: Re-vendor at the upstream branch head\n", 1)[1]
     script = textwrap.dedent(
-        step.split("        run: |\n", 1)[1].split("\n      # PRs opened", 1)[0]
+        re.split(r"\n      [-#]", step.split("        run: |\n", 1)[1], maxsplit=1)[0]
     )
     workspace = tmp_path / "ws"
     root = workspace / "src" / "external_dependencies" / "source"
