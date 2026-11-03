@@ -1,9 +1,10 @@
 <?xml version="1.0" ?>
-<!-- Converted from franka_description 2.9.0 (Copyright 2023 Franka Robotics GmbH, Apache License,
-     Version 2.0; LICENSE-franka_description), with actuator settings from the MuJoCo Menagerie
-     Franka FR3 model (franka_fr3) and finger coupling from its Franka Emika Panda hand.xml (Apache
-     License, Version 2.0; LICENSE-mujoco_menagerie_franka_fr3). Copied from moveit_pro_franka_ws
-     (940aa42) and modified by PickNik Inc., 2026. -->
+<!-- Converted from franka_description 2.9.0 (Copyright 2023 Franka Robotics GmbH), with actuator
+     settings from the MuJoCo Menagerie Franka FR3 model (franka_fr3) and finger coupling from its
+     Franka Emika Panda hand.xml. All Apache License, Version 2.0; LICENSE-franka_description
+     carries the text and ../NOTICE names the sources. Copied from moveit_pro_franka_ws (940aa42)
+     and modified by PickNik Inc., 2026: the planar_x and planar_y travel is widened to cover the
+     store, and a test keeps it equal to the URDF's. -->
 <mujoco model="mobile_fr3_duo">
   <compiler angle="radian" meshdir="assets" />
   <size nuser_cam="4" />

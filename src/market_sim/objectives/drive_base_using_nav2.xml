@@ -10,9 +10,9 @@
       <SubTree ID="Stow Arms for Navigation" _collapsed="true" />
       <!-- Nav2 drives the base through base_jgvc; a base jog leaves it inactive. -->
       <Action ID="SwitchController" activate_controllers="base_jgvc" />
-      <!-- GridBased uses Nav2's installed tree; Smac uses the copy the driver launch file
-           writes with that planner selected. Both absolute: BehaviorTree.CPP rejects a
-           relative tree path. -->
+      <!-- bt_navigator reads this path, and the launch file that starts it writes the Smac
+           copy with that planner selected. GridBased uses Nav2's installed tree. Both
+           absolute: BehaviorTree.CPP rejects a relative tree path. -->
       <Action
         ID="Script"
         code="nav_tree := planner_id == 'GridBased' ? '/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml' : '/tmp/market_sim/behavior_trees/navigate_to_pose_smac.xml'"

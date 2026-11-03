@@ -56,9 +56,9 @@ equal.
   Ready**, calls **Drive Base using Nav2**: it runs **Stow Arms for Navigation** (both arms and the
   spine go to the `Stow` waypoint), gives Nav2 the base controller, and drives with Nav2's default
   navigate-to-pose tree, which replans and recovers. Its `planner_id` port picks the planner: Nav2's
-  installed tree serves NavFn, and a copy with SmacLattice as its planner, written by
-  `CMakeLists.txt` at build time, serves SMAC. The launch file starts `bt_navigator` in the folder
-  that holds the copy, and `test/test_nav_tree_files.py` keeps the two in step. Nav2's footprint is the stowed-arms outline, the same in both costmaps (a test checks
+  installed tree serves NavFn, and a copy with SmacLattice as its planner serves SMAC. The launch
+  file that starts `bt_navigator` writes that copy at startup, and `test/test_nav_tree_files.py`
+  keeps the Objective and the launch file on the same two paths. Nav2's footprint is the stowed-arms outline, the same in both costmaps (a test checks
   it). The Navigate to Aisle goals stand far enough back from the shelf
   that this footprint clears both racks while it turns to face the shelf, also checked by a test.
 - Nav2's controller turns the base in place toward a new path before following it (Nav2's rotation

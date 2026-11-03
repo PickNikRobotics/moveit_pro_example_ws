@@ -481,9 +481,11 @@ likely under heavy CPU load. The navigator logs "Timed out while waiting for act
 acknowledge goal request for follow_path" just before the abort.
 
 This is fixed in Nav2 after Jazzy. `market_sim/params/nav2_params.yaml` raises `default_server_timeout`
-above Nav2's default to make the trigger rarer; that does not remove it. The remaining mitigation
-would be a node that cancels a `follow_path` goal still executing when no `navigate_to_pose` goal is
-active.
+above Nav2's default to make the trigger rarer; that does not remove it. `hangar_sim` and `lunar_sim`
+keep Nav2's default: the raise was made for market_sim's long store drives and is not measured on the
+smaller scenes, so treat it as that config's mitigation rather than a workspace-wide setting. The
+remaining mitigation would be a node that cancels a `follow_path` goal still executing when no
+`navigate_to_pose` goal is active.
 
 ## One trajectory controller, several planning groups
 

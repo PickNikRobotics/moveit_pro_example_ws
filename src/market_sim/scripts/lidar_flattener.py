@@ -28,17 +28,16 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-# Based on hangar_sim's lidar_flattener.py; only the docstring differs.
+# Based on hangar_sim's script/lidar_flattener.py: the same flattening logic, with the docstring
+# written for this package's scanner and ExternalShutdownException added to the spin guard.
 
 """Turns each MuJoCo 3D-lidar point cloud into the LaserScan the rest of the stack expects.
 
 Both simulated SICK nanoScan3s are <camera> sensors with DEPTH_TYPE=THREE_D_LIDAR, so
 picknik_mujoco_ros publishes them as an organized PointCloud2 rather than as a LaserScan.
 Everything downstream of /scan_front and /scan_rear is built on LaserScan: the two relays that
-feed beluga_amcl on /scan_interleaved, and both Nav2 costmap obstacle layers. Flattening here
-keeps those topics identical in name, type, frame and angular window to what a <rangefinder>
-would publish, so nothing else in the package has to know which sensor model produced the scan.
-The parameters are set in launch/sim/robot_drivers_to_persist_sim.launch.py.
+feed beluga_amcl on /scan_interleaved, and both Nav2 costmap obstacle layers. The parameters
+are set in launch/sim/robot_drivers_to_persist_sim.launch.py.
 
 The cloud is `resolution` beams wide and 3 rows tall. Row 1 is the elevation-0 row and is
 the only one that belongs in a 2D scan; rows 0 and 2 sit at +/-fovy/2 and would put floor
@@ -46,11 +45,11 @@ and ceiling returns into the scan plane. Columns run from azimuth -fov_x/2 to +f
 about the camera's optical Z, which is clockwise in the scan frame, so they are reversed to
 give the counter-clockwise LaserScan convention.
 
-Column order and the scan frame are fixed by the MJCF and are checked in against it: for
-the front unit, column 810 lands at -135 deg and column 0 at +135 deg in the mount frame,
-so after the reversal beam 0 sits at -135 deg, which is exactly where lidar_front_ROS puts
-its X axis. If the camera or optical-site quaternions in description/ur5e_ridgeback.xml
-change, these change with them.
+Column order and the scan frame are fixed by the MJCF: the sweep, beam count and range
+limits belong to the <camera> elements in mjcf/mobile_fr3_duo.xml, whose comment records
+where they were measured. Beam 0 lands on the X axis of each lidar_*_ROS frame, which the
+launch file publishes statically. A change to either camera or its optical site moves the
+columns, and the launch parameters have to follow.
 """
 
 import math
@@ -75,30 +74,20 @@ class LidarFlattener(Node):
         super().__init__("lidar_flattener")
 
         self.declare_parameter("lidars", ["lidar_front", "lidar_rear"])
-        # The published window is the one the <rangefinder> path published and the one
-        # params/laser_filter_params.yaml is written against: angle_min 0, angle_max
-        # 4.7124 rad (270 deg), X of the lidar_*_ROS frame at beam 0. The sweep must equal
-        # the camera's user[FOV_X] and the beam count its resolution width in
-        # description/ur5e_ridgeback.xml, or these angles stop describing the columns
-        # published. At resolution="811 3" the increment works out to exactly 1/3 deg,
-        # which is the TIM571's datasheet angular resolution.
+        # The window the launch file sets must equal the camera's user[FOV_X] and the beam
+        # count its resolution width in mjcf/mobile_fr3_duo.xml, or these angles stop
+        # describing the columns published. angle_min is 0 because beam 0 is the frame's X.
         self.declare_parameter("angle_min", 0.0)
         self.declare_parameter("angle_max", math.radians(270.0))
-        # Neither fan ends on its own housing here, and the chassis self-hits that do
-        # occur are already rejected downstream by the two angular-bounds stages in
-        # params/laser_filter_params.yaml. Trimming in this node as well would move
-        # angle_min off 0 and silently invalidate those bounds, so it defaults off.
+        # Trimmed beams are dropped from each end of the published sweep. This package has
+        # no laser_filters chain, so this node is the only place that happens; the launch
+        # file sets both ends, and trimming moves angle_min off 0.
         self.declare_parameter("trim_low_deg", 0.0)
         self.declare_parameter("trim_high_deg", 0.0)
         self.declare_parameter("range_min", 0.05)
         self.declare_parameter("range_max", 25.0)
-        # Off by default, which reproduces the <rangefinder> path exactly: it declared a
-        # beam_std_dev the plugin never applied, so the old scan carried no noise either.
-        # The rendered sensor is likewise noiseless, landing within a millimetre or two of
-        # an exact ray cast. The TIM571 datasheet gives a 20 mm statistical error at 10%
-        # reflectivity, so set this to 0.02 to model the real scanner -- but that is a
-        # behavior change for AMCL and both costmaps, not a port, so it is left to a
-        # deliberate follow-up rather than folded in here.
+        # MuJoCo's rendered ranges carry no sensor noise, so the launch file injects the
+        # real scanner's statistical error here. Off by default, publishing the render as-is.
         self.declare_parameter("range_noise_stddev", 0.0)
         # The sensor reports to the millimetre. Rounding to the same grid keeps a consumer
         # from reading precision out of the simulation that the hardware cannot give it.
@@ -117,8 +106,8 @@ class LidarFlattener(Node):
         self._last_stamp = {}
         self._logged_window = set()
 
-        # BEST_EFFORT to match the plugin's SensorDataQoS on the cloud, and to match what
-        # the laser_filters chains already subscribe to /scan_{front,rear} with.
+        # BEST_EFFORT to match the plugin's SensorDataQoS on the cloud, and the sensor-data
+        # QoS the Nav2 costmap obstacle layers subscribe to /scan_{front,rear} with.
         qos = QoSProfile(
             reliability=QoSReliabilityPolicy.BEST_EFFORT,
             durability=QoSDurabilityPolicy.VOLATILE,
@@ -131,10 +120,8 @@ class LidarFlattener(Node):
             self.declare_parameter(f"{name}.points_topic", f"/{name}/points")
             suffix = name.rsplit("_", 1)[-1]
             self.declare_parameter(f"{name}.scan_topic", f"/scan_{suffix}")
-            # The <rangefinder> path published its scans in <name>_ROS, a z-up frame with
-            # X at beam 0, and MuJoCo broadcast that frame itself. Nothing publishes it
-            # once the sensor is a camera, so the launch file publishes it statically and
-            # this node keeps stamping scans with the same name.
+            # Scans are stamped in <name>_ROS, a z-up frame with X at beam 0. The camera
+            # sensor does not broadcast it, so the launch file publishes it statically.
             self.declare_parameter(f"{name}.frame_id", f"{name}_ROS")
             points_topic = self.get_parameter(f"{name}.points_topic").value
             scan_topic = self.get_parameter(f"{name}.scan_topic").value

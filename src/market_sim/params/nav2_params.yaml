@@ -48,7 +48,8 @@ amcl:
     z_max: 0.05
     z_rand: 0.5
     z_short: 0.05
-    # Both lidars' scans, merged into one 360 deg scan by the persist launch file.
+    # Both lidars' scans relayed onto one topic by the persist launch file, a scan at a
+    # time: no message carries two instants.
     scan_topic: /scan_interleaved
 
 map_server:
