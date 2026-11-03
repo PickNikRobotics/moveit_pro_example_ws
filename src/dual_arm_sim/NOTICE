@@ -33,14 +33,15 @@ Third-party files:
 - MuJoCo Menagerie Franka FR3 model (franka_fr3)
   Licensed under the Apache License, Version 2.0. Its LICENSE file, which also
   contains a BSD license section, is copied unchanged to
-  description/mujoco/LICENSE.
+  description/mujoco/LICENSE-franka_description.
   - The actuator settings in description/mujoco/mobile_fr3_duo.xml come from
     its fr3.xml.
 
 - MuJoCo Menagerie Franka Emika Panda model (franka_emika_panda), for the
   Franka Hand
-  Licensed under the Apache License, Version 2.0; description/mujoco/LICENSE
-  carries the same Apache License text.
+  Licensed under the Apache License, Version 2.0;
+  description/mujoco/LICENSE-franka_description carries the same Apache License
+  text.
   - finger_0.obj and finger_1.obj in description/mujoco/assets/ are copied
     unchanged.
   - The finger coupling (tendon and equality constraints) in
