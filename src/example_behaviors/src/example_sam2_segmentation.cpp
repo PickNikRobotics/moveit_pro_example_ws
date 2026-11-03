@@ -29,7 +29,7 @@ constexpr auto kPortMasksDefault = "{masks2d}";
 constexpr auto kPortModelPackage = "model_package";
 constexpr auto kPortModelPackageDefault = "moveit_pro_sam2";
 constexpr auto kPortBundleManifest = "model_bundle_manifest";
-constexpr auto kPortBundleManifestDefault = "models/model.yaml";
+constexpr auto kPortBundleManifestDefault = "models/sam2_bundle.yaml";
 constexpr auto kPortRuntimeId = "runtime_id";
 constexpr auto kPortRuntimeIdDefault = "onnxruntime";
 

@@ -25,7 +25,7 @@
         image="{image}"
         masks2d="{masks2d}"
         pixel_coords="{pixel_coords}"
-        model_bundle_manifest="models/model.yaml"
+        model_bundle_manifest="models/sam2_bundle.yaml"
         runtime_id="onnxruntime"
         model_package="moveit_pro_sam2"
       />

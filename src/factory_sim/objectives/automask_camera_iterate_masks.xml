@@ -14,10 +14,10 @@
         mask_count="{mask_count}"
         masks2d="{masks2d}"
         score_threshold="0.800000"
-        model_bundle_manifest="models/sam2_automask_bundle.yaml"
+        model_bundle_manifest="models/sam2_bundle.yaml"
         runtime_id="onnxruntime"
         nms_threshold="0.3"
-        model_package="factory_sim"
+        model_package="moveit_pro_sam2"
         min_component_area="2000"
       />
       <Decorator
@@ -27,7 +27,7 @@
         vector_in="{masks2d}"
       >
         <Control ID="Sequence">
-          <Action ID="Script" code="mask_label:=&quot;mask &quot;..index" />
+          <Action ID="Script" code="mask_label:='mask '..index" />
           <SubTree ID="CreateVector" _collapsed="true" vector="{one_mask}" />
           <Action
             ID="PushBackVector"
