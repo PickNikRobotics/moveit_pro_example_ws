@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 314" role="img" aria-labelledby="title description">
+  <title id="title">Gravity feedforward reduces the load the spring must carry</title>
+  <desc id="description">Two equal-width bars represent the same required holding torque at the same stiffness. Without feedforward, the spring supplies the load through position error. With gravity feedforward, the predicted gravity part is supplied separately and the spring supplies the remaining load. The striped remainder represents model error and other disturbances, not zero error. The proportions are illustrative, not measured.</desc>
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #e6edf3; font-size: 20px; }
+      .math { font-family: Georgia, 'DejaVu Serif', serif; font-size: 27px; }
+      .sub { font-size: 70%; baseline-shift: sub; }
+      .small { font-size: 17px; fill: #afbdcb; }
+      .heading { font-size: 21px; font-weight: 650; }
+      .wire { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+    </style>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#8bbcff"/></marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#7fcebb"/></marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#c9a3e6"/></marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#efb96d"/></marker>
+    <marker id="arrow-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#acbdcf"/></marker>
+    <pattern id="residual" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="9" height="9" fill="#1b232e"/><path d="M -2 2 L 2 -2 M 0 9 L 9 0 M 7 11 L 11 7" stroke="#66788e" stroke-width="1.2"/></pattern>
+  </defs>
+  <rect x="1" y="1" width="778" height="312" rx="10" fill="#0d1117" stroke="#394553"/>
+
+  <text x="26" y="36" text-anchor="start" class="" style="fill:#e6edf3;font-size:22px;font-weight:650">Same required holding torque. Same spring stiffness.</text>
+  <text x="26" y="90" text-anchor="start" class="" style="fill:#e6edf3;font-size:20px;font-weight:650">Without feedforward</text>
+  <text x="26" y="175" text-anchor="start" class="" style="fill:#e6edf3;font-size:20px;font-weight:650">With gravity feedforward</text>
+<g id="spring-only"><title>The spring supplies all required torque through position error</title><rect x="314" y="64" width="438" height="52" rx="5" fill="url(#residual)" stroke="#66788e"/></g>
+<rect x="378" y="77" width="312" height="27" rx="4" fill="#1b232e"/>
+  <text x="533" y="97" text-anchor="middle" class="" style="fill:#e6edf3;font-size:19px">Spring carries the whole load</text>
+<g id="feedforward-share"><title>Predicted gravity supplied by feedforward, not spring error</title><rect x="314" y="149" width="326" height="52" fill="#30251a" stroke="#9c7646"/></g>
+<g id="residual-share"><title>The spring still supplies the residual load</title><rect x="640" y="149" width="112" height="52" fill="url(#residual)" stroke="#66788e"/></g>
+  <text x="477" y="182" text-anchor="middle" class="" style="fill:#efb96d;font-size:20px;font-weight:650">Predicted gravity load</text>
+  <g id="feedforward-label"><title>feedforward label</title><path d="M 477 202 V 220" class="wire" stroke="#efb96d" style="stroke-width:2"/></g>
+  <text x="477" y="246" text-anchor="middle" class="math" style="fill:#efb96d;font-size:25px">τ<tspan class="sub">ff</tspan></text>
+  <g id="residual-label"><title>residual label</title><path d="M 696 202 V 220" class="wire" stroke="#acbdcf" style="stroke-width:2"/></g>
+  <text x="696" y="246" text-anchor="middle" class="" style="fill:#e6edf3;font-size:19px">spring</text>
+  <text x="26" y="290" text-anchor="start" class="" style="fill:#e6edf3;font-size:20px">Less position error is needed; model error and disturbances still remain.</text>
+</svg>

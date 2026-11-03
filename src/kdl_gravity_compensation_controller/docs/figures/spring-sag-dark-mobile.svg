@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 426" role="img" aria-labelledby="title description">
+  <title id="title">A soft spring needs position error to hold weight</title>
+  <desc id="description">In the ideal spring and damping motor law, feedforward adds torque independently of position error. The desired angle is a dashed blue line; the measured angle under weight is a lower solid green line. Without feedforward, spring deflection carries the load. This sketch illustrates a local, unsaturated static equilibrium, not a measurement.</desc>
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #e6edf3; font-size: 20px; }
+      .math { font-family: Georgia, 'DejaVu Serif', serif; font-size: 27px; }
+      .sub { font-size: 70%; baseline-shift: sub; }
+      .small { font-size: 17px; fill: #afbdcb; }
+      .heading { font-size: 21px; font-weight: 650; }
+      .wire { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+    </style>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#8bbcff"/></marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#7fcebb"/></marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#c9a3e6"/></marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#efb96d"/></marker>
+    <marker id="arrow-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#acbdcf"/></marker>
+    <pattern id="residual" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="9" height="9" fill="#1b232e"/><path d="M -2 2 L 2 -2 M 0 9 L 9 0 M 7 11 L 11 7" stroke="#66788e" stroke-width="1.2"/></pattern>
+  </defs>
+  <rect x="1" y="1" width="358" height="424" rx="10" fill="#0d1117" stroke="#394553"/>
+
+  <g id="motor-law"><title>Ideal spring and damping motor law</title><rect x="16" y="16" width="328" height="106" rx="7" fill="#1b232e" stroke="#66788e"/></g>
+  <text x="35" y="55" text-anchor="start" class="math" style="fill:#e6edf3;font-size:24px">τ = k<tspan class="sub">p</tspan>(q* − q)</text>
+  <text x="75" y="95" text-anchor="start" class="math" style="fill:#e6edf3;font-size:24px">+ k<tspan class="sub">d</tspan>(q̇* − q̇) + τ<tspan class="sub">ff</tspan></text>
+  <text x="180" y="159" text-anchor="middle" class="" style="fill:#e6edf3;font-size:20px;font-weight:650">At rest, no feedforward</text>
+  <g id="desired-angle"><title>desired angle</title><path d="M 56 226 H 318" class="wire" stroke="#8bbcff" style="stroke-width:3" stroke-dasharray="7 5"/></g>
+  <text x="309" y="206" text-anchor="end" class="" style="fill:#8bbcff;font-size:20px">desired q*</text>
+  <g id="actual-angle"><title>actual angle</title><path d="M 56 226 L 291 294" class="wire" stroke="#7fcebb" style="stroke-width:6"/></g>
+  <text x="150" y="323" text-anchor="middle" class="" style="fill:#7fcebb;font-size:20px">measured q</text>
+  <g id="position-error"><title>position error</title><path d="M 127 226 A 71 71 0 0 1 124 246" class="wire" stroke="#acbdcf" style="stroke-width:2"/></g>
+  <text x="143" y="249" text-anchor="start" class="" style="fill:#e6edf3;font-size:18px">error</text>
+  <g id="weight"><title>weight</title><path d="M 292 301 V 350" class="wire" stroke="#acbdcf" style="stroke-width:2" marker-end="url(#arrow-slate)"/></g>
+  <text x="318" y="373" text-anchor="end" class="" style="fill:#acbdcf;font-size:18px">weight</text>
+<circle cx="56" cy="226" r="8" fill="#acbdcf"/>
+  <text x="180" y="406" text-anchor="middle" class="" style="fill:#e6edf3;font-size:18px">Less stiffness → more deflection</text>
+</svg>

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 734" role="img" aria-labelledby="title description">
+  <title id="title">Two torque contributions, one hardware effort writer</title>
+  <desc id="description">An upstream effort controller writes the gravity controller reference, not hardware effort. The gravity controller adds gain times the KDL gravity estimate plus offset, using measured joint positions and the robot model. Only gravity claims the hardware effort interface. A compatible position controller has a separate desired-position command path to the unchanged driver. In reBot motion mode the driver maps the sum to the motor and the SDK limits the feedforward field to its wire range.</desc>
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #e6edf3; font-size: 20px; }
+      .math { font-family: Georgia, 'DejaVu Serif', serif; font-size: 27px; }
+      .sub { font-size: 70%; baseline-shift: sub; }
+      .small { font-size: 17px; fill: #afbdcb; }
+      .heading { font-size: 21px; font-weight: 650; }
+      .wire { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+    </style>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#8bbcff"/></marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#7fcebb"/></marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#c9a3e6"/></marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#efb96d"/></marker>
+    <marker id="arrow-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#acbdcf"/></marker>
+    <pattern id="residual" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="9" height="9" fill="#1b232e"/><path d="M -2 2 L 2 -2 M 0 9 L 9 0 M 7 11 L 11 7" stroke="#66788e" stroke-width="1.2"/></pattern>
+  </defs>
+  <rect x="1" y="1" width="358" height="732" rx="10" fill="#0d1117" stroke="#394553"/>
+
+  <g id="upstream"><title>Upstream effort producer</title><rect x="18" y="18" width="324" height="78" rx="7" fill="#30251a" stroke="#9c7646"/></g>
+  <text x="180" y="47" text-anchor="middle" class="" style="fill:#e6edf3;font-size:20px;font-weight:650">Upstream effort controller</text>
+  <text x="180" y="75" text-anchor="middle" class="math" style="fill:#efb96d;font-size:25px">τ<tspan class="sub">up</tspan></text>
+  <text x="196" y="124" text-anchor="start" class="" style="fill:#efb96d;font-size:18px">effort reference</text>
+  <g id="gravity-controller"><title>Gravity controller adds the contributions exactly once</title><rect x="18" y="153" width="324" height="238" rx="7" fill="#291e35" stroke="#86689e"/></g>
+  <text x="324" y="181" text-anchor="end" class="" style="fill:#c9a3e6;font-size:20px;font-weight:650">Gravity controller</text>
+<g id="torque-sum"><title>Add upstream effort and gravity once</title><circle cx="72" cy="304" r="24" fill="#0d1117" stroke="#c9a3e6"/></g>
+  <text x="72" y="313" text-anchor="middle" class="" style="fill:#c9a3e6;font-size:30px">+</text>
+  <g id="reference-to-sum"><title>reference to sum</title><path d="M 180 97 V 132 H 72 V 279" class="wire" stroke="#efb96d" style="stroke-width:2" marker-end="url(#arrow-orange)"/></g>
+  <g id="model-inputs"><title>Measured position and the robot model</title><rect x="128" y="203" width="195" height="54" rx="7" fill="#142923" stroke="#467e6e"/></g>
+  <text x="226" y="226" text-anchor="middle" class="" style="fill:#7fcebb;font-size:18px">Measured q</text>
+  <text x="226" y="247" text-anchor="middle" class="" style="fill:#7fcebb;font-size:18px">+ URDF model</text>
+  <g id="measured-model-input"><title>measured model input</title><path d="M 226 258 V 275" class="wire" stroke="#7fcebb" style="stroke-width:2" marker-end="url(#arrow-green)"/></g>
+  <g id="gravity-model"><title>KDL gravity with gain and offset</title><rect x="128" y="277" width="195" height="86" rx="7" fill="#291e35" stroke="#86689e"/></g>
+  <text x="226" y="302" text-anchor="middle" class="" style="fill:#c9a3e6;font-size:19px;font-weight:650">KDL gravity</text>
+  <text x="226" y="330" text-anchor="middle" class="math" style="fill:#c9a3e6;font-size:24px">gain · G(q)</text>
+  <text x="226" y="352" text-anchor="middle" class="" style="fill:#c9a3e6;font-size:18px">+ offset</text>
+  <g id="gravity-to-sum"><title>gravity to sum</title><path d="M 128 304 H 97" class="wire" stroke="#c9a3e6" style="stroke-width:2" marker-end="url(#arrow-purple)"/></g>
+  <g id="summed-output"><title>summed output</title><path d="M 72 329 V 412 H 180 V 434" class="wire" stroke="#efb96d" style="stroke-width:2" marker-end="url(#arrow-orange)"/></g>
+  <g id="hardware-effort"><title>Only gravity claims joint effort</title><rect x="18" y="435" width="324" height="74" rx="7" fill="#30251a" stroke="#9c7646"/></g>
+  <text x="180" y="464" text-anchor="middle" class="" style="fill:#e6edf3;font-size:20px;font-weight:650">Hardware effort: joint/effort</text>
+  <text x="180" y="491" text-anchor="middle" class="" style="fill:#efb96d;font-size:18px">Gravity is the only claimant</text>
+  <g id="hardware-to-driver"><title>hardware to driver</title><path d="M 180 510 V 575" class="wire" stroke="#efb96d" style="stroke-width:2" marker-end="url(#arrow-orange)"/></g>
+  <g id="position-command"><title>Separate desired-position command, only with compatible hardware</title><rect x="18" y="531" width="116" height="88" rx="7" fill="#14243a" stroke="#526f98"/></g>
+  <text x="76" y="558" text-anchor="middle" class="" style="fill:#8bbcff;font-size:18px">Position</text>
+  <text x="76" y="580" text-anchor="middle" class="" style="fill:#8bbcff;font-size:18px">controller</text>
+  <text x="76" y="605" text-anchor="middle" class="math" style="fill:#8bbcff;font-size:23px">q*</text>
+  <g id="position-to-driver"><title>position to driver</title><path d="M 76 620 V 651 H 152" class="wire" stroke="#8bbcff" style="stroke-width:2" stroke-dasharray="7 5" marker-end="url(#arrow-blue)"/></g>
+  <g id="unchanged-driver"><title>Unchanged driver and motion SDK</title><rect x="154" y="577" width="188" height="111" rx="7" fill="#1b232e" stroke="#66788e"/></g>
+  <text x="248" y="607" text-anchor="middle" class="" style="fill:#e6edf3;font-size:20px;font-weight:650">Driver → motor</text>
+  <text x="248" y="635" text-anchor="middle" class="" style="fill:#e6edf3;font-size:17px">reBot motion:</text>
+  <text x="248" y="658" text-anchor="middle" class="" style="fill:#e6edf3;font-size:17px">SDK wire limits</text>
+  <text x="180" y="716" text-anchor="middle" class="" style="fill:#e6edf3;font-size:18px">Target q* is not measured q.</text>
+</svg>

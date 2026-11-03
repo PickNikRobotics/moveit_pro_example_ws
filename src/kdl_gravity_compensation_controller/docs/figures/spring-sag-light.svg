@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 352" role="img" aria-labelledby="title description">
+  <title id="title">A soft spring needs position error to hold weight</title>
+  <desc id="description">In the ideal spring and damping motor law, feedforward adds torque independently of position error. The desired angle is a dashed blue line; the measured angle under weight is a lower solid green line. Without feedforward, spring deflection carries the load. This sketch illustrates a local, unsaturated static equilibrium, not a measurement.</desc>
+  <defs>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; fill: #1d2a3a; font-size: 20px; }
+      .math { font-family: Georgia, 'DejaVu Serif', serif; font-size: 27px; }
+      .sub { font-size: 70%; baseline-shift: sub; }
+      .small { font-size: 17px; fill: #526173; }
+      .heading { font-size: 21px; font-weight: 650; }
+      .wire { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+    </style>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#275caa"/></marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#157463"/></marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#75509a"/></marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#a45a0d"/></marker>
+    <marker id="arrow-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 Z" fill="#536577"/></marker>
+    <pattern id="residual" width="9" height="9" patternUnits="userSpaceOnUse"><rect width="9" height="9" fill="#f4f6f8"/><path d="M -2 2 L 2 -2 M 0 9 L 9 0 M 7 11 L 11 7" stroke="#bdc6d0" stroke-width="1.2"/></pattern>
+  </defs>
+  <rect x="1" y="1" width="778" height="350" rx="10" fill="#ffffff" stroke="#d9dfe5"/>
+
+  <g id="motor-law"><title>Ideal spring and damping motor law</title><rect x="20" y="20" width="740" height="66" rx="7" fill="#f4f6f8" stroke="#bdc6d0"/></g>
+  <text x="390" y="62" text-anchor="middle" class="math" style="fill:#1d2a3a;font-size:28px">τ = k<tspan class="sub">p</tspan>(q* − q) + k<tspan class="sub">d</tspan>(q̇* − q̇) + τ<tspan class="sub">ff</tspan></text>
+  <g id="motor-loop"><title>The spring and damping law acts inside the motor</title><rect x="163" y="113" width="327" height="193" rx="7" fill="#f4f6f8" stroke="#bdc6d0" stroke-dasharray="5 4"/></g>
+  <text x="179" y="139" text-anchor="start" class="" style="fill:#526173;font-size:15px;font-weight:650">INSIDE THE MOTOR</text>
+  <g id="setpoint"><title>Desired position and velocity</title><rect x="22" y="165" width="115" height="60" rx="7" fill="#eff4fc" stroke="#9db6db"/></g>
+  <text x="80" y="188" text-anchor="middle" class="" style="fill:#275caa;font-size:18px">Target</text>
+  <text x="80" y="213" text-anchor="middle" class="math" style="fill:#275caa;font-size:22px">q*, q̇*</text>
+  <g id="spring-damping"><title>Spring and damping from position and velocity error</title><rect x="179" y="165" width="129" height="60" rx="7" fill="#eff4fc" stroke="#9db6db"/></g>
+  <text x="244" y="189" text-anchor="middle" class="" style="fill:#1d2a3a;font-size:19px">Spring</text>
+  <text x="244" y="212" text-anchor="middle" class="" style="fill:#1d2a3a;font-size:18px">+ damping</text>
+<g id="torque-sum"><title>Add feedforward to spring and damping</title><circle cx="342" cy="195" r="17" fill="#ffffff" stroke="#a45a0d"/></g>
+  <text x="342" y="202" text-anchor="middle" class="" style="fill:#a45a0d;font-size:26px">+</text>
+  <g id="motor-joint"><title>The joint supplies measured position and velocity feedback</title><rect x="380" y="165" width="92" height="60" rx="7" fill="#f4f6f8" stroke="#bdc6d0"/></g>
+  <text x="426" y="188" text-anchor="middle" class="" style="fill:#1d2a3a;font-size:19px">Joint</text>
+  <text x="426" y="213" text-anchor="middle" class="math" style="fill:#157463;font-size:22px">q, q̇</text>
+  <g id="target-to-spring"><title>target to spring</title><path d="M 137 195 H 178" class="wire" stroke="#275caa" style="stroke-width:2" marker-end="url(#arrow-blue)"/></g>
+  <g id="spring-to-sum"><title>spring to sum</title><path d="M 308 195 H 324" class="wire" stroke="#536577" style="stroke-width:2" marker-end="url(#arrow-slate)"/></g>
+  <g id="sum-to-joint"><title>sum to joint</title><path d="M 359 195 H 379" class="wire" stroke="#536577" style="stroke-width:2" marker-end="url(#arrow-slate)"/></g>
+  <g id="measured-feedback"><title>measured feedback</title><path d="M 426 225 V 249 H 244 V 226" class="wire" stroke="#157463" style="stroke-width:2" marker-end="url(#arrow-green)"/></g>
+  <text x="475" y="272" text-anchor="end" class="" style="fill:#157463;font-size:16px">measured feedback</text>
+  <text x="192" y="292" text-anchor="start" class="math" style="fill:#a45a0d;font-size:22px">τ<tspan class="sub">ff</tspan> = 0</text>
+  <g id="zero-feedforward"><title>zero feedforward</title><path d="M 277 286 H 342 V 213" class="wire" stroke="#a45a0d" style="stroke-width:2" marker-end="url(#arrow-orange)"/></g>
+  <text x="634" y="139" text-anchor="middle" class="" style="fill:#1d2a3a;font-size:20px;font-weight:650">Holding weight</text>
+  <g id="desired-angle"><title>desired angle</title><path d="M 540 187 H 754" class="wire" stroke="#275caa" style="stroke-width:3" stroke-dasharray="7 5"/></g>
+  <text x="747" y="171" text-anchor="end" class="" style="fill:#275caa;font-size:18px">desired q*</text>
+  <g id="actual-angle"><title>actual angle</title><path d="M 540 187 L 733 246" class="wire" stroke="#157463" style="stroke-width:6"/></g>
+<circle cx="540" cy="187" r="8" fill="#536577"/>
+  <g id="position-error"><title>position error</title><path d="M 598 187 A 58 58 0 0 1 595 205" class="wire" stroke="#536577" style="stroke-width:2"/></g>
+  <text x="609" y="210" text-anchor="start" class="" style="fill:#1d2a3a;font-size:18px">error</text>
+  <text x="628" y="273" text-anchor="middle" class="" style="fill:#157463;font-size:18px">measured q</text>
+  <g id="weight"><title>weight</title><path d="M 733 251 V 287" class="wire" stroke="#536577" style="stroke-width:2" marker-end="url(#arrow-slate)"/></g>
+  <text x="756" y="310" text-anchor="end" class="" style="fill:#536577;font-size:17px">weight</text>
+  <text x="22" y="336" text-anchor="start" class="" style="fill:#1d2a3a;font-size:19px;font-weight:550">At rest, the spring must deflect to carry the load.</text>
+</svg>

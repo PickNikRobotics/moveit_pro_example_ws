@@ -1,109 +1,94 @@
 # KDL gravity compensation controller
 
-A ros2_control **chainable** downstream controller for a URDF serial chain.
-It adds model-based gravity effort to an upstream effort command, or runs by
-itself as gravity-only.
+**Let gravity feedforward carry the predictable load, not the position error.**
+This ros2_control chainable controller adds model-based gravity effort to an
+upstream effort command. With no upstream controller, it runs gravity-only.
 
-## Why a soft spring sags under load
+## 1. Why does a soft spring sag?
 
-A joint in spring/impedance mode needs position error to generate spring torque.
-For a revolute joint, the idealized motor law is:
+In spring/impedance mode, a joint must deflect to produce spring torque. At rest,
+damping contributes nothing: without feedforward, position error carries the
+weight. More stiffness reduces sag, but also makes the joint less compliant.
 
-```text
-torque = kp * (desired position - measured position)
-       + kd * (desired velocity - measured velocity) + feedforward torque
-```
+<picture>
+  <source media="(prefers-color-scheme: dark) and (max-width: 600px)" srcset="docs/figures/spring-sag-dark-mobile.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/spring-sag-dark.svg">
+  <source media="(max-width: 600px)" srcset="docs/figures/spring-sag-light-mobile.svg">
+  <img alt="Spring and damping motor law: without feedforward, the measured joint angle sags below its dashed desired angle to generate holding torque." src="docs/figures/spring-sag-light.svg" width="780">
+</picture>
 
-At rest with a stationary target, damping contributes nothing. For positive
-stiffness `kp`, the local, unsaturated balance is approximately:
+*At a stationary target, q\* is the desired angle and q is the measured angle.
+The sag sketch is illustrative: a local, unsaturated equilibrium, not a measurement.*
 
-```text
-position error = (load torque - feedforward torque) / kp
-```
+## 2. Where does the gravity controller sit?
 
-Without feedforward, a soft spring must deflect to carry the arm's weight.
-Increasing stiffness reduces that error but also makes the joint less compliant.
-Gravity feedforward instead estimates the predictable load so the spring does
-not have to provide all the holding torque through sag. This is an equilibrium
-approximation, not a guarantee through friction, contact, saturation or motion.
-Model errors still leave a residual load for the spring to carry.
+Two controllers cannot both claim hardware `joint/effort`. Instead, the upstream
+effort controller writes **gravity's reference**; gravity adds its contribution
+and is the **only hardware effort writer**. Controller manager runs upstream
+before gravity, with no topic round-trip between them.
 
-This motivation applies to spring/impedance mode, not every position controller.
-The reBot configuration still defaults to mock hardware and `position_csp`;
-its optional effort path requires explicitly selected real motion mode. Nothing
-in this package changes those defaults or enables motors.
+<picture>
+  <source media="(prefers-color-scheme: dark) and (max-width: 600px)" srcset="docs/figures/effort-chain-dark-mobile.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/effort-chain-dark.svg">
+  <source media="(max-width: 600px)" srcset="docs/figures/effort-chain-light-mobile.svg">
+  <img alt="An upstream effort controller writes gravity's reference. Gravity adds the KDL torque from measured positions and alone writes hardware effort. A position controller uses a separate target path to the unchanged driver." src="docs/figures/effort-chain-light.svg" width="780">
+</picture>
 
-## Follow the position and effort paths
+*Orange: effort. Purple: gravity model. Green: measured position. Dashed blue:
+separate position target, only on hardware that supports both command types.*
 
-The controller reads **measured** joint positions `q`, not the position target,
-and writes, per joint:
+Per joint, the [controller](src/gravity_compensation_controller.cpp) writes:
 
 ```text
 hardware effort = upstream effort + gains[i] * gravity(q)[i] + offsets[i]
 ```
 
-Gravity comes from KDL `ChainDynParam::JntToGravity`, using the URDF chain,
-gravity vector and optional payload. Gains and offsets apply only to the
-gravity contribution, never to upstream effort. An upstream producer should
-supply the remaining effort, not a second copy of the same gravity term.
+The model uses **measured q**, the URDF chain, mounting gravity and optional
+payload. Gains never scale upstream effort; do not add the same gravity term
+again upstream. Keeping the model here makes its parameters, lifecycle and
+fake-hardware tests independent of the driver. A position-only jog or trajectory
+controller is **not** an upstream effort producer.
 
-```mermaid
-flowchart TB
-    U["Upstream effort controller<br/>trajectory feedforward or spring-damper"] --> R["Gravity reference interfaces<br/>gravity_compensation_controller/jointN/effort"]
-    R --> S["Gravity controller sums once<br/>upstream + gain * G(q) + offset"]
-    Q["Measured joint/position state: q"] --> G["KDL gravity model: G(q)"]
-    URDF["URDF chain, gravity vector, payload"] --> G
-    G --> S
-    S --> H["Hardware jointN/effort<br/>claimed only by gravity"]
-    H --> D["Unchanged driver<br/>map joint effort to motor sign"]
-    P["Optional position controller<br/>jointN/position command: target"] -. "only if hardware supports both" .-> D
-    D --> W["reBot motion-mode SDK<br/>clamp feedforward to wire range and encode"]
-    W --> M["Motor<br/>spring + damping + feedforward"]
-```
+## 3. What does feedforward take off the spring?
 
-**Commands ask; states report.** A `joint/position` command holds a desired
-position; its separate state interface reports the measured position. The
-gravity reference is another command interface, written by an upstream
-controller rather than hardware. It is not a topic or a torque measurement.
-The last three boxes illustrate reBot's motion-mode path; other effort drivers
-have their own command interpretation and limits.
+It supplies the **predicted gravity load**, reducing the torque the spring must
+create through position error. It does not remove model error, friction,
+contact forces or the need for damping.
 
-### What the unchanged driver does, and does not, limit
+<picture>
+  <source media="(prefers-color-scheme: dark) and (max-width: 600px)" srcset="docs/figures/feedforward-benefit-dark-mobile.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/figures/feedforward-benefit-dark.svg">
+  <source media="(max-width: 600px)" srcset="docs/figures/feedforward-benefit-light-mobile.svg">
+  <img alt="For the same load and stiffness, gravity feedforward supplies the predicted share of holding torque; the spring still carries a striped residual load. Bar proportions are illustrative, not measured." src="docs/figures/feedforward-benefit-light.svg" width="780">
+</picture>
 
-In reBot motion mode, the [driver's `write()`](../external_dependencies/robstride_hardware_interface/robstride_hardware_interface/src/robstride_hardware_interface.cpp)
-maps the summed joint effort to motor sign and passes it to
-[`EncodeMotionCommand`](../external_dependencies/robstride_sdk/robstride_sdk/include/robstride_sdk/robstride_motor.hpp).
-The SDK's [`FloatToUint16`](../external_dependencies/robstride_sdk/robstride_sdk/include/robstride_sdk/robstride_protocol.hpp)
-clamps and quantizes that feedforward field to the motor model's wire range.
-The diagram shows the normal command path; existing freeze/fault handling can
-suppress it. CSP takes a different branch and writes a position target, not
-this feedforward field.
+*Equal bars: the same required holding torque. Orange is feedforward; hatching
+is the spring's remaining job. Proportions are illustrative, not measured.*
 
-There is **no added controller clamp or separate driver feedforward cap** here.
-A historical optional driver-side `max_feedforward_effort` clamp is not part
-of this implementation. Do not confuse that separate policy, a URDF effort
-limit, or the SDK's encoding range with a certified continuous-hold limit.
-Clamping the feedforward field does not bound the motor's total spring +
-damping + feedforward torque. `~/commanded_effort` reports the sum **before**
-driver/SDK limiting, not measured motor torque or proof of physical balance.
+Locally at rest, with positive stiffness and no saturation:
+**q\* − q ≈ (τ<sub>load</sub> − τ<sub>ff</sub>) / k<sub>p</sub>**.
+A better gravity estimate can reduce sag without increasing stiffness; it is
+not a guarantee of physical balance or safe hold.
 
-## Why the gravity model belongs in a chainable controller
+### What stays in the driver?
 
-The controller owns the robot-specific chain, payload, mounting gravity and
-trim; the driver keeps its existing transport and motor-command mapping.
-Putting the model in the driver would couple those robot assumptions to a
-hardware plugin and require another way to configure and test them. Here the
-same plugin can be exercised with fake hardware, using the normal lifecycle
-and parameter APIs, without changing driver code.
+In reBot motion mode, the unchanged [driver](../external_dependencies/robstride_hardware_interface/robstride_hardware_interface/src/robstride_hardware_interface.cpp)
+maps the summed effort to motor sign. The SDK
+[encodes](../external_dependencies/robstride_sdk/robstride_sdk/include/robstride_sdk/robstride_motor.hpp)
+and [clamps](../external_dependencies/robstride_sdk/robstride_sdk/include/robstride_sdk/robstride_protocol.hpp)
+feedforward to its motor-model wire range. Existing freeze/fault handling can
+suppress commands; CSP uses a separate position-target path.
 
-ros2_control gives each command interface one claimant. Two controllers cannot
-both write hardware `joint/effort`, even if the intent is to add their torques.
-Chaining makes the addition explicit: the upstream controller claims gravity's
-references; gravity alone claims hardware effort. Controller manager handles
-those claims and orders upstream before gravity. No new mux, bridge or driver
-mixing policy is needed. This controller adds gravity once per update; it does
-not accumulate commands, change motor gains or torque limits, or supply motion
-control and safety policy.
+**No controller clamp or separate driver feedforward cap is added.** The
+historical optional `max_feedforward_effort` cap is not included. Wire ranges
+are not continuous-hold ratings and do not bound total spring + damping +
+feedforward torque. `~/commanded_effort` is the **pre-limit request**, not
+measured motor torque.
+
+The reBot configuration still defaults to mock hardware and `position_csp`.
+The optional effort path requires explicitly selected real motion mode; gravity
+starts inactive with zero configured gains/offsets. Nothing here enables motors
+or changes gains, limits or motion policy.
 
 ## Interfaces and ownership
 
@@ -136,27 +121,15 @@ driver, and it does not provide position holding, damping or trajectory control.
 
 ## Standalone versus chained operation
 
-Both modes use the same measured positions, gravity model and hardware effort
-claims. Only the source of the upstream term changes:
+- **Standalone:** upstream effort is zero; references are ignored. No input topic
+  is needed. Output is `gain * G(q) + offset`.
+- **Chained:** a synchronous upstream producer writes gravity's references each
+  cycle. Output is `upstream + gain * G(q) + offset`.
 
-```mermaid
-flowchart TB
-    subgraph Standalone["Standalone: no upstream claimant"]
-        direction TB
-        Z["No input topic needed<br/>references ignored; upstream = 0"] --> GS["Gravity controller<br/>gain * G(q) + offset"]
-        GS --> HS["Hardware effort"]
-    end
-    subgraph Chained["Chained: upstream claims gravity references"]
-        direction TB
-        U["Synchronous upstream producer<br/>writes each cycle"] --> GC["Gravity controller<br/>upstream + gain * G(q) + offset"]
-        GC --> HC["Hardware effort"]
-    end
-```
-
-Controller manager selects chained mode when an upstream controller claims the
-references. Deactivating that upstream controller through controller manager
-returns gravity to standalone. Mode/lifecycle changes clear references; do not
-switch a loaded robot on the assumption that zero effort is a safe hold.
+Gravity has the same hardware claims in both modes. Controller manager selects
+chained mode when an upstream controller claims references; deactivating that
+producer returns gravity to standalone. Lifecycle/mode changes clear references.
+**Zero effort is not a loaded arm's safe hold.**
 
 ### Standalone gravity-only setup
 
@@ -252,34 +225,16 @@ procedures on a real robot.
 
 ## Every cycle consumes and clears its input
 
-References are single-cycle inputs, not a hold-last-command buffer. NaN means
-**no upstream input this cycle**, so that joint gets zero upstream effort while
-its gravity contribution remains. A valid zero is also accepted. An unreadable
-handle is a different failure: it is not treated as a missing command.
+**Write → read once → clear to NaN → add gravity.** References are single-cycle
+inputs, not a hold-last-command buffer. NaN means **no input this cycle**, so
+that joint gets zero upstream effort while its gravity contribution remains.
+Unreadable or infinite input is an error, not a missing command.
 
-```mermaid
-flowchart TB
-    A["Start of cycle<br/>references are NaN"] --> B["Upstream runs first<br/>writes claimed references, or misses a write"]
-    B --> C["Gravity reads every reference once<br/>and immediately clears it to NaN"]
-    C --> D{"Read result for each joint?"}
-    D -->|"Finite value"| E["Use value as upstream effort"]
-    D -->|"NaN: no input"| F["Use zero upstream effort"]
-    D -->|"Unreadable, infinite, or clear failed"| X["Return ERROR<br/>attempt to zero all hardware efforts"]
-    E --> G["Add gain * G(q) + offset<br/>validate positions, solver and complete sum"]
-    F --> G
-    G -->|"Valid"| H["Write hardware efforts"]
-    G -->|"Invalid"| X
-    H -->|"Write failed"| X
-    H -->|"Success; next cycle"| A
-```
-
-Clearing happens even on failed updates, before any error return. Thus a
-six-joint producer replaced by a three-joint producer cannot leave its old
-commands on the released joints: those three references stay NaN and contribute
-zero next cycle. The replacement must still write its three claimed references
-every cycle. This rule prevents stale **reference** reuse; it does not detect
-stale commands inside an upstream controller that keeps rewriting its last
-value (as the forward-controller example does).
+Clearing also happens on failed updates. A six-joint producer replaced by a
+three-joint producer leaves no old effort on the released joints. Every claimed
+reference must be rewritten each cycle; asynchronous/multi-rate producers are
+unsupported. This prevents stale **reference** reuse, not stale data inside a
+producer that keeps rewriting its last value.
 
 ## Lifecycle, missing data and diagnostics
 
