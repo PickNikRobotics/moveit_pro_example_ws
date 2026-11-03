@@ -59,6 +59,7 @@ def planar_velocities(vx, vy, wz, yaw):
 
 def main():
     import rclpy
+    from rclpy.executors import ExternalShutdownException
     from geometry_msgs.msg import Twist
     from nav_msgs.msg import Odometry
     from rclpy.node import Node
@@ -121,7 +122,7 @@ def main():
     node = BaseTwistToPlanar()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     node.destroy_node()
     rclpy.try_shutdown()

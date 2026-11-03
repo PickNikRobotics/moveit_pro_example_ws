@@ -233,7 +233,7 @@
           pos="0 0 0"
           axis="1 0 0"
           type="slide"
-          range="-50 50"
+          range="-75 75"
           actuatorfrcrange="-1000 1000"
           damping="0.5"
         />
@@ -242,7 +242,7 @@
           pos="0 0 0"
           axis="0 1 0"
           type="slide"
-          range="-50 50"
+          range="-75 75"
           actuatorfrcrange="-1000 1000"
           damping="0.5"
         />

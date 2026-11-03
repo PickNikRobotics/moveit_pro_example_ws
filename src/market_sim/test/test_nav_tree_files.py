@@ -26,27 +26,27 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Drive Base using Nav2 and the launch file must agree on where each planner's Nav2 tree is.
+"""Drive Base using Nav2 and the driver launch file must agree on each planner's Nav2 tree.
 
-The SubTree's Script names the tree file for each planner: Nav2's installed stock tree for the
-default planner, and a file relative to bt_navigator's working directory for any other. The launch
-file sets that working directory; CMakeLists.txt installs the files there. Needs the installed
-package, so it runs after colcon build.
+Both paths the SubTree names are absolute, because BehaviorTree.CPP refuses a relative tree
+path: the default planner gets Nav2's own installed tree, and the Smac planner gets the copy
+the launch file writes at startup with that planner selected. These checks run without a
+simulator, so a mismatch between the Objective, the launch file and the planner list fails the
+build rather than a drive.
 """
 
 import ast
 import re
-import xml.etree.ElementTree as ET
 from pathlib import Path
+import xml.etree.ElementTree as ET
 
 import yaml
-from ament_index_python.packages import get_package_share_directory
 
 PACKAGE = Path(__file__).resolve().parents[1]
 LAUNCH = PACKAGE / "launch" / "sim" / "robot_drivers_to_persist_sim.launch.py"
 SCRIPT = re.compile(
-    r"nav_tree := planner_id == '(?P<default>\w+)' \? '(?P<stock>[^']+)' : "
-    r"'(?P<prefix>[^']*)' \.\. planner_id \.\. '(?P<suffix>[^']*)'$"
+    r"nav_tree := planner_id == '(?P<default>\w+)' \? "
+    r"'(?P<stock>[^']+)' : '(?P<smac>[^']+)'$"
 )
 
 
@@ -59,12 +59,15 @@ def script_parts():
     return match.groupdict()
 
 
-def nav_tree_dir():
+def launch_constant(name):
     module = ast.parse(LAUNCH.read_text())
     for node in module.body:
-        if isinstance(node, ast.Assign) and node.targets[0].id == "NAV_TREE_DIR":
-            return node.value.value
-    raise AssertionError("NAV_TREE_DIR is not set in the launch file")
+        if (
+            isinstance(node, ast.Assign)
+            and getattr(node.targets[0], "id", None) == name
+        ):
+            return ast.literal_eval(node.value)
+    raise AssertionError(f"{name} is not set in the launch file")
 
 
 def planners():
@@ -72,35 +75,40 @@ def planners():
     return params["planner_server"]["ros__parameters"]["planner_plugins"]
 
 
-def test_launch_runs_bt_navigator_in_the_tree_directory():
+def test_both_tree_paths_are_absolute():
+    """A relative path reaches BehaviorTree.CPP and fails there, not at launch."""
+    parts = script_parts()
+    for key in ("stock", "smac"):
+        assert Path(parts[key]).is_absolute(), f"{key} tree path is relative"
+
+
+def test_objective_and_launch_file_name_the_same_trees():
+    parts = script_parts()
+    assert parts["stock"] == launch_constant("STOCK_NAV_TO_POSE_TREE")
+    assert parts["smac"] == launch_constant("SMAC_NAV_TO_POSE_TREE")
+
+
+def test_every_registered_planner_is_reachable():
+    """Each planner in the params must be selectable through the SubTree's planner_id."""
+    parts = script_parts()
+    selectors = {
+        parts["default"]: parts["stock"],
+        launch_constant("SMAC_SELECTOR").split('"')[1]: parts["smac"],
+    }
+    for planner in planners():
+        assert planner in selectors, f"{planner} has no tree the Objective can name"
+
+
+def test_launch_file_writes_the_smac_tree_from_the_stock_one():
+    """The generated tree must differ from the stock tree only in the planner selector."""
+    stock_path = Path(launch_constant("STOCK_NAV_TO_POSE_TREE"))
+    navfn, smac = launch_constant("NAVFN_SELECTOR"), launch_constant("SMAC_SELECTOR")
     source = LAUNCH.read_text()
-    call = re.search(
-        r'nav2_node\(\s*"nav2_bt_navigator",\s*"bt_navigator",'
-        r"\s*cwd=os\.path\.join\(share, NAV_TREE_DIR\)\s*\)",
-        source,
-    )
-    assert call, "bt_navigator is not started in the tree folder through nav2_node"
-
-
-def test_every_planner_has_a_tree_file():
-    parts = script_parts()
-    folder = Path(get_package_share_directory("market_sim")) / nav_tree_dir()
-    for planner in planners():
-        if planner == parts["default"]:
-            path = Path(parts["stock"])
-        else:
-            path = folder / f"{parts['prefix']}{planner}{parts['suffix']}"
-        assert path.is_file(), f"{planner}: {path}"
-
-
-def test_copies_differ_from_the_stock_tree_only_in_the_planner():
-    parts = script_parts()
-    stock = Path(parts["stock"]).read_text()
-    folder = Path(get_package_share_directory("market_sim")) / nav_tree_dir()
-    selector = f'default_planner="{parts["default"]}"'
-    assert stock.count(selector) == 1
-    for planner in planners():
-        if planner == parts["default"]:
-            continue
-        copy = (folder / f"{parts['prefix']}{planner}{parts['suffix']}").read_text()
-        assert copy == stock.replace(selector, f'default_planner="{planner}"')
+    assert "def write_smac_nav_tree(" in source
+    assert f"tree.replace({'NAVFN_SELECTOR'}, {'SMAC_SELECTOR'})" in source
+    if stock_path.is_file():
+        stock = stock_path.read_text()
+        assert (
+            stock.count(navfn) == 1
+        ), "the stock tree no longer selects NavFn by default"
+        assert smac.split('"')[1] in str(planners())

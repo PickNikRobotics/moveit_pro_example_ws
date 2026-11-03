@@ -22,9 +22,13 @@
         transform_stamped="{current_transform}"
         pose_stamped="{initial_pose}"
       />
+      <!-- A tight seed: an in-place refinement starts from the estimate the filter already holds. -->
       <SubTree
         ID="Refine Localization In Place Subtree"
         name="Refine the estimate"
+        xy_variance="0.01"
+        yaw_variance="0.01"
+        num_updates="{num_updates}"
         seed_pose="{initial_pose}"
         restore_pose="{initial_pose}"
       />
@@ -36,6 +40,9 @@
         <Metadata runnable="true" />
         <Metadata subcategory="Navigation" />
       </MetadataFields>
+      <input_port name="num_updates" default="20" type="int">
+        Number of filter updates.
+      </input_port>
     </SubTree>
   </TreeNodesModel>
 </root>

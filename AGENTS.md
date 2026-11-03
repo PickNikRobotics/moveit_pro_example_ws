@@ -502,6 +502,31 @@ heartbeat the driving Objective ticks, and on the controller's
 `follow_joint_trajectory/_action/status`. `so101_base_config`'s
 `script/so101_arm_bridge.py` does both.
 
+## The objective_server heartbeat does not mean the controllers are up
+
+`objective_test_fixture` treats the first `/objective_server_heartbeat` message as "the agent is
+ready", and that says nothing about `controller_manager`. The spawners load serially and slowly
+(measured around 8 s each), so a config declaring many controllers can have its first Objective
+run before its controllers exist, failing on `SwitchController` with "<name> is not an existing
+controller" - a startup race that reads like a broken tree. A config with that many controllers
+needs its integration test to gate on `controller_manager/list_controllers` reporting every
+`controllers_active_at_startup` entry `active`; see `controllers_active` in
+`src/market_sim/test/objectives_integration_test.py`.
+
+Two neighbouring traps in the same tests. A pytest run that dies in a fixture leaves
+`ros2_control_node` and its spawners alive, and a second `controller_manager` on the same DDS
+graph makes every spawner fail with `Failed to acquire lock in 20 seconds`; restart the container
+rather than `pkill`, which reliably misses some. And `docker exec` does not inherit the caller's
+environment, so an env var that selects test scope has to be passed with `docker exec -e` or it
+is silently empty and the tests it gates are skipped while the run still reports success.
+
+## An rclpy node that only catches KeyboardInterrupt cannot shut down cleanly
+
+`rclpy` raises `ExternalShutdownException` on SIGINT, not `KeyboardInterrupt`. A node that
+catches only the latter ignores SIGINT until launch escalates to SIGTERM five seconds later, then
+exits non-zero with a traceback from inside `wait_for_ready_callbacks`. Every `rclpy.spin` here
+should catch both; `src/market_sim/scripts/*.py` show the shape.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

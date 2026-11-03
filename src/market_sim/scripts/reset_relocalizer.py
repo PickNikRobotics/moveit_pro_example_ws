@@ -52,6 +52,7 @@ def is_jump(previous, current, max_step, max_turn):
 
 def main():
     import rclpy
+    from rclpy.executors import ExternalShutdownException
     from geometry_msgs.msg import PoseWithCovarianceStamped
     from nav_msgs.msg import Odometry
     from rclpy.node import Node
@@ -115,7 +116,7 @@ def main():
     node = ResetRelocalizer()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     node.destroy_node()
     rclpy.try_shutdown()

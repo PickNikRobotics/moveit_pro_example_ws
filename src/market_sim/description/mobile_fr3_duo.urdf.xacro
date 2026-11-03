@@ -23,14 +23,14 @@
     <parent link="odom"/>
     <child link="virtual_x"/>
     <axis xyz="1 0 0"/>
-    <limit lower="-50.0" upper="50.0" effort="1000.0" velocity="0.35"/>
+    <limit lower="-75.0" upper="75.0" effort="1000.0" velocity="0.35"/>
   </joint>
 
   <joint name="planar_y" type="prismatic">
     <parent link="virtual_x"/>
     <child link="virtual_y"/>
     <axis xyz="0 1 0"/>
-    <limit lower="-50.0" upper="50.0" effort="1000.0" velocity="0.35"/>
+    <limit lower="-75.0" upper="75.0" effort="1000.0" velocity="0.35"/>
   </joint>
 
   <joint name="planar_theta" type="continuous">

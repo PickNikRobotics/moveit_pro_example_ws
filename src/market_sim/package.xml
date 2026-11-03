@@ -23,11 +23,21 @@
   <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <depend>nav2_bt_navigator</depend>
-  <exec_depend>nav2_bringup</exec_depend>
+  <!-- One entry per node the persist launch file starts, plus every plugin the params name.
+       Not nav2_bringup: it is unused here and pulls a Gazebo stack into the user image. -->
+  <exec_depend>nav2_behaviors</exec_depend>
+  <exec_depend>nav2_controller</exec_depend>
+  <exec_depend>nav2_costmap_2d</exec_depend>
   <exec_depend>nav2_lifecycle_manager</exec_depend>
   <exec_depend>nav2_map_server</exec_depend>
-  <exec_depend>nav2_smac_planner</exec_depend>
+  <exec_depend>nav2_mppi_controller</exec_depend>
+  <exec_depend>nav2_navfn_planner</exec_depend>
+  <exec_depend>nav2_planner</exec_depend>
   <exec_depend>nav2_rotation_shim_controller</exec_depend>
+  <exec_depend>nav2_smac_planner</exec_depend>
+  <exec_depend>nav2_smoother</exec_depend>
+  <exec_depend>nav2_velocity_smoother</exec_depend>
+  <exec_depend>nav2_waypoint_follower</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
@@ -42,6 +52,7 @@
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_index_python</test_depend>
+  <test_depend>controller_manager_msgs</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>python3-numpy</test_depend>
