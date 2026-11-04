@@ -22,6 +22,9 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           husky_mujoco_geometry_test test/test_husky_mujoco_geometry.py
           TIMEOUT 30)
+  ament_add_pytest_test(
+          base_jog_config_test test/test_base_jog_config.py
+          TIMEOUT 30)
   # Redirect ROS node logs into the test_results tree so the test-results CI artifact ships them back too.
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py
