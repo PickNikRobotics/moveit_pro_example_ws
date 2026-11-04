@@ -29,12 +29,40 @@
       file="package://franka_description/meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_mount.stl"
     />
     <mesh
+      name="fr3_duo_mount_convex_00"
+      file="package://franka_meshes/meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_mount_convex_00.stl"
+    />
+    <mesh
+      name="fr3_duo_mount_convex_01"
+      file="package://franka_meshes/meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_mount_convex_01.stl"
+    />
+    <mesh
+      name="fr3_duo_mount_convex_02"
+      file="package://franka_meshes/meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_mount_convex_02.stl"
+    />
+    <mesh
+      name="fr3_duo_mount_convex_03"
+      file="package://franka_meshes/meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_mount_convex_03.stl"
+    />
+    <mesh
       name="fr3_duo_cover"
       file="package://franka_description/meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_cover.stl"
     />
     <mesh
       name="franka_head"
       file="package://franka_description/meshes/accessories/franka_head_v0_2/collision/franka_head.stl"
+    />
+    <mesh
+      name="franka_head_convex_00"
+      file="package://franka_meshes/meshes/accessories/franka_head_v0_2/collision/franka_head_convex_00.stl"
+    />
+    <mesh
+      name="franka_head_convex_01"
+      file="package://franka_meshes/meshes/accessories/franka_head_v0_2/collision/franka_head_convex_01.stl"
+    />
+    <mesh
+      name="franka_head_convex_02"
+      file="package://franka_meshes/meshes/accessories/franka_head_v0_2/collision/franka_head_convex_02.stl"
     />
     <mesh
       name="link0"
@@ -53,12 +81,100 @@
       file="package://franka_description/meshes/robots/fr3v2/collision/link3.stl"
     />
     <mesh
+      name="link3_convex_00"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link3_convex_00.stl"
+    />
+    <mesh
+      name="link3_convex_01"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link3_convex_01.stl"
+    />
+    <mesh
+      name="link3_convex_02"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link3_convex_02.stl"
+    />
+    <mesh
+      name="link3_convex_03"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link3_convex_03.stl"
+    />
+    <mesh
+      name="link3_convex_04"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link3_convex_04.stl"
+    />
+    <mesh
+      name="link3_convex_05"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link3_convex_05.stl"
+    />
+    <mesh
+      name="link3_convex_06"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link3_convex_06.stl"
+    />
+    <mesh
+      name="link3_convex_07"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link3_convex_07.stl"
+    />
+    <mesh
       name="link4"
       file="package://franka_description/meshes/robots/fr3v2/collision/link4.stl"
     />
     <mesh
+      name="link4_convex_00"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link4_convex_00.stl"
+    />
+    <mesh
+      name="link4_convex_01"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link4_convex_01.stl"
+    />
+    <mesh
+      name="link4_convex_02"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link4_convex_02.stl"
+    />
+    <mesh
+      name="link4_convex_03"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link4_convex_03.stl"
+    />
+    <mesh
+      name="link4_convex_04"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link4_convex_04.stl"
+    />
+    <mesh
+      name="link4_convex_05"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link4_convex_05.stl"
+    />
+    <mesh
+      name="link4_convex_06"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link4_convex_06.stl"
+    />
+    <mesh
+      name="link4_convex_07"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link4_convex_07.stl"
+    />
+    <mesh
       name="link5"
       file="package://franka_description/meshes/robots/fr3v2/collision/link5.stl"
+    />
+    <mesh
+      name="link5_convex_00"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link5_convex_00.stl"
+    />
+    <mesh
+      name="link5_convex_01"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link5_convex_01.stl"
+    />
+    <mesh
+      name="link5_convex_02"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link5_convex_02.stl"
+    />
+    <mesh
+      name="link5_convex_03"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link5_convex_03.stl"
+    />
+    <mesh
+      name="link5_convex_04"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link5_convex_04.stl"
+    />
+    <mesh
+      name="link5_convex_05"
+      file="package://franka_meshes/meshes/robots/fr3v2/collision/link5_convex_05.stl"
     />
     <mesh
       name="link6"
@@ -761,7 +877,26 @@
                   mesh="fr3_duo_cover"
                   name="fr3_duo_cover"
                 />
-                <geom type="mesh" mesh="fr3_duo_mount" name="fr3_duo_mount2" />
+                <geom
+                  name="fr3_duo_mount2_convex_00"
+                  type="mesh"
+                  mesh="fr3_duo_mount_convex_00"
+                />
+                <geom
+                  name="fr3_duo_mount2_convex_01"
+                  type="mesh"
+                  mesh="fr3_duo_mount_convex_01"
+                />
+                <geom
+                  name="fr3_duo_mount2_convex_02"
+                  type="mesh"
+                  mesh="fr3_duo_mount_convex_02"
+                />
+                <geom
+                  name="fr3_duo_mount2_convex_03"
+                  type="mesh"
+                  mesh="fr3_duo_mount_convex_03"
+                />
                 <geom
                   pos="0 0 0.068"
                   quat="1 0 0 0"
@@ -924,7 +1059,46 @@
                                 density="0"
                                 mesh="link3"
                               />
-                              <geom name="link32" type="mesh" mesh="link3" />
+                              <geom
+                                name="link32_convex_00"
+                                type="mesh"
+                                mesh="link3_convex_00"
+                              />
+                              <geom
+                                name="link32_convex_01"
+                                type="mesh"
+                                mesh="link3_convex_01"
+                              />
+                              <geom
+                                name="link32_convex_02"
+                                type="mesh"
+                                mesh="link3_convex_02"
+                              />
+                              <geom
+                                name="link32_convex_03"
+                                type="mesh"
+                                mesh="link3_convex_03"
+                              />
+                              <geom
+                                name="link32_convex_04"
+                                type="mesh"
+                                mesh="link3_convex_04"
+                              />
+                              <geom
+                                name="link32_convex_05"
+                                type="mesh"
+                                mesh="link3_convex_05"
+                              />
+                              <geom
+                                name="link32_convex_06"
+                                type="mesh"
+                                mesh="link3_convex_06"
+                              />
+                              <geom
+                                name="link32_convex_07"
+                                type="mesh"
+                                mesh="link3_convex_07"
+                              />
                               <body
                                 name="left_fr3v2_link3_accelerometer_top"
                                 pos="0.065099 0.077352 -0.00787"
@@ -967,7 +1141,46 @@
                                   density="0"
                                   mesh="link4"
                                 />
-                                <geom name="link42" type="mesh" mesh="link4" />
+                                <geom
+                                  name="link42_convex_00"
+                                  type="mesh"
+                                  mesh="link4_convex_00"
+                                />
+                                <geom
+                                  name="link42_convex_01"
+                                  type="mesh"
+                                  mesh="link4_convex_01"
+                                />
+                                <geom
+                                  name="link42_convex_02"
+                                  type="mesh"
+                                  mesh="link4_convex_02"
+                                />
+                                <geom
+                                  name="link42_convex_03"
+                                  type="mesh"
+                                  mesh="link4_convex_03"
+                                />
+                                <geom
+                                  name="link42_convex_04"
+                                  type="mesh"
+                                  mesh="link4_convex_04"
+                                />
+                                <geom
+                                  name="link42_convex_05"
+                                  type="mesh"
+                                  mesh="link4_convex_05"
+                                />
+                                <geom
+                                  name="link42_convex_06"
+                                  type="mesh"
+                                  mesh="link4_convex_06"
+                                />
+                                <geom
+                                  name="link42_convex_07"
+                                  type="mesh"
+                                  mesh="link4_convex_07"
+                                />
                                 <body
                                   name="left_fr3v2_link4_accelerometer_top"
                                   pos="-0.0651 0.046152 -0.00787"
@@ -1011,9 +1224,34 @@
                                     mesh="link5"
                                   />
                                   <geom
-                                    name="link52"
+                                    name="link52_convex_00"
                                     type="mesh"
-                                    mesh="link5"
+                                    mesh="link5_convex_00"
+                                  />
+                                  <geom
+                                    name="link52_convex_01"
+                                    type="mesh"
+                                    mesh="link5_convex_01"
+                                  />
+                                  <geom
+                                    name="link52_convex_02"
+                                    type="mesh"
+                                    mesh="link5_convex_02"
+                                  />
+                                  <geom
+                                    name="link52_convex_03"
+                                    type="mesh"
+                                    mesh="link5_convex_03"
+                                  />
+                                  <geom
+                                    name="link52_convex_04"
+                                    type="mesh"
+                                    mesh="link5_convex_04"
+                                  />
+                                  <geom
+                                    name="link52_convex_05"
+                                    type="mesh"
+                                    mesh="link5_convex_05"
                                   />
                                   <body
                                     name="left_fr3v2_link5_accelerometer_top"
@@ -1428,7 +1666,46 @@
                                 density="0"
                                 mesh="link3"
                               />
-                              <geom name="link34" type="mesh" mesh="link3" />
+                              <geom
+                                name="link34_convex_00"
+                                type="mesh"
+                                mesh="link3_convex_00"
+                              />
+                              <geom
+                                name="link34_convex_01"
+                                type="mesh"
+                                mesh="link3_convex_01"
+                              />
+                              <geom
+                                name="link34_convex_02"
+                                type="mesh"
+                                mesh="link3_convex_02"
+                              />
+                              <geom
+                                name="link34_convex_03"
+                                type="mesh"
+                                mesh="link3_convex_03"
+                              />
+                              <geom
+                                name="link34_convex_04"
+                                type="mesh"
+                                mesh="link3_convex_04"
+                              />
+                              <geom
+                                name="link34_convex_05"
+                                type="mesh"
+                                mesh="link3_convex_05"
+                              />
+                              <geom
+                                name="link34_convex_06"
+                                type="mesh"
+                                mesh="link3_convex_06"
+                              />
+                              <geom
+                                name="link34_convex_07"
+                                type="mesh"
+                                mesh="link3_convex_07"
+                              />
                               <body
                                 name="right_fr3v2_link3_accelerometer_top"
                                 pos="0.065099 0.077352 -0.00787"
@@ -1471,7 +1748,46 @@
                                   density="0"
                                   mesh="link4"
                                 />
-                                <geom name="link44" type="mesh" mesh="link4" />
+                                <geom
+                                  name="link44_convex_00"
+                                  type="mesh"
+                                  mesh="link4_convex_00"
+                                />
+                                <geom
+                                  name="link44_convex_01"
+                                  type="mesh"
+                                  mesh="link4_convex_01"
+                                />
+                                <geom
+                                  name="link44_convex_02"
+                                  type="mesh"
+                                  mesh="link4_convex_02"
+                                />
+                                <geom
+                                  name="link44_convex_03"
+                                  type="mesh"
+                                  mesh="link4_convex_03"
+                                />
+                                <geom
+                                  name="link44_convex_04"
+                                  type="mesh"
+                                  mesh="link4_convex_04"
+                                />
+                                <geom
+                                  name="link44_convex_05"
+                                  type="mesh"
+                                  mesh="link4_convex_05"
+                                />
+                                <geom
+                                  name="link44_convex_06"
+                                  type="mesh"
+                                  mesh="link4_convex_06"
+                                />
+                                <geom
+                                  name="link44_convex_07"
+                                  type="mesh"
+                                  mesh="link4_convex_07"
+                                />
                                 <body
                                   name="right_fr3v2_link4_accelerometer_top"
                                   pos="-0.0651 0.046152 -0.00787"
@@ -1515,9 +1831,34 @@
                                     mesh="link5"
                                   />
                                   <geom
-                                    name="link54"
+                                    name="link54_convex_00"
                                     type="mesh"
-                                    mesh="link5"
+                                    mesh="link5_convex_00"
+                                  />
+                                  <geom
+                                    name="link54_convex_01"
+                                    type="mesh"
+                                    mesh="link5_convex_01"
+                                  />
+                                  <geom
+                                    name="link54_convex_02"
+                                    type="mesh"
+                                    mesh="link5_convex_02"
+                                  />
+                                  <geom
+                                    name="link54_convex_03"
+                                    type="mesh"
+                                    mesh="link5_convex_03"
+                                  />
+                                  <geom
+                                    name="link54_convex_04"
+                                    type="mesh"
+                                    mesh="link5_convex_04"
+                                  />
+                                  <geom
+                                    name="link54_convex_05"
+                                    type="mesh"
+                                    mesh="link5_convex_05"
                                   />
                                   <body
                                     name="right_fr3v2_link5_accelerometer_top"
@@ -1799,7 +2140,21 @@
                     mesh="franka_head"
                     name="franka_head"
                   />
-                  <geom type="mesh" mesh="franka_head" name="franka_head2" />
+                  <geom
+                    name="franka_head2_convex_00"
+                    type="mesh"
+                    mesh="franka_head_convex_00"
+                  />
+                  <geom
+                    name="franka_head2_convex_01"
+                    type="mesh"
+                    mesh="franka_head_convex_01"
+                  />
+                  <geom
+                    name="franka_head2_convex_02"
+                    type="mesh"
+                    mesh="franka_head_convex_02"
+                  />
                   <body
                     name="head_camera_mounting_point"
                     pos="0.0424638 -0.014113 0.223526"

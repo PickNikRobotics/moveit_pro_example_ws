@@ -1,0 +1,100 @@
+franka_meshes
+
+This package holds mesh files that PickNik Inc. derived from Franka Robotics'
+franka_description geometry. The two kinds of attribution below are separate and
+must stay separate: the authorship of the derivation is PickNik's, and the
+copyright in the source geometry is Franka Robotics'.
+
+
+PickNik's own work in this package
+----------------------------------
+
+Copyright 2026 PickNik Inc.
+
+Authored by PickNik Inc. No file here is an upstream franka_description file,
+and nothing here is or should be attributed to Franka Robotics' own authorship.
+
+- The *_convex_NN.stl files under meshes/*/collision/ are an approximate convex
+  decomposition by PickNik Inc. of five franka_description collision meshes:
+  the FR3 v2 link3, link4 and link5, the Franka head and the FR3 Duo mount.
+  MuJoCo collides a mesh as its convex hull, so a mesh whose own shape is far
+  from convex collides as the filled-in shape; each part written here is already
+  convex, so hulling it changes nothing and the union of the parts follows the
+  real shape. Every part carries "Modified by PickNik Inc. - convex collision
+  part" in its 80-byte binary STL header.
+
+- The *_visual.obj files under meshes/*/visual/ were converted by PickNik Inc.
+  from the correspondingly named visual/*.dae meshes of franka_description with
+  trimesh 4.12.2 and pycollada 0.9.3. The conversion is needed because MuJoCo
+  has no COLLADA decoder. The converted files are modified: the submeshes of
+  each source file are merged into a single mesh, duplicate vertices are merged,
+  meshes above 30000 faces are decimated to that cap, the per-material COLLADA
+  colours are dropped because a MuJoCo geom carries one colour, and
+  franka_spine_visual.obj is scaled from its source's millimetres to metres.
+
+Both sets are derived works of Apache-2.0 licensed geometry, so the Apache
+License, Version 2.0, in meshes/LICENSE-franka_description, applies to the mesh
+files. This package's own build, test and documentation files are licensed under
+the BSD 3-Clause License in the LICENSE file at the root of this repository.
+
+
+Provenance commits
+------------------
+
+Recorded as given, not re-derived here:
+
+- PickNik files: moveit_pro_franka_ws at
+  b510ad58bde5740d748a0b5e79e0c151a0309e98.
+- Upstream description: franka_description at
+  7aeeddc449edf8d62b594f9e36a81da53e7796f9
+  (https://github.com/frankarobotics/franka_description.git), release 2.9.0,
+  which is the commit this workspace's
+  src/external_dependencies/franka_description submodule pins. The source
+  geometry of every file here comes from that commit.
+
+
+Source geometry
+---------------
+
+- franka_description 2.9.0
+  Copyright 2023 Franka Robotics GmbH
+  Licensed under the Apache License, Version 2.0. Its LICENSE file, which also
+  contains a BSD license section, is copied unchanged to
+  meshes/LICENSE-franka_description. Upstream's own NOTICE file reads:
+
+      franka_description
+
+      Copyright 2023 Franka Robotics GmbH
+
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+
+  The source mesh of each file here, in franka_description's own tree:
+
+  | This package                                                       | Source mesh in franka_description 2.9.0                          |
+  | ------------------------------------------------------------------ | ---------------------------------------------------------------- |
+  | meshes/robots/fr3v2/collision/link3_convex_00.stl to _07.stl       | meshes/robots/fr3v2/collision/link3.stl                          |
+  | meshes/robots/fr3v2/collision/link4_convex_00.stl to _07.stl       | meshes/robots/fr3v2/collision/link4.stl                          |
+  | meshes/robots/fr3v2/collision/link5_convex_00.stl to _05.stl       | meshes/robots/fr3v2/collision/link5.stl                          |
+  | meshes/accessories/franka_head_v0_2/collision/franka_head_convex_00.stl to _02.stl | meshes/accessories/franka_head_v0_2/collision/franka_head.stl |
+  | meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_mount_convex_00.stl to _03.stl | meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_mount.stl |
+  | meshes/robots/fr3v2/visual/link0_visual.obj to link7_visual.obj    | meshes/robots/fr3v2/visual/link0.dae to link7.dae                |
+  | meshes/robot_ee/franka_hand_white/visual/hand_visual.obj           | meshes/robot_ee/franka_hand_white/visual/hand.dae                |
+  | meshes/accessories/franka_head_v0_2/visual/franka_head_visual.obj  | meshes/accessories/franka_head_v0_2/visual/franka_head.dae       |
+  | meshes/accessories/franka_spine_v0_1/visual/franka_spine_visual.obj | meshes/accessories/franka_spine_v0_1/visual/franka_spine.dae     |
+  | meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_mount_visual.obj | meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_mount.dae |
+  | meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_cover_visual.obj | meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_cover.dae |
+
+  franka_description ships three geometrically identical hand.dae files. The
+  source named above is the one an FR3 v2 URDF renders: robots/common/
+  franka_robot.xacro sets ee_color to white for robot_type fr3v2, which resolves
+  the visual mesh to meshes/robot_ee/franka_hand_white/visual/hand.dae.

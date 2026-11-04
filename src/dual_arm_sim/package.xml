@@ -17,6 +17,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>franka_description</exec_depend>
+  <exec_depend>franka_meshes</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>

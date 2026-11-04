@@ -1,0 +1,28 @@
+upstream:
+  repository: https://github.com/PickNikRobotics/moveit_pro_franka_ws.git
+  commit: 452d513a73d255675c8936752001fc0f6d6f6d97
+  branch: main
+vendored_paths:
+  - src/franka_meshes/CMakeLists.txt
+  - src/franka_meshes/NOTICE
+  - src/franka_meshes/README.md
+  - src/franka_meshes/package.xml
+  - src/franka_meshes/meshes/LICENSE-franka_description
+  - src/franka_meshes/meshes/accessories/fr3_duo_mount_v0_3/collision
+  - src/franka_meshes/meshes/accessories/franka_head_v0_2/collision
+  - src/franka_meshes/meshes/robots/fr3v2/collision
+  - src/franka_meshes/script
+  - src/franka_meshes/test
+pruned_paths:
+  - the visual meshes under src/franka_meshes/meshes/*/visual, which no configuration here loads yet; dual_arm_sim's MJCF still renders the franka_description collision meshes as its visual geoms
+  - everything in the upstream workspace other than src/franka_meshes, which is a robot configuration workspace rather than a mesh package
+modified_paths: []
+apache_paths:
+  - .
+notes:
+  - PickNik-authored convex collision parts of five franka_description meshes whose own shape is far from convex. MuJoCo collides a mesh as its convex hull, so the head collided as roughly five times its true volume; each part here is already convex, so MuJoCo's hulling is a no-op and the union tracks the real shape.
+  - Only an MJCF loads them, through package://franka_meshes/meshes/..., and only dual_arm_sim does so today. A URDF needs none of them because MoveIt collides the mesh itself, so franka_description's robots/common/utils.xacro collision template is untouched and every other robot_type keeps its single source mesh.
+  - The parts are derived from franka_description 2.9.0 geometry, so the Apache-2.0 notice travels with them: meshes/LICENSE-franka_description is the upstream licence text and each part's 80-byte STL header carries "Modified by PickNik Inc. - convex collision part".
+  - Vendored from PickNik's own repository rather than a third-party one, which is why the parts can live inside the snapshot: a vendored refresh resyncs them from their real source. The earlier attempt put them inside the third-party franka_description snapshot, where a refresh would have discarded PickNik files that upstream never had.
+  - The snapshot mirrors the upstream path src/franka_meshes rather than flattening it, because the package lives in a workspace repository; snapshot_path is left at its default so a refresh maps each vendored path straight onto its upstream path.
+  - Pinned to the merge commit that landed franka_meshes on upstream main, so drift tracking resolves a real branch tip rather than a pull-request head.
