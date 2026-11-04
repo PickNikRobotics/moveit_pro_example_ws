@@ -51,9 +51,26 @@ import sys
 from pathlib import Path
 
 PACKAGE = Path(__file__).resolve().parents[1]
-SOURCE_MESHES = (
-    PACKAGE.parent / "external_dependencies" / "franka_description" / "meshes"
-)
+
+
+def _source_meshes():
+    """franka_description's meshes, wherever this package is checked out.
+
+    Modified by PickNik Inc.: the first candidate is this package's own workspace, the second
+    is a workspace that vendors it beside franka_config. Without the second, a vendored copy
+    reports every source mesh missing and --check exits non-zero.
+    """
+    candidates = (
+        PACKAGE.parent / "external_dependencies" / "franka_description" / "meshes",
+        PACKAGE.parents[2] / "franka_config" / "franka_description" / "meshes",
+    )
+    for candidate in candidates:
+        if candidate.is_dir():
+            return candidate
+    return candidates[0]
+
+
+SOURCE_MESHES = _source_meshes()
 PART_MESHES = PACKAGE / "meshes"
 
 # Written into each part's 80-byte STL header, so a part is identifiable as a PickNik file

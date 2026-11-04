@@ -41,3 +41,8 @@ different terms and are covered by mjcf/assets/store_visuals/NOTICE.md.
     of this package either: it loads them from the vendored franka_meshes
     (src/external_dependencies/franka_meshes) the same way. They are PickNik
     files derived from this geometry, and that package carries its own NOTICE.
+  - The visual meshes mjcf/mobile_fr3_duo.xml renders for the spine, mount,
+    cover, head, FR3 v2 links and hand are not part of this package either:
+    they load from the vendored franka_meshes over package:// in the same way.
+    They are DAE conversions of the same franka_description geometry, and that
+    package carries its own NOTICE.

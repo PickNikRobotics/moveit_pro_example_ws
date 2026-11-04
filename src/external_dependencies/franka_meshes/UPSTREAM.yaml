@@ -9,14 +9,19 @@ vendored_paths:
   - src/franka_meshes/package.xml
   - src/franka_meshes/meshes/LICENSE-franka_description
   - src/franka_meshes/meshes/accessories/fr3_duo_mount_v0_3/collision
+  - src/franka_meshes/meshes/accessories/fr3_duo_mount_v0_3/visual
   - src/franka_meshes/meshes/accessories/franka_head_v0_2/collision
+  - src/franka_meshes/meshes/accessories/franka_head_v0_2/visual
+  - src/franka_meshes/meshes/accessories/franka_spine_v0_1/visual
+  - src/franka_meshes/meshes/robot_ee/franka_hand_white/visual
   - src/franka_meshes/meshes/robots/fr3v2/collision
+  - src/franka_meshes/meshes/robots/fr3v2/visual
   - src/franka_meshes/script
   - src/franka_meshes/test
 pruned_paths:
-  - the visual meshes under src/franka_meshes/meshes/*/visual, which no configuration here loads yet; dual_arm_sim's MJCF still renders the franka_description collision meshes as its visual geoms
   - everything in the upstream workspace other than src/franka_meshes, which is a robot configuration workspace rather than a mesh package
-modified_paths: []
+modified_paths:
+  - src/franka_meshes/script/generate_collision_decomposition.py
 apache_paths:
   - .
 notes:
@@ -26,3 +31,5 @@ notes:
   - Vendored from PickNik's own repository rather than a third-party one, which is why the parts can live inside the snapshot: a vendored refresh resyncs them from their real source. The earlier attempt put them inside the third-party franka_description snapshot, where a refresh would have discarded PickNik files that upstream never had.
   - The snapshot mirrors the upstream path src/franka_meshes rather than flattening it, because the package lives in a workspace repository; snapshot_path is left at its default so a refresh maps each vendored path straight onto its upstream path.
   - Pinned to the merge commit that landed franka_meshes on upstream main, so drift tracking resolves a real branch tip rather than a pull-request head.
+  - The one modified file is the generator's source-mesh lookup, which upstream resolves against its own workspace. It now tries that path first and a vendoring layout second, so the script and its check still run here; nothing else in it changed.
+  - The visual meshes are DAE conversions of the same franka_description geometry. dual_arm_sim's MJCF loads them as its visual geoms, which previously rendered the collision meshes and so looked coarser than the real robot.
