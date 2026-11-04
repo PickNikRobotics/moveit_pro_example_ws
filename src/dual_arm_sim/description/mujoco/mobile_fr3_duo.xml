@@ -25,8 +25,16 @@
       file="package://franka_description/meshes/accessories/franka_spine_v0_1/collision/franka_spine.stl"
     />
     <mesh
+      name="franka_spine_visual"
+      file="package://franka_meshes/meshes/accessories/franka_spine_v0_1/visual/franka_spine_visual.obj"
+    />
+    <mesh
       name="fr3_duo_mount"
       file="package://franka_description/meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_mount.stl"
+    />
+    <mesh
+      name="fr3_duo_mount_visual"
+      file="package://franka_meshes/meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_mount_visual.obj"
     />
     <mesh
       name="fr3_duo_mount_convex_00"
@@ -49,8 +57,16 @@
       file="package://franka_description/meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_cover.stl"
     />
     <mesh
+      name="fr3_duo_cover_visual"
+      file="package://franka_meshes/meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_cover_visual.obj"
+    />
+    <mesh
       name="franka_head"
       file="package://franka_description/meshes/accessories/franka_head_v0_2/collision/franka_head.stl"
+    />
+    <mesh
+      name="franka_head_visual"
+      file="package://franka_meshes/meshes/accessories/franka_head_v0_2/visual/franka_head_visual.obj"
     />
     <mesh
       name="franka_head_convex_00"
@@ -69,16 +85,32 @@
       file="package://franka_description/meshes/robots/fr3v2/collision/link0.stl"
     />
     <mesh
+      name="link0_visual"
+      file="package://franka_meshes/meshes/robots/fr3v2/visual/link0_visual.obj"
+    />
+    <mesh
       name="link1"
       file="package://franka_description/meshes/robots/fr3v2/collision/link1.stl"
+    />
+    <mesh
+      name="link1_visual"
+      file="package://franka_meshes/meshes/robots/fr3v2/visual/link1_visual.obj"
     />
     <mesh
       name="link2"
       file="package://franka_description/meshes/robots/fr3v2/collision/link2.stl"
     />
     <mesh
+      name="link2_visual"
+      file="package://franka_meshes/meshes/robots/fr3v2/visual/link2_visual.obj"
+    />
+    <mesh
       name="link3"
       file="package://franka_description/meshes/robots/fr3v2/collision/link3.stl"
+    />
+    <mesh
+      name="link3_visual"
+      file="package://franka_meshes/meshes/robots/fr3v2/visual/link3_visual.obj"
     />
     <mesh
       name="link3_convex_00"
@@ -117,6 +149,10 @@
       file="package://franka_description/meshes/robots/fr3v2/collision/link4.stl"
     />
     <mesh
+      name="link4_visual"
+      file="package://franka_meshes/meshes/robots/fr3v2/visual/link4_visual.obj"
+    />
+    <mesh
       name="link4_convex_00"
       file="package://franka_meshes/meshes/robots/fr3v2/collision/link4_convex_00.stl"
     />
@@ -153,6 +189,10 @@
       file="package://franka_description/meshes/robots/fr3v2/collision/link5.stl"
     />
     <mesh
+      name="link5_visual"
+      file="package://franka_meshes/meshes/robots/fr3v2/visual/link5_visual.obj"
+    />
+    <mesh
       name="link5_convex_00"
       file="package://franka_meshes/meshes/robots/fr3v2/collision/link5_convex_00.stl"
     />
@@ -181,12 +221,24 @@
       file="package://franka_description/meshes/robots/fr3v2/collision/link6.stl"
     />
     <mesh
+      name="link6_visual"
+      file="package://franka_meshes/meshes/robots/fr3v2/visual/link6_visual.obj"
+    />
+    <mesh
       name="link7"
       file="package://franka_description/meshes/robots/fr3v2/collision/link7.stl"
     />
     <mesh
+      name="link7_visual"
+      file="package://franka_meshes/meshes/robots/fr3v2/visual/link7_visual.obj"
+    />
+    <mesh
       name="hand"
       file="package://franka_description/meshes/robot_ee/franka_hand_white/collision/hand.stl"
+    />
+    <mesh
+      name="hand_visual"
+      file="package://franka_meshes/meshes/robot_ee/franka_hand_white/visual/hand_visual.obj"
     />
     <!-- Finger visual meshes from MuJoCo Menagerie franka_emika_panda/assets at d98292e (Apache-2.0) -->
     <mesh name="finger_0" file="finger_0.obj" />
@@ -829,7 +881,7 @@
               conaffinity="0"
               group="1"
               density="0"
-              mesh="franka_spine"
+              mesh="franka_spine_visual"
             />
             <geom name="franka_spine2" type="mesh" mesh="franka_spine" />
             <body
@@ -863,7 +915,7 @@
                   conaffinity="0"
                   group="1"
                   density="0"
-                  mesh="fr3_duo_mount"
+                  mesh="fr3_duo_mount_visual"
                   name="fr3_duo_mount"
                 />
                 <geom
@@ -874,7 +926,7 @@
                   conaffinity="0"
                   group="1"
                   density="0"
-                  mesh="fr3_duo_cover"
+                  mesh="fr3_duo_cover_visual"
                   name="fr3_duo_cover"
                 />
                 <geom
@@ -930,7 +982,7 @@
                           conaffinity="0"
                           group="1"
                           density="0"
-                          mesh="link0"
+                          mesh="link0_visual"
                         />
                         <geom name="link02" type="mesh" mesh="link0" />
                         <body
@@ -972,7 +1024,7 @@
                             conaffinity="0"
                             group="1"
                             density="0"
-                            mesh="link1"
+                            mesh="link1_visual"
                           />
                           <geom name="link12" type="mesh" mesh="link1" />
                           <body
@@ -1014,7 +1066,7 @@
                               conaffinity="0"
                               group="1"
                               density="0"
-                              mesh="link2"
+                              mesh="link2_visual"
                             />
                             <geom name="link22" type="mesh" mesh="link2" />
                             <body
@@ -1057,7 +1109,7 @@
                                 conaffinity="0"
                                 group="1"
                                 density="0"
-                                mesh="link3"
+                                mesh="link3_visual"
                               />
                               <geom
                                 name="link32_convex_00"
@@ -1139,7 +1191,7 @@
                                   conaffinity="0"
                                   group="1"
                                   density="0"
-                                  mesh="link4"
+                                  mesh="link4_visual"
                                 />
                                 <geom
                                   name="link42_convex_00"
@@ -1221,7 +1273,7 @@
                                     conaffinity="0"
                                     group="1"
                                     density="0"
-                                    mesh="link5"
+                                    mesh="link5_visual"
                                   />
                                   <geom
                                     name="link52_convex_00"
@@ -1292,7 +1344,7 @@
                                       conaffinity="0"
                                       group="1"
                                       density="0"
-                                      mesh="link6"
+                                      mesh="link6_visual"
                                     />
                                     <geom
                                       name="link62"
@@ -1327,7 +1379,7 @@
                                         conaffinity="0"
                                         group="1"
                                         density="0"
-                                        mesh="link7"
+                                        mesh="link7_visual"
                                       />
                                       <geom
                                         name="link72"
@@ -1357,7 +1409,7 @@
                                             conaffinity="0"
                                             group="1"
                                             density="0"
-                                            mesh="hand"
+                                            mesh="hand_visual"
                                           />
                                           <geom
                                             name="hand2"
@@ -1537,7 +1589,7 @@
                           conaffinity="0"
                           group="1"
                           density="0"
-                          mesh="link0"
+                          mesh="link0_visual"
                         />
                         <geom name="link04" type="mesh" mesh="link0" />
                         <body
@@ -1579,7 +1631,7 @@
                             conaffinity="0"
                             group="1"
                             density="0"
-                            mesh="link1"
+                            mesh="link1_visual"
                           />
                           <geom name="link14" type="mesh" mesh="link1" />
                           <body
@@ -1621,7 +1673,7 @@
                               conaffinity="0"
                               group="1"
                               density="0"
-                              mesh="link2"
+                              mesh="link2_visual"
                             />
                             <geom name="link24" type="mesh" mesh="link2" />
                             <body
@@ -1664,7 +1716,7 @@
                                 conaffinity="0"
                                 group="1"
                                 density="0"
-                                mesh="link3"
+                                mesh="link3_visual"
                               />
                               <geom
                                 name="link34_convex_00"
@@ -1746,7 +1798,7 @@
                                   conaffinity="0"
                                   group="1"
                                   density="0"
-                                  mesh="link4"
+                                  mesh="link4_visual"
                                 />
                                 <geom
                                   name="link44_convex_00"
@@ -1828,7 +1880,7 @@
                                     conaffinity="0"
                                     group="1"
                                     density="0"
-                                    mesh="link5"
+                                    mesh="link5_visual"
                                   />
                                   <geom
                                     name="link54_convex_00"
@@ -1899,7 +1951,7 @@
                                       conaffinity="0"
                                       group="1"
                                       density="0"
-                                      mesh="link6"
+                                      mesh="link6_visual"
                                     />
                                     <geom
                                       name="link64"
@@ -1934,7 +1986,7 @@
                                         conaffinity="0"
                                         group="1"
                                         density="0"
-                                        mesh="link7"
+                                        mesh="link7_visual"
                                       />
                                       <geom
                                         name="link74"
@@ -1964,7 +2016,7 @@
                                             conaffinity="0"
                                             group="1"
                                             density="0"
-                                            mesh="hand"
+                                            mesh="hand_visual"
                                           />
                                           <geom
                                             name="hand4"
@@ -2137,7 +2189,7 @@
                     conaffinity="0"
                     group="1"
                     density="0"
-                    mesh="franka_head"
+                    mesh="franka_head_visual"
                     name="franka_head"
                   />
                   <geom

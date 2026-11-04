@@ -8,11 +8,14 @@ import pytest
 
 PACKAGE = Path(__file__).resolve().parents[1]
 MESHES = PACKAGE / "meshes"
-SUBMODULE = PACKAGE.parent / "external_dependencies" / "franka_description" / "meshes"
 
 sys.path.insert(0, str(PACKAGE / "script"))
 
 import generate_collision_decomposition as generator  # noqa: E402
+
+# Modified by PickNik Inc.: resolve franka_description the same way the generator does, so this
+# test passes both in the upstream workspace and in a workspace that vendors this one.
+SUBMODULE = generator.SOURCE_MESHES
 
 # Each source mesh and the number of convex parts committed for it.
 SOURCES = {
