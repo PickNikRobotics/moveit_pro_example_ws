@@ -147,8 +147,8 @@ def _occupied_cells():
 def test_footprint_clears_the_map_at_the_spawn_pose():
     """Nav2 refuses to plan from a pose whose footprint covers an occupied cell.
 
-    One of the two edges of the spawn window; see AGENTS.md. Moving the base further back
-    satisfies this test and eventually fails the drawing-reach one below.
+    One of the two edges of the spawn window; see the README's Scene section. Moving the base
+    further back satisfies this test and eventually fails the drawing-reach one below.
     """
     x, y, yaw = _spawn_pose()
     params = yaml.safe_load((PACKAGE / "params" / "nav2_params.yaml").read_text())
@@ -313,7 +313,7 @@ def _reaches(mujoco, model, data, base, side, link, target_position, target_matr
 
 
 def test_writing_demo_paths_are_reachable_at_the_spawn_pose():
-    """The drawing edge of the spawn window; see AGENTS.md.
+    """The drawing edge of the spawn window; see the README's Scene section.
 
     Proves only that inverse kinematics exists for the furthest commanded pose of each drawn
     path, which is the pose that binds. It does NOT run MoveIt: it checks no path continuity,

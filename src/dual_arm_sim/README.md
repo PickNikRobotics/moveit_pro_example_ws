@@ -8,25 +8,11 @@ For general documentation see [MoveIt Pro Documentation](https://docs.picknik.ai
 
 ## A standalone package
 
-Each example_ws sim is an independent, standalone package: it needs no other config package. For that reason the Mobile FR3 Duo robot files are duplicated in dual_arm_sim and market_sim on purpose. A fix to one copy has to be made in the other by hand.
+Each example_ws sim is an independent, standalone package: it needs no other config package. The same Mobile FR3 Duo robot files are planned for a second, supermarket sim in [#1046](https://github.com/PickNikRobotics/moveit_pro_example_ws/pull/1046), deliberately as a second standalone copy rather than a shared one, so a fix to one copy will have to be made in the other by hand.
 
-These files, and the whole-body and navigation Objectives, are copied from the Mobile FR3 Duo configuration in PickNik's [moveit_pro_franka_ws](https://github.com/PickNikRobotics/moveit_pro_franka_ws) (`mobile_fr3_duo_mock` and `mobile_fr3_duo_sim`) and adapted.
+These files, and the whole-body and navigation Objectives, are copied from the Mobile FR3 Duo configuration in PickNik's [moveit_pro_franka_ws](https://github.com/PickNikRobotics/moveit_pro_franka_ws) (`mobile_fr3_duo_mock` and `mobile_fr3_duo_sim` at `b510ad58bde5740d748a0b5e79e0c151a0309e98`) and adapted.
 
-| File | Difference from market_sim's copy |
-| --- | --- |
-| `description/mobile_fr3_duo.urdf.xacro` | package name, MuJoCo model path, planar base travel (±10 m), the table surface links |
-| `description/mobile_fr3_duo_mujoco.ros2_control.xacro` | the launch file named in one comment |
-| `description/mujoco/mobile_fr3_duo.xml` | planar base travel (±10 m), the header comment, the stiffer finger tendon gain |
-| `description/environment.xacro` | only in this package: the table surfaces as links |
-| `description/mujoco/sensors.xml` | none |
-| `description/mujoco/assets/finger_0.obj`, `finger_1.obj`, `tmrv0_2_visual.stl` | none |
-| `config/moveit/mobile_fr3_duo.srdf`, `config/moveit/pose_ik.yaml` | the whole-body groups and their IK entries |
-| `config/moveit/joint_limits.yaml`, `joint_jog.yaml`, `pose_jog.yaml` | none |
-| `config/control/mobile_fr3_duo.ros2_control.yaml` | the whole-body controllers `body_jtc` and `base_pid`; the grippers may stall on a grasp |
-| `scripts/base_twist_to_planar.py`, `scripts/odometry_joint_state_publisher.py` | the package name in the usage line |
-| `test/test_base_twist_to_planar.py`, `test/test_odometry_joint_state_publisher.py` | the license header |
-| `objectives/{open,close}_{left,right}_gripper.xml`, `request_teleoperation.xml`, `move_base_to_ready.xml`, `navigate_to_clicked_point.xml` | none |
-| `objectives/stow_arms_for_navigation.xml` | its description (this package stows with the spine raised) |
+A file-by-file comparison against that second copy belongs here once it exists; it is left out until #1046 lands, so this page describes only what is in this branch.
 
 The robot meshes that are byte-identical to franka_description's are not copied: `description/mujoco/mobile_fr3_duo.xml` loads them from the vendored franka_description through `package://franka_description/meshes/...` paths. Only the converted chassis mesh and the two Menagerie finger meshes are in `description/mujoco/assets/`.
 
@@ -36,10 +22,36 @@ The tables, the blocks and the scene camera stand where they keep their place re
 
 - Each table top is an obstacle in Nav2's map (`maps/scene.pgm`, made by `scripts/generate_map.py`), projected onto the ground so the base cannot drive under an overhang. The legs sit inside that projection and add nothing. `test/test_scene.py` checks the map matches the scene and that the footprint clears it at the spawn pose.
 - The base spawns clear of that projection rather than at the map origin, and the two side tables moved with it so the place waypoints still sit over them. `description/mujoco/scene.xml`'s keyframe sets the spawn pose.
-- That spawn pose sits near the front gap's edge: a few millimetres further forward and the Nav2 footprint covers an occupied map cell, and about two map cells further back and the drawing surface is out of reach. `test/test_scene.py` guards both edges. The drawing centre in `objectives/writing_demo.xml` sets the reach edge. Read AGENTS.md's "spawn pose sits in a narrow window" entry before moving the pick table, changing the map resolution or lengthening the `Stow` waypoint.
+- That spawn pose sits near the front gap's edge: a few millimetres further forward and the Nav2 footprint covers an occupied map cell, and about two map cells further back and the drawing surface is out of reach. `test/test_scene.py` guards both edges. The drawing centre in `objectives/writing_demo.xml` sets the reach edge. Read "The spawn window" below before moving the pick table, changing the map resolution or lengthening the `Stow` waypoint.
 - The three table surfaces and their legs are also links in `description/environment.xacro`, so MoveIt plans against them from start-up. The blocks are deliberately not: a block in the planning scene would make every pick a collision. Each surface link's name and origin match the same-named MuJoCo body, so the simulator reports any drift between the two files.
 - At `Home` the tables box the robot in on three sides: only backing away is free. The base cannot turn there, and an arm lowered with the spine would reach a table top, so "Stow Arms for Navigation" keeps the spine at 0.6 m. The blocks are not in MoveIt's planning scene.
 - The scene camera matches the 640 by 480 resolution of the base cameras, because every camera renders into one offscreen buffer.
+
+### The spawn window
+
+The Nav2 map projects each table's whole top onto the ground, so the base cannot plan under an
+overhang. The pick table's projection reaches back past where the arms must stand to work it, and
+the Nav2 footprint includes the stowed arms, so two constraints squeeze the spawn pose from
+opposite sides:
+
+- move the base **back** and it clears the map but the drawing surface goes out of reach, and
+  `PlanCartesianPath` fails inside Writing Demo;
+- move it **forward** and the drawing reaches but the footprint covers an occupied cell, so Nav2
+  refuses to plan and "Move Base to Ready" fails with the start in collision.
+
+The window is about two map cells wide, and the committed spawn sits near its **clearance** edge:
+only single-digit millimetres of front gap, against a map cell an order of magnitude larger, with
+room to spare on the reach side. The drawing centre in `objectives/writing_demo.xml` is what buys
+that reach room; shifting it toward the robot widens the window, shifting it away narrows it.
+
+Anything that moves either bound lands outside the window: moving the pick table, changing
+`generate_map.py`'s `RESOLUTION`, or lengthening the `Stow` waypoint so the footprint reaches
+further forward. The side tables bound neither edge.
+
+`test/test_scene.py` guards both edges, one test each, and each failure message names the edge
+crossed. **Run it after any of those changes, and do not widen the window by editing the Nav2
+footprint:** the arm-width footprint is deliberate, and the narrow front gap was accepted knowingly
+rather than overlooked.
 
 ## Frames and odometry
 

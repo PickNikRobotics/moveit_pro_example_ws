@@ -3,8 +3,8 @@
      Version 2.0; description/mujoco/LICENSE-franka_description), with actuator settings from the
      MuJoCo Menagerie Franka FR3 model (franka_fr3) and finger coupling from its Franka Emika Panda
      hand.xml (Apache License, Version 2.0; description/mujoco/LICENSE-franka_description). Copied
-     from moveit_pro_franka_ws (src/mobile_fr3_duo_sim/mjcf/mobile_fr3_duo.xml) and modified by
-     PickNik Inc., 2026. -->
+     from moveit_pro_franka_ws (src/mobile_fr3_duo_sim/mjcf/mobile_fr3_duo.xml at
+     b510ad58bde5740d748a0b5e79e0c151a0309e98) and modified by PickNik Inc., 2026. -->
 <mujoco model="mobile_fr3_duo">
   <compiler angle="radian" meshdir="assets" />
   <size nuser_cam="4" />
