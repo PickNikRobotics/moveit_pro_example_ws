@@ -36,3 +36,8 @@ different terms and are covered by mjcf/assets/store_visuals/NOTICE.md.
     mjcf/mobile_fr3_duo.xml loads them at run time from the vendored
     franka_description, through package://franka_description/meshes/... paths
     (src/external_dependencies/franka_config/franka_description/meshes/...).
+  - The convex collision parts mjcf/mobile_fr3_duo.xml collides instead of the
+    franka_head, fr3_duo_mount and FR3 v2 link3 to link5 meshes are not part
+    of this package either: it loads them from the vendored franka_meshes
+    (src/external_dependencies/franka_meshes) the same way. They are PickNik
+    files derived from this geometry, and that package carries its own NOTICE.
