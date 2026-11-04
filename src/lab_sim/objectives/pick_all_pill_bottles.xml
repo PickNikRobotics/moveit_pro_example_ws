@@ -47,7 +47,7 @@
             <Action
               ID="Script"
               name="Build marker name"
-              code="viz_marker_name:=&quot;place_pose_&quot;..viz_idx"
+              code="viz_marker_name:='place_pose_'..viz_idx"
             />
             <Action
               ID="VisualizePose"
