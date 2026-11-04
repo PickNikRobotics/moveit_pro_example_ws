@@ -540,6 +540,10 @@
       <state_interface name="velocity">
         <param name="initial_value">0.0</param>
       </state_interface>
+      <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
+        <!-- Type-2 measured motor torque, not the effort command. -->
+        <state_interface name="effort" />
+      </xacro:if>
     </joint>
     <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
       <!--

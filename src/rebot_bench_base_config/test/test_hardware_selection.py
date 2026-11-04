@@ -91,11 +91,12 @@ def test_real_declares_one_motor_per_joint_matched_by_id():
         assert [c.get("name") for c in joint.findall("command_interface")] == [
             "position"
         ]
-        # The driver exports only what is declared, and
-        # joint_state_broadcaster asks for position and velocity.
+        # Read-only Type-2 measured effort supports gravity identification;
+        # command interfaces and motor modes remain unchanged.
         assert [s.get("name") for s in joint.findall("state_interface")] == [
             "position",
             "velocity",
+            "effort",
         ]
         # on_init matches a joint to its gpio by id and refuses to start
         # without one.
@@ -123,7 +124,7 @@ def test_arm_control_mode_switches_joint1_to_6_and_never_the_gripper():
         expand(hardware_interface="real", arm_control_mode="torque")
 
 
-def test_shipped_config_runs_joint1_to_6_in_position_csp(tmp_path):
+def test_shipped_config_starts_in_spring_mode(tmp_path):
     from moveit_studio_utils_py.system_config import load_system_config
 
     config = load_system_config("rebot_bench_base_config", tmp_path)[0]
@@ -137,7 +138,23 @@ def test_shipped_config_runs_joint1_to_6_in_position_csp(tmp_path):
         params(g)["ID"]: params(g)["control_mode"]
         for g in control.find("ros2_control").findall("gpio")
     }
-    assert modes == {**{str(i): "position_csp" for i in range(1, 7)}, "7": "motion"}
+    assert modes == {str(i): "motion" for i in range(1, 8)}
+    motors = {g.get("name"): params(g) for g in control.findall("ros2_control/gpio")}
+    for joint, (_, _, kp, kd) in MOTORS.items():
+        assert motors[f"{joint}_motor"]["kp"] == kp
+        assert motors[f"{joint}_motor"]["kd"] == kd
+    assert "joint_trajectory_admittance_controller" in config.ros2_control["controllers_active_at_startup"]
+    assert "gravity_compensation_controller" in config.ros2_control["controllers_active_at_startup"]
+    assert "gravity_compensation_controller" not in config.ros2_control["controllers_inactive_at_startup"]
+    # These mode defaults target the separately installed physical gravity-only
+    # integration, not a replacement controller or a simulated float mode.
+    import yaml
+
+    share = Path(get_package_share_directory("rebot_bench_base_config"))
+    controllers = yaml.safe_load((share / "config/control/rebot.ros2_control.yaml").read_text())
+    gravity = controllers["gravity_compensation_controller"]["ros__parameters"]
+    assert gravity["gains"] == [0.0, 1.0, 1.0, 1.0, 0.0, 0.0]
+    assert gravity["offsets"] == [0.0] * 6
 
 
 def test_real_branch_follows_the_can_interface_and_torque_arguments():

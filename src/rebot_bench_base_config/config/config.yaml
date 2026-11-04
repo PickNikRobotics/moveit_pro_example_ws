@@ -26,9 +26,9 @@ hardware:
       # Driver-owned latched trip; runtime returns HOME before torque OFF.
       - thermal_cutoff_c: "100.0"
       - thermal_clear_c: "75.0"
-      # Real only. joint1-joint6 control: "position_csp" (the motor's own
-      # position loop) or "motion" (impedance, the Xacro default). See the README.
-      - arm_control_mode: "position_csp"
+      # Real only. Start in spring/MIT mode with configured kp/kd and the
+      # fitted gravity integration below; switching to float is explicit.
+      - arm_control_mode: "motion"
       # Bench-specific placements in the printed TF frame (world, z = 0 on the
       # mat top), from the 2026-10-11 ChArUco calibration; re-measure and
       # override them for any other installation (README.md). base_link: x, y
@@ -84,6 +84,9 @@ ros2_control:
   controllers_active_at_startup:
   - joint_state_broadcaster
   - joint_trajectory_admittance_controller
+  # Requires the existing gravity-only port, fitted inertials, and J1-J6 effort
+  # command interfaces. These mode defaults do not install that integration.
+  - gravity_compensation_controller
   controllers_inactive_at_startup:
   - leader_position_controller
   - joint_velocity_controller

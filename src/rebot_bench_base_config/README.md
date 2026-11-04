@@ -105,9 +105,10 @@ J4 motor speed limit (33 rad/s, matching the other RS00 wrist motors). The jaw i
 impedance position servo, not contact detection or force control. The firmware torque-limit register requests a motor torque bound; transient
 feedback can exceed it. It is not a calibrated fingertip-force limit. Lower torque reduces grip;
 more damping reduces fast-open bounce. Keep stiffness responsive. This
-configuration ships `arm_control_mode: "position_csp"`, so J1–J6 ignore their GPIO
-kp/kd settings and each tracks at up to its stored speed limit (0x7017); J4's
-factory 1 rad/s limit caused lag even though the bridge was uncapped.
+configuration ships `arm_control_mode: "motion"`, so J1–J6 start in spring mode
+with their configured GPIO kp/kd. In optional `position_csp` mode those gains
+are ignored and each joint tracks at up to its stored speed limit (0x7017);
+J4's factory 1 rad/s limit caused lag even though the bridge was uncapped.
 Changing J4's speed limit changes physical response and requires commissioning.
 
 Inspect the exact proposed writes without contacting hardware:
@@ -777,8 +778,8 @@ so an RS00 declared where an RS06 is fitted silently rescales every position,
 velocity and effort.
 
 joint1-joint6 run in the mode set by the `arm_control_mode` entry under
-`urdf_params` in `config/config.yaml`: `position_csp`, which it ships, or `motion`
-(impedance, the Xacro argument's default when no value is passed). Impedance computes `kp * error + kd * velocity error` and the
+`urdf_params` in `config/config.yaml`: `motion` (spring/MIT impedance, the
+configuration and Xacro default) or the explicit opt-in `position_csp`. Impedance computes `kp * error + kd * velocity error` and the
 driver sends no gravity feedforward, so a loaded joint settles short by load
 torque / kp - joint4 stopped about 50 mrad short lifting 0.3 rad. `position_csp`
 uses the motor's own position loop, which settles on target, capped by the speed
@@ -829,6 +830,28 @@ writing its held setpoint regardless, so deactivate it first. `~/set_zero_robstr
 deserves particular care: it moves nothing itself, but it redefines where zero is,
 and a controller still chasing its old setpoint number will then drive the motor
 to match.
+
+### Gravity mode switches
+
+**Start Gravity Comp** and **Stop Gravity Comp** are short mode-switch Objectives:
+they finish after explicitly re-anchoring JTAC to measured position and changing
+motor gains; JTAC and gravity stay active. The physical defaults are spring gains
+with fitted gravity `[0,1,1,1,0,0]`, not float. They require the existing KDL gravity
+integration and the separate **thermal-guard** anchor-before-gains update before
+physical use; the driver stays unchanged. See [gravity modes](docs/gravity-modes.md)
+for adoption dependencies and partial-write limitations. These mode files are not
+a standalone mock/simulation integration and must not replace the bench's fitted
+description or torque clamps.
+
+### Static gravity data collection
+
+**Collect reBot Gravity Data** visits 48 named **Gravity** waypoints, including
+leaned-back shoulders up to 2.4 rad, using
+the standard **Move to Waypoint** at normal speed, with settling waits and raw
+recording around the sequence. It reuses the fixed bench/wall scene without cubes
+and does not change gains or activate a fit. See [the collection runbook](docs/gravity-identification.md)
+for effort telemetry, physical-run prerequisites, raw recording, multi-dataset
+offline fitting and HOME/thermal handling.
 
 ### Waypoints and Objectives
 
