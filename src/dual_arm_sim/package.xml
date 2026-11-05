@@ -44,6 +44,17 @@
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>behaviortree_cpp_picknik</test_depend>
+  <test_depend>geometry_msgs</test_depend>
+  <test_depend>moveit_pro_base</test_depend>
+  <test_depend>moveit_pro_behavior_interface</test_depend>
+  <test_depend>moveit_pro_task_constructor_core</test_depend>
+  <test_depend>moveit_studio_utils_py</test_depend>
+  <test_depend>nlohmann-json-dev</test_depend>
+  <test_depend>pcl_conversions</test_depend>
+  <test_depend>pluginlib</test_depend>
+  <test_depend>python3-numpy</test_depend>
+  <test_depend>rclcpp</test_depend>
+  <test_depend>sensor_msgs</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>python3-pytest</test_depend>
   <test_depend>python3-yaml</test_depend>
