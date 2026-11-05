@@ -33,6 +33,7 @@ ship in the MoveIt Pro image).
 """
 
 import filecmp
+import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -40,6 +41,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import yaml
+from PIL import Image
 
 PACKAGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PACKAGE / "scripts"))
@@ -185,8 +187,6 @@ def test_every_fixed_camera_has_an_optical_frame_site(model):
 
 def test_map_marks_every_shelf_and_frees_the_start(model):
     mujoco = pytest.importorskip("mujoco")
-    from PIL import Image
-
     info = yaml.safe_load((PACKAGE / "maps" / "market.yaml").read_text())
     grid = np.array(Image.open(PACKAGE / "maps" / info["image"]))[::-1]
     resolution, origin = info["resolution"], info["origin"]
@@ -227,8 +227,6 @@ def test_lidar_height_matches_the_model(model):
 def test_localization_map_matches_the_lidar_plane(model):
     """Ranges cast in the scene at lidar height match the localization map at several poses."""
     mujoco = pytest.importorskip("mujoco")
-    from PIL import Image
-
     info = yaml.safe_load((PACKAGE / "maps" / "market_localization.yaml").read_text())
     grid = np.array(Image.open(PACKAGE / "maps" / info["image"]))[::-1]
     resolution, origin = info["resolution"], info["origin"]
@@ -290,8 +288,6 @@ def test_localization_map_matches_the_lidar_plane(model):
 def test_aisle_goals_lie_on_free_map_cells():
     import xml.etree.ElementTree as ET
 
-    from PIL import Image
-
     info = yaml.safe_load((PACKAGE / "maps" / "market.yaml").read_text())
     grid = np.array(Image.open(PACKAGE / "maps" / info["image"]))[::-1]
     resolution, origin = info["resolution"], info["origin"]
@@ -306,3 +302,192 @@ def test_aisle_goals_lie_on_free_map_cells():
         reach = int(0.4 / resolution)
         window = grid[row - reach : row + reach + 1, col - reach : col + reach + 1]
         assert np.all(window == 254), path.name
+
+
+def test_duo_actuators_cover_base_spine_arms_and_grippers(model) -> None:
+    """The synchro-drive simulation actuates three planar joints, not A300 wheels."""
+    expected = {"planar_x", "planar_y", "planar_theta", "franka_spine_vertical_joint"}
+    expected.update(
+        f"{side}_fr3v2_joint{joint}"
+        for side in ("left", "right")
+        for joint in range(1, 8)
+    )
+    expected.update(f"{side}_fr3v2_finger_joint1" for side in ("left", "right"))
+    assert model.nu == len(expected)
+    assert {model.actuator(i).name for i in range(model.nu)} == expected
+    for name in ("planar_x", "planar_y", "planar_theta", "franka_spine_vertical_joint"):
+        assert model.actuator_trnid[model.actuator(name).id, 0] == model.joint(name).id
+
+
+def test_horizontal_lidar_ring_samples_the_optical_axis(model):
+    """The horizontal lidar ring must land on a render pixel centre, without vertical quantization."""
+    height = model.vis.global_.offheight
+    assert height % 2 == 1
+    assert int(height / 2) == (height - 1) / 2
+    for camera in range(model.ncam):
+        if model.cam_user[camera, 0] != 2:
+            np.testing.assert_array_equal(
+                model.cam_resolution[camera], [model.vis.global_.offwidth, height]
+            )
+
+
+def test_imu_reports_body_orientation_and_rotation(model):
+    """Exercise actual MuJoCo sensors independently of planar encoders and ground-truth ROS."""
+    mujoco = pytest.importorskip("mujoco")
+    data = mujoco.MjData(model)
+    mujoco.mj_resetDataKeyframe(model, data, 0)
+    yaw = 0.7
+    joint = model.joint("planar_theta")
+    data.qpos[joint.qposadr[0]] = yaw
+    data.qvel[joint.dofadr[0]] = 0.4
+    mujoco.mj_forward(model, data)
+    site = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, "imu_site")
+    readings = {}
+    for i in range(model.nsensor):
+        if model.sensor_objid[i] == site:
+            start = model.sensor_adr[i]
+            readings[model.sensor_type[i]] = data.sensordata[
+                start : start + model.sensor_dim[i]
+            ].copy()
+    np.testing.assert_allclose(
+        readings[mujoco.mjtSensor.mjSENS_FRAMEQUAT],
+        [np.cos(yaw / 2), 0, 0, np.sin(yaw / 2)],
+        atol=1e-10,
+    )
+    np.testing.assert_allclose(
+        readings[mujoco.mjtSensor.mjSENS_GYRO], [0, 0, 0.4], atol=1e-10
+    )
+    assert np.isfinite(readings[mujoco.mjtSensor.mjSENS_ACCELEROMETER]).all()
+
+
+def test_fuse_parameters_parse_with_ros() -> None:
+    """ROS YAML uses different scalar rules than PyYAML, notably the Y axis."""
+    subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import rclpy; rclpy.init(); rclpy.shutdown()",
+            "--ros-args",
+            "--params-file",
+            str(PACKAGE / "config/fuse/fuse.yaml"),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_resized_shelves_and_aisles_match_the_requested_dimensions(model) -> None:
+    """Compiled shelf faces bound a two-metre gondola and four-metre aisle."""
+    mujoco = pytest.importorskip("mujoco")
+    data = mujoco.MjData(model)
+    mujoco.mj_forward(model, data)
+    faces = []
+    for name in ("B1_1", "B2_1"):
+        body = model.body(name).id
+        boxes = [
+            g
+            for g in range(model.ngeom)
+            if model.geom_bodyid[g] == body
+            and model.geom_type[g] == mujoco.mjtGeom.mjGEOM_BOX
+        ]
+        assert len(boxes) == 1
+        geom = boxes[0]
+        assert 2 * model.geom_size[geom, 1] == pytest.approx(2.0)
+        faces.append(
+            (
+                data.geom_xpos[geom, 1] - model.geom_size[geom, 1],
+                data.geom_xpos[geom, 1] + model.geom_size[geom, 1],
+            )
+        )
+    assert faces[1][0] - faces[0][1] == pytest.approx(4.0)
+    demo = ET.parse(PACKAGE / "objectives/demo_d4_b2_south_return.xml")
+    waypoints = demo.findall(".//Action[@pose_stamped='{b2_waypoint}']")
+    assert waypoints
+    for waypoint in waypoints:
+        y = float(waypoint.get("position_xyz").split(";")[1])
+        assert faces[1][0] - y == pytest.approx(0.9)
+
+
+def test_d4_dock_is_visible_to_both_lidars_and_in_both_maps(model):
+    """A docking landmark must agree between physics, lidar surfaces and planning."""
+    mujoco = pytest.importorskip("mujoco")
+    data = mujoco.MjData(model)
+    mujoco.mj_resetDataKeyframe(model, data, model.key("default").id)
+    mujoco.mj_forward(model, data)
+    dock = model.geom("demo_dock_d4").id
+    assert model.geom_group[dock] == 2
+    assert model.geom_contype[dock] != 0
+    for side in ("front", "rear"):
+        height = data.cam_xpos[model.camera("lidar_" + side).id, 2]
+        assert abs(height - data.geom_xpos[dock, 2]) < model.geom_size[dock, 2]
+    for name in ("market", "market_localization"):
+        meta = yaml.safe_load((PACKAGE / "maps" / (name + ".yaml")).read_text())
+        pixels = np.array(Image.open(PACKAGE / "maps" / meta["image"]))[::-1]
+        west_face = data.geom_xpos[dock, 0] - model.geom_size[dock, 0]
+        x, y = (np.array([west_face, 0.0]) - meta["origin"][:2]) / meta["resolution"]
+        assert np.any(pixels[int(y) - 1 : int(y) + 2, int(x) - 1 : int(x) + 2] < 100)
+
+
+def test_in_place_refinement_keeps_a_local_seed() -> None:
+    """The seed AMCL receives when refining an estimate keeps a 10 cm / 0.1 rad spread."""
+    name = "Refine Localization In Place Subtree"
+    top = ET.parse(PACKAGE / "objectives/refine_localization_in_place.xml")
+    call = top.find(f".//BehaviorTree//SubTree[@ID='{name}']")
+    subtree = ET.parse(PACKAGE / "objectives/refine_localization_in_place_subtree.xml")
+    ports = {
+        port.get("name"): port.get("default")
+        for port in subtree.findall(f"TreeNodesModel/SubTree[@ID='{name}']/input_port")
+    }
+
+    def received(value):
+        """Resolve a subtree attribute through its isolated, declared input ports."""
+        if not (value.startswith("{") and value.endswith("}")):
+            return value
+        assert value[1:-1] in ports, f"{value} is not a declared port of {name}"
+        return call.get(value[1:-1], ports[value[1:-1]])
+
+    seeds = [
+        node
+        for node in subtree.findall(
+            f"BehaviorTree[@ID='{name}']//Action[@ID='SetInitialPose']"
+        )
+        if node.get("pose") == "{seed_pose}"
+    ]
+    assert received("{seed_pose}") == call.get("seed_pose")
+    assert len(seeds) == 1
+    assert float(received(seeds[0].get("xy_variance"))) == pytest.approx(0.01)
+    assert float(received(seeds[0].get("yaw_variance"))) == pytest.approx(0.01)
+
+
+def test_stocking_carts_are_physical_unmapped_lidar_obstacles(model) -> None:
+    """Both lidars see physical carts where the static maps show free space."""
+    mujoco = pytest.importorskip("mujoco")
+    data = mujoco.MjData(model)
+    mujoco.mj_resetDataKeyframe(model, data, model.key("default").id)
+    mujoco.mj_forward(model, data)
+    for position in generate_market.STOCKING_CART_POSITIONS:
+        for side in ("front", "rear"):
+            z = data.cam_xpos[model.camera("lidar_" + side).id, 2]
+            origin = np.array([position[0] - 0.12, position[1] - 2, z])
+            direction = np.array([0.0, 1.0, 0.0])
+            hit = np.zeros(1, dtype=np.int32)
+            distance = mujoco.mj_ray(
+                model,
+                data,
+                origin,
+                direction,
+                np.array([1, 1, 1, 0, 0, 0], dtype=np.uint8),
+                1,
+                1,
+                hit,
+            )
+            assert 0 < distance < 2
+            assert "stocking_" in model.body(model.geom_bodyid[hit[0]]).name
+            assert model.geom_contype[hit[0]] != 0
+            point = (origin + distance * direction)[:2]
+            for name in ("market", "market_localization"):
+                meta = yaml.safe_load((PACKAGE / "maps" / (name + ".yaml")).read_text())
+                pixels = np.array(Image.open(PACKAGE / "maps" / meta["image"]))[::-1]
+                x, y = ((point - meta["origin"][:2]) / meta["resolution"]).astype(int)
+                assert np.all(pixels[y - 1 : y + 2, x - 1 : x + 2] == 254)

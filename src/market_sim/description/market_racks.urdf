@@ -9596,6 +9596,16 @@
       <geometry><box size="1 2.6 0.9" /></geometry>
     </collision>
   </link>
+  <joint name="demo_dock_d4_joint" type="fixed">
+    <parent link="racks_base" />
+    <child link="demo_dock_d4" />
+    <origin xyz="26.32 0 0.45" rpy="0 0 0" />
+  </joint>
+  <link name="demo_dock_d4">
+    <collision>
+      <geometry><box size="0.5 2 0.9" /></geometry>
+    </collision>
+  </link>
   <joint name="wall_north_joint" type="fixed">
     <parent link="racks_base" />
     <child link="wall_north" />

@@ -112,3 +112,22 @@ def test_launch_file_writes_the_smac_tree_from_the_stock_one():
             stock.count(navfn) == 1
         ), "the stock tree no longer selects NavFn by default"
         assert smac.split('"')[1] in str(planners())
+
+
+def test_nav2_tree_declares_nonrunnable_navigation_metadata() -> None:
+    """The Nav2-only tree satisfies the workspace XML contract without becoming runnable."""
+    root = ET.parse(PACKAGE / "params" / "navigate_through_poses.xml").getroot()
+    main_tree_id = root.get("main_tree_to_execute")
+    assert root.find(f"BehaviorTree[@ID='{main_tree_id}']") is not None
+    subtree = root.find(f"TreeNodesModel/SubTree[@ID='{main_tree_id}']")
+    assert subtree is not None, "The workspace XML validator requires a tree model."
+    metadata_fields = subtree.find("MetadataFields")
+    assert metadata_fields is not None
+    metadata = {
+        key: value
+        for field in metadata_fields.findall("Metadata")
+        for key, value in field.attrib.items()
+    }
+    assert metadata["runnable"] == "false"
+    assert metadata["subcategory"] == "Navigation"
+    assert metadata["description"].strip()

@@ -21,6 +21,8 @@ hardware:
       - mujoco_model: "mjcf/scene.xml"
       - mujoco_viewer: "False"
 
+ros_global_params:
+  use_sim_time: false
 moveit_params:
   joint_group_name: "manipulator"
   kinematics:
@@ -47,6 +49,7 @@ ros2_control:
     path: "config/control/mobile_fr3_duo.ros2_control.yaml"
   controllers_active_at_startup:
     - "joint_state_broadcaster"
+    - "base_state_broadcaster"
     - "imu_sensor_broadcaster"
     - "left_gripper_controller"
     - "right_gripper_controller"

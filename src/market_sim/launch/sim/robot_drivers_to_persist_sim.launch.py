@@ -28,32 +28,45 @@
 
 """Processes that stay up for the whole MoveIt Pro session in the market simulation.
 
-This is the config's ``additional_driver_launch_file``: frames, the lidar scans, the
-odometry bridge, the base velocity bridge, Beluga AMCL and Nav2. The nodes run this
-package's scripts.
+This is the config's ``additional_driver_launch_file``: frames, the self-filtered and
+synchronized lidar scans, planar encoder/IMU fusion, the base velocity bridge, reset
+synchronization, Beluga AMCL or slam_toolbox, and Nav2.
 
 Frames, one publisher per edge:
 
     world -> map                 static identity
     world -> mj_world            static identity; the simulator hangs scene frames off mj_world
-    map -> odom                  Beluga AMCL, the localization correction
+    map -> odom                  Beluga AMCL, or slam_toolbox in mapping mode
     odom -> ... -> base_link     robot_state_publisher, through planar_x, planar_y, planar_theta
     base_link -> lidar_*_ROS     static; the frames the flattened scans are stamped in
 
-The description is rooted at ``odom``. The odometry bridge is the only publisher of the
-three planar joints: the simulator's true base pose plus drift, so AMCL has a real
-correction to make. The simulator publishes no base TF and no planar joint states
-(joint_state_broadcaster's ``joints`` list leaves them out).
+The odometry bridge publishes the planar joints from Fuse's /odom_filtered.
 """
 
 import math
 import os
+import shutil
+
+import yaml
 
 from ament_index_python.packages import get_package_share_directory
+from nav2_common.launch import RewrittenYaml
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
+from launch.actions import (
+    DeclareLaunchArgument,
+    GroupAction,
+    IncludeLaunchDescription,
+    OpaqueFunction,
+)
+from launch.substitutions import (
+    LaunchConfiguration,
+    EnvironmentVariable,
+    PythonExpression,
+)
+from launch_ros.parameter_descriptions import ParameterValue
+from launch.conditions import IfCondition, UnlessCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from moveit_studio_utils_py.launch_common import NodeWithAnsiLogging as Node
 
 # Nav2's own navigate-to-pose tree, and the copy of it this launch file writes with the Smac
 # planner selected instead. BehaviorTree.CPP will not accept a relative tree path, so both are
@@ -63,6 +76,7 @@ STOCK_NAV_TO_POSE_TREE = (
     "navigate_to_pose_w_replanning_and_recovery.xml"
 )
 SMAC_NAV_TO_POSE_TREE = "/tmp/market_sim/behavior_trees/navigate_to_pose_smac.xml"
+NAV_THROUGH_POSES_TREE = "/tmp/market_sim/behavior_trees/navigate_through_poses.xml"
 NAVFN_SELECTOR = 'default_planner="GridBased"'
 SMAC_SELECTOR = 'default_planner="SmacLattice"'
 
@@ -129,16 +143,57 @@ def lifecycle_manager(name, nodes):
     )
 
 
+def configure_navigation_parameters(params_file, *, ground_truth=False):
+    """Expand the shared footprint before ROS parses YAML; optionally isolate survey navigation."""
+    rewrites = {
+        "global_frame": "world",
+        "local_frame": "world",
+        "robot_base_frame": "base_link_ground_truth",
+        "odom_topic": "/ground_truth/odom",
+        "global_costmap.global_costmap.ros__parameters.static_layer.map_topic": "/navigation_map",
+    }
+    for costmap in ("local_costmap", "global_costmap"):
+        for side in ("front", "rear"):
+            rewrites[
+                f"{costmap}.{costmap}.ros__parameters.obstacle_layer.scan_{side}.topic"
+            ] = f"/navigation_scan_{side}"
+    return RewrittenYaml(
+        source_file=params_file,
+        root_key="",
+        param_rewrites=rewrites if ground_truth else {},
+        convert_types=True,
+    )
+
+
+def require_mapping_for_truth_navigation(context):
+    """Keep the optional truth-based survey mode out of ordinary AMCL navigation."""
+    if not IfCondition(LaunchConfiguration("slam")).evaluate(context):
+        raise RuntimeError(
+            "MARKET_SIM_GROUND_TRUTH_NAV requires slam:=true for a mapping survey; set the flag false for lidar-localized navigation."
+        )
+    return []
+
+
 def generate_launch_description():
     share = get_package_share_directory("market_sim")
     write_smac_nav_tree()
-    params_file = LaunchConfiguration("params_file")
+    shutil.copyfile(
+        os.path.join(share, "params", "navigate_through_poses.xml"),
+        NAV_THROUGH_POSES_TREE,
+    )
+    slam = LaunchConfiguration("slam")
+    params_file = configure_navigation_parameters(LaunchConfiguration("params_file"))
     map_yaml = LaunchConfiguration("map")
     localization_map_yaml = LaunchConfiguration("localization_map")
     log_level = LaunchConfiguration("log_level")
     nav2_args = ["--ros-args", "--log-level", log_level]
 
     declared = [
+        DeclareLaunchArgument(
+            "slam",
+            default_value=EnvironmentVariable("MARKET_SIM_SLAM", default_value="false"),
+            description="Build a map with slam_toolbox instead of loading maps and AMCL.",
+        ),
         DeclareLaunchArgument(
             "params_file",
             default_value=os.path.join(share, "params", "nav2_params.yaml"),
@@ -181,12 +236,16 @@ def generate_launch_description():
         ),
     ]
 
-    # SICK nanoScan3 values, measured on the real scanner.
+    # SICK nanoScan3 geometry from the Duo MJCF and the base configuration.
     lidar_flattener = Node(
         package="market_sim",
         executable="lidar_flattener.py",
         name="lidar_flattener",
         output="log",
+        remappings=[
+            ("/scan_front", "/scan_front_raw"),
+            ("/scan_rear", "/scan_rear_raw"),
+        ],
         parameters=[
             {
                 "angle_min": 0.0,
@@ -200,41 +259,101 @@ def generate_launch_description():
             }
         ],
     )
-    # Both scans on one topic for AMCL, a scan at a time, as in hangar_sim: relayed rather than
-    # merged, so no message carries two instants.
-    scan_relays = [
+    # Exclude returns inside the stowed Duo envelope; navigation stows the arms before driving.
+    with open(os.path.join(share, "params", "nav2_params.yaml")) as stream:
+        navigation_params = yaml.safe_load(stream)
+    footprint = yaml.safe_load(
+        navigation_params["local_costmap"]["local_costmap"]["ros__parameters"][
+            "footprint"
+        ]
+    )
+    self_filter = {
+        "filter1": {
+            "name": "duo_self_returns",
+            "type": "laser_filters/LaserScanBoxFilter",
+            "params": {
+                "box_frame": "base_link",
+                "min_x": min(point[0] for point in footprint),
+                "max_x": max(point[0] for point in footprint),
+                "min_y": min(point[1] for point in footprint),
+                "max_y": max(point[1] for point in footprint),
+                "min_z": -1.0,
+                "max_z": 2.0,
+                "invert": False,
+            },
+        }
+    }
+    scan_filters = [
         Node(
-            package="topic_tools",
-            executable="relay",
-            name=f"scan_{side}_relay",
-            output="log",
-            parameters=[
-                {"input_topic": f"/scan_{side}", "output_topic": "/scan_interleaved"}
+            package="laser_filters",
+            executable="scan_to_scan_filter_chain",
+            name=f"{side}_self_filter",
+            parameters=[self_filter],
+            remappings=[
+                ("scan", f"/scan_{side}_raw"),
+                ("scan_filtered", f"/scan_{side}"),
             ],
         )
         for side in ("front", "rear")
     ]
 
-    odometry = Node(
+    # AMCL reads one scan topic, so both scans are merged into one 360 deg /scan in base_link.
+    # The lidar clouds arrive one render period after their stamp, so a merge cycle's newest
+    # scans are up to two periods old; a tighter limit drops cycles and starves AMCL.
+    scan_merger = Node(
         package="market_sim",
-        executable="odometry_joint_state_publisher.py",
-        name="odometry_joint_state_publisher",
+        executable="scan_merger.py",
+        name="scan_merger",
         output="log",
+        parameters=[{"max_scan_age_sec": 0.2, "merge_rate_hz": 20.0}],
     )
-    # A keyframe reset teleports the base; AMCL cannot follow, so re-seed it at the true pose.
+
+    # Reset synchronization holds Nav2 commands until Fuse, planar TF and (outside SLAM) AMCL agree.
     relocalizer = Node(
         package="market_sim",
         executable="reset_relocalizer.py",
         name="reset_relocalizer",
-        output="log",
+        parameters=[
+            {
+                "use_amcl": ParameterValue(
+                    PythonExpression(["'", slam, "'.lower() not in ('true', '1')"]),
+                    value_type=bool,
+                )
+            }
+        ],
     )
-    # /cmd_vel in base_link becomes world-axis planar joint velocities, turned by the true heading.
+    with open(
+        os.path.join(share, "config", "control", "mobile_fr3_duo.ros2_control.yaml")
+    ) as stream:
+        base_limits = yaml.safe_load(stream)["base_jvc"]["ros__parameters"][
+            "max_joint_velocity"
+        ]
+    # Convert body-frame commands to the simulation's planar actuators; fused pose alone reaches MoveIt.
     base_velocity = Node(
         package="market_sim",
         executable="base_twist_to_planar.py",
         name="base_twist_to_planar",
-        output="log",
-        parameters=[{"ground_truth_topic": "/ground_truth/odom"}],
+        parameters=[
+            {
+                "max_linear_velocity": min(base_limits[:2]),
+                "max_angular_velocity": base_limits[2],
+            }
+        ],
+    )
+    odometry = Node(
+        package="market_sim",
+        executable="odometry_joint_state_publisher.py",
+        name="odometry_joint_state_publisher",
+    )
+
+    state_estimator = Node(
+        package="fuse_optimizers",
+        executable="fixed_lag_smoother_node",
+        name="state_estimator",
+        parameters=[
+            os.path.join(share, "config", "fuse", "fuse.yaml"),
+            {"use_sim_time": False},
+        ],
     )
 
     localization = [
@@ -254,8 +373,10 @@ def generate_launch_description():
             output="screen",
             parameters=[
                 {
+                    "use_sim_time": False,
                     "yaml_filename": localization_map_yaml,
                     "topic_name": "localization_map",
+                    "frame_id": "map",
                 }
             ],
             arguments=nav2_args,
@@ -271,31 +392,95 @@ def generate_launch_description():
         lifecycle_manager("lifecycle_manager_localization", LOCALIZATION_NODES),
     ]
 
-    def nav2_node(package, executable, remappings=(), **kwargs):
+    # slam_toolbox publishes map -> odom and /map; map_saver serves the save service.
+    mapping = GroupAction(
+        [
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    os.path.join(
+                        get_package_share_directory("slam_toolbox"),
+                        "launch",
+                        "online_sync_launch.py",
+                    )
+                ),
+                launch_arguments={
+                    "use_sim_time": "false",
+                    "slam_params_file": params_file,
+                    "autostart": "true",
+                }.items(),
+            ),
+            Node(
+                package="nav2_map_server",
+                executable="map_saver_server",
+                name="map_saver",
+                output="screen",
+                parameters=[params_file],
+                arguments=nav2_args,
+            ),
+            lifecycle_manager("lifecycle_manager_slam", ["map_saver"]),
+        ],
+        condition=IfCondition(slam),
+    )
+
+    truth_navigation = os.environ.get(
+        "MARKET_SIM_GROUND_TRUTH_NAV", "false"
+    ).lower() in ("true", "1")
+    navigation_parameters = (
+        configure_navigation_parameters(params_file, ground_truth=True)
+        if truth_navigation
+        else params_file
+    )
+    truth_nodes = []
+    if truth_navigation:
+        declared.append(OpaqueFunction(function=require_mapping_for_truth_navigation))
+        truth_nodes = [
+            Node(
+                package="market_sim",
+                executable="navigation_scan_relay.py",
+                name="navigation_scan_relay",
+            ),
+            Node(
+                package="nav2_map_server",
+                executable="map_server",
+                name="navigation_map_server",
+                parameters=[
+                    {
+                        "use_sim_time": False,
+                        "yaml_filename": map_yaml,
+                        "topic_name": "navigation_map",
+                        "frame_id": "world",
+                    }
+                ],
+            ),
+            lifecycle_manager(
+                "lifecycle_manager_navigation_map", ["navigation_map_server"]
+            ),
+        ]
+
+    def nav2_node(package, executable, remappings=()):
         return Node(
             package=package,
             executable=executable,
             name=executable,
             output="screen",
-            parameters=[params_file],
+            parameters=[navigation_parameters],
             arguments=nav2_args,
             remappings=list(remappings),
-            **kwargs,
         )
 
-    # The controller feeds the smoother, whose output is /cmd_vel; recoveries publish /cmd_vel directly.
+    # The controller feeds the smoother; both its output and recoveries publish body-frame /nav2_cmd_vel.
     to_smoother = [("cmd_vel", "cmd_vel_nav")]
     navigation = [
         nav2_node("nav2_controller", "controller_server", to_smoother),
         nav2_node("nav2_smoother", "smoother_server"),
         nav2_node("nav2_planner", "planner_server"),
-        nav2_node("nav2_behaviors", "behavior_server"),
+        nav2_node("nav2_behaviors", "behavior_server", [("cmd_vel", "nav2_cmd_vel")]),
         nav2_node("nav2_bt_navigator", "bt_navigator"),
         nav2_node("nav2_waypoint_follower", "waypoint_follower"),
         nav2_node(
             "nav2_velocity_smoother",
             "velocity_smoother",
-            to_smoother + [("cmd_vel_smoothed", "cmd_vel")],
+            to_smoother + [("cmd_vel_smoothed", "nav2_cmd_vel")],
         ),
         lifecycle_manager("lifecycle_manager_navigation", NAVIGATION_NODES),
     ]
@@ -303,7 +488,16 @@ def generate_launch_description():
     return LaunchDescription(
         declared
         + frames
-        + [lidar_flattener, *scan_relays, odometry, base_velocity, relocalizer]
-        + localization
+        + [
+            lidar_flattener,
+            scan_merger,
+            base_velocity,
+            odometry,
+            relocalizer,
+            state_estimator,
+        ]
+        + scan_filters
+        + [GroupAction(localization, condition=UnlessCondition(slam)), mapping]
+        + truth_nodes
         + navigation
     )
