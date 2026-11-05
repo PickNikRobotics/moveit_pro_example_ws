@@ -19,33 +19,32 @@ The existing Apollo-derived regolith texture retains its separate
 
 ## Placement
 
-All coordinates are metres in MuJoCo world space. The habitat faces south, toward
-the demo route. Five fixed bodies add no degrees of freedom. Every base geom has
-collision enabled and uses rendered group 1, so the same shapes can obstruct a
-rover and appear in depth-camera or image-based lidar returns.
+All coordinates are metres in MuJoCo world space. The habitat, lander, solar mast and cargo sit north of the demo route; the rest are spread around the 10-15 m drivable band. Each has solid geometry at both lidar scan heights (0.46 m and 0.79 m above the ground). The habitat's door faces south-east, toward the route. Ten fixed bodies add no degrees of freedom. Every base geom has collision enabled and uses rendered group 1, so the same shapes can obstruct a rover and appear in depth-camera or image-based lidar returns.
 
-| Body | Centre x, y | Sampled terrain z | Body datum z |
-| --- | --- | --- | --- |
-| Habitat | 0, 6.8 | -0.002010 | -0.042010 |
-| Solar array | -4, 6 | -0.019955 | -0.059955 |
-| Antenna | -2.8, 8.1 | 0.009206 | -0.030794 |
-| Landing pad | 6, 6.4 | -0.002010 | -0.042010 |
-| Lander | 6, 6.4 | -0.002010 | -0.042010 |
+| Body | Centre x, y | Yaw, rad | Sampled terrain z | Body datum z |
+| --- | --- | --- | --- | --- |
+| Habitat | -2, 6.6 | 0.464 | -0.010340 | -0.050340 |
+| Landing pad | 7, 6.6 | 0 | 0.039891 | -0.000109 |
+| Lander | 7, 6.6 | 0 | 0.039891 | -0.000109 |
+| Vertical solar mast | -5.5, 6.6 | -0.6 | 0.002431 | -0.037569 |
+| Cargo | -5, 8.4 | 0.3 | 0.004985 | -0.035015 |
 
 These are offline samples of the committed `assets/lunar_hfield.png`, using the
 row reversal and nearest-cell convention in `test_husky_mujoco_geometry.py`'s
-`_hfield_elevation`. PNG values map to `value / 255 * 0.286 - 0.2095` metres.
-Each datum is 4 cm below its centre sample. Habitat feet, array feet, the antenna
-foundation, and the pad slab extend below the lowest terrain in their footprints.
-The lander's feet meet the pad top at local z = 0.18 m. No ground asset is changed.
+`_hfield_elevation`. PNG values map to `value / 255 * 0.2171 - 0.1406` metres.
+Each datum is 4 cm below its centre sample. Supports, cabinets, the antenna foundation, the cargo, and the pad slab extend below the lowest terrain in their footprints.
+The lander's legs drop vertically from a knee at local z = 0.6 m, above the front scan plane, and their feet meet the pad top at local z = 0.04 m. The habitat's door sill sits under the door frame. Parts the front lidar cannot see that reach past the parts it can (the landing pad, the lander's feet, the antenna foundation, the solar array's feet and the power unit's pad) stand at most 0.10 m above the surface beside them, so the rover rolls over them instead of driving onto them unseen.
 
-The southernmost habitat geometry is the threshold at y = 4.83 m. The pad reaches
-y = 4.30 m but is farther east, with x >= 3.90 m. The recorded far corner before
-adding the base is approximately 0.996, 2.170. The base leaves at least 2 m of
-clear ground beyond a conservative 0.6 m rover radius around that corner and
-stays outside the full recorded square.
+The band bodies sit 4 cm below the bilinear height of the band's collision strips (`assets/lunar_band_*.png`, from `generate_band_terrain.py`) under their origin:
 
-A future navigation demo can start at the default keyframe, x = -0.30, y = 0.50,
-and end near x = 0, y = 3.8, facing north toward the closed habitat door. That
-approach point stops short of the threshold. It is a suggested goal, not a claim
-that navigation or traversability over the existing craters has been validated.
+| Body | Centre x, y | Yaw, rad | Body datum z |
+| --- | --- | --- | --- |
+| Solar array | -11.93, 6.5 | 1.57 | -0.036161 |
+| Antenna | 12.02, 3 | 1.2 | -0.053829 |
+| Fission surface power | -11.4, -4 | 0 | -0.010255 |
+| Logistics module | -4, -11.82 | 0.15 | -0.021822 |
+| Rover shelter | 10.54, -9.5 | 3.4416 | -0.047831 |
+
+Every band body's footprint stays within 12.8 m of the centre in x and y, on band ground short of the edge berm. The shelter's open front faces the base. Its walls, the cargo, the logistics skids and the power unit's pad reach below their datums, so uneven ground shows no gap under them.
+
+By the validator's world-aligned bounding boxes, the southernmost geometry of the northern group is the landing pad at y = 4.50 m. `validate_moon_base.py` checks that every base geom stays outside the recorded square's footprint plus a 0.6 m rover radius, leaves at least 2 m beyond that radius around the square's far corner, and stays inside the 30x30 m drivable area.

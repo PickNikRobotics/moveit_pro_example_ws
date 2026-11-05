@@ -1,34 +1,27 @@
 # Moon base validation
 
-![Moon base from a chase view and the route start corner](moon_base_render_sheet.png)
+![Moon base from a chase view and from the centre looking south over the band](moon_base_render_sheet.png)
 
-The sheet uses two offline inspection cameras. The configured scene cameras are
-unchanged. The base has five fixed bodies and 35 visible collision geoms.
+The sheet uses two offline inspection cameras. The configured scene cameras are unchanged. The base has ten fixed bodies and 72 visible collision geoms.
 
-## Recorded-state comparison
+## Recorded state
 
-Measured on the scene without the moon base, then repeated with it, using `validate_and_render.py` with MuJoCo 3.6.0. Both runs include the rover's IMU body, which changes this open-loop route; record a new baseline whenever the rover's mass model changes.
+Recorded with `validate_and_render.py` on the current scene with MuJoCo 3.6.0, rover IMU body included, and committed as `docs/moon_base_baseline.json`. `validate_moon_base.py` requires a fresh run to reproduce it exactly; record a new baseline whenever the rover's mass model or the terrain under the route changes.
 
-| Measurement | Before | After |
-| --- | --- | --- |
-| Closure error, m | 1.28100276146052 | 1.28100276146052 |
-| Turn 1, degrees | 117.044049304336 | 117.044049304336 |
-| Turn 2, degrees | 94.2037099372136 | 94.2037099372136 |
-| Turn 3, degrees | 88.0877338907876 | 88.0877338907876 |
-| Turn 4, degrees | 69.45411711271146 | 69.45411711271146 |
+| Measurement | Recorded |
+| --- | --- |
+| Closure error, m | 1.3842426358857043 |
+| Turn 1, degrees | 114.25709835752929 |
+| Turn 2, degrees | 106.6487899754946 |
+| Turn 3, degrees | 94.33056106808039 |
+| Turn 4, degrees | 104.56184734124906 |
 
 These are chassis `xpos` and `xquat` measurements, not wheel odometry. The current
 keyframe starts on the heightfield at -0.30, 0.50 m. Historical numbers elsewhere
 in the package README differ from this measurement. The base preserves the current
 route's errors; it does not retune the skid-steer calibration.
 
-`validate_moon_base.py` also checks that all five bodies are fixed, collision
-geometry belongs to rendered groups, body elevations match the committed PNG,
-and the base is outside the route footprint and inside the terrain boundary.
-The minimum far-corner clearance is **2.08255 m beyond a 0.6 m rover radius**,
-using conservative world-aligned geom bounding boxes. Rays from the start corner
-at 1.2 m height hit the door, solar panel, antenna panel, and lander payload with
-hidden geom groups disabled.
+`validate_moon_base.py` also checks that all ten bodies are fixed, collision geometry belongs to rendered groups, body elevations match the committed heightmaps, any part the front lidar cannot see that reaches past the parts it can stands at most 0.10 m above the surface beside it, and the base is outside the route footprint and inside the drivable area. The minimum far-corner clearance is **2.21744 m beyond a 0.6 m rover radius**, using conservative world-aligned geom bounding boxes. Rays from the start corner at 1.2 m height hit the door, solar mast panel, lander payload, and rover shelter with hidden geom groups disabled.
 
 ## Reproduce
 
@@ -38,11 +31,7 @@ The package build passed on MoveIt Pro `10.1.0-rc9` with Jazzy on 2026-09-14:
 moveit_pro build user_workspace -w "$PWD" --colcon-args '--packages-up-to lunar_sim'
 ```
 
-All three selected packages finished: `clearpath_platform_description`,
-`lunar_sim_behaviors`, and `lunar_sim`. An isolated GPU-backed deployment reached
-healthy driver and runtime states, with `/health` reporting `Idle`. The Desktop
-App's live `/scene_camera/color` feed showed the habitat, solar array, pad, and
-lander alongside the rover, satisfying the live launch check.
+All three selected packages finished: `clearpath_platform_description`, `lunar_sim_behaviors`, and `lunar_sim`. An isolated GPU-backed deployment reached healthy driver and runtime states, with `/health` reporting `Idle`. The Desktop App's live `/scene_camera/color` feed showed the habitat, solar array, pad, and lander alongside the rover, satisfying the live launch check. That check was recorded on the earlier layout, before the solar array moved out to the band.
 
 The separate 3D point-cloud display has a pre-existing unconnected-tree error
 between `scene_camera_optical_frame` and `world`, outside this change's scope.

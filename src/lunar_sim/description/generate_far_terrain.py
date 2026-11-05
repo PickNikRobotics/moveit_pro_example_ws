@@ -33,8 +33,7 @@
 
 Offline and seeded; run manually and commit the output.
 
-Visual only, so the driven terrain keeps the 10 m half-extents its spawn elevation, rock keepout,
-square calibration and shadow frustum are all derived from.
+It collides, so the rover can leave by the access road onto it. It meets the drivable band's 15 m outer edge (generate_band_terrain.py); the cratered centre keeps the 10 m half-extents its spawn elevation, rock keepout, square calibration and shadow frustum are all derived from.
 
 It has to MEET the driven terrain's rim, not just sit beyond it: from the camera's ~0.95 m height
 that rim already is the horizon, so ridges with void behind it render as black sky below the
@@ -45,6 +44,7 @@ Usage: python3 generate_far_terrain.py [--half-m 300] [--grid 256] [--seed 869]
 Copy the printed size/pos into husky_scene.xml.
 """
 import argparse
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
@@ -54,25 +54,60 @@ from scipy.ndimage import gaussian_filter
 HERE = Path(__file__).resolve().parent
 ASSETS = HERE / "assets"
 
-# The driven surface this field must meet, from husky_scene.xml's <hfield>/<geom>. Keep in sync:
-# a mismatch shows up as a step at the rim, or this field poking through the driven ground.
-NEAR_HALF_M = 10.0
-NEAR_Z_MIN = -0.2095
-NEAR_Z_MAX = NEAR_Z_MIN + 0.286
+# Half-extent of the drivable terrain; generate_band_terrain.py builds the band out to it.
+NEAR_HALF_M = 15.0
+# The access road through the north berm (generate_band_terrain.py), part of the drivable footprint
+# this field hides under: centre x, half-width including its walls, and where it ends.
+ROAD_X_M = -4.5
+ROAD_HALF_M = 3.5
+ROAD_END_M = 19.0
 
-# Keyed on Chebyshev distance max(|x|, |y|), NOT radius: the driven terrain is a square 20x20 m
-# hfield whose corners reach 14.1 m, so a radial profile would lift this field at 10 m in every
-# direction and push it up through those corners. Hidden below HIDE_D, ramped up to meet the rim at
+
+def footprint_depth(x, y):
+    """How far inside the drivable footprint, the 30x30 m square plus the access road, a point is
+    (negative outside), measured to the nearer side the way Chebyshev distance does for the square.
+    The road term only decides it past the square's north edge; inside the square it can only make
+    the field more hidden.
+    """
+    square = NEAR_HALF_M - np.maximum(np.abs(x), np.abs(y))
+    road = np.where(
+        y > 0, np.minimum(ROAD_HALF_M - np.abs(x - ROAD_X_M), ROAD_END_M - y), -np.inf
+    )
+    return np.maximum(square, road)
+
+
+def _centre_z_range():
+    """The cratered centre's floor and top, from husky_scene.xml's lunar_hfield and ground_plane."""
+    root = ET.parse(HERE / "husky_scene.xml").getroot()
+    hfield = root.find(".//hfield[@name='lunar_hfield']")
+    geom = root.find(".//geom[@name='ground_plane']")
+    if hfield is None or geom is None:
+        raise SystemExit(
+            "husky_scene.xml needs the lunar_hfield <hfield> and ground_plane <geom>"
+        )
+    floor = float(geom.get("pos").split()[2])
+    return floor, floor + float(hfield.get("size").split()[2])
+
+
+NEAR_Z_MIN, NEAR_Z_MAX = _centre_z_range()
+
+# Keyed on depth into the drivable footprint (footprint_depth: Chebyshev distance max(|x|, |y|) for
+# the 30x30 m square, stretched over the access road), NOT radius: the square's corners reach 21.2 m,
+# so a radial profile would lift this field at 15 m in every direction and push it up through them.
+# Moving ROAD_* means regenerating this field before the band. Hidden below HIDE_D, ramped up to meet the rim at
 # MEET_D - the ramp must finish there, since past it there is no driven ground left to hide under
 # and any shortfall renders as a trench ringing the terrain.
-HIDE_D = 6.0
-MEET_D = NEAR_HALF_M
+# The ramp finishes inside the drivable footprint, under the band's edge berm (generate_band_terrain.py),
+# so this field already sits at MEET_Z where the berm's outer face comes down to meet it.
+HIDE_D = 11.0
+MEET_D = NEAR_HALF_M - 1.0
 
 # Held below the driven ground so it stays hidden, but not so far that the ramp reads as a wall.
 HIDDEN_Z = NEAR_Z_MIN - 0.35
 
 # Meet the rim at the middle of the driven terrain's range, so the join is not a visible step.
 MEET_Z = 0.5 * (NEAR_Z_MIN + NEAR_Z_MAX)
+
 
 # Rolling relief, ramped in beyond the join so the ground only heaves once it reads as distance.
 RELIEF_AMP_M = 4.0
@@ -106,11 +141,12 @@ def build_far_field(half_m, grid, seed, ridge_amp=RIDGE_AMP_M, relief_amp=RELIEF
     x = axis[None, :]
     y = axis[:, None]
     radius = np.hypot(x, y)
-    chebyshev = np.maximum(np.abs(x), np.abs(y))
+    # Chebyshev distance for the square, stretched over the access road so it hides under that too.
+    chebyshev = NEAR_HALF_M - footprint_depth(x, y)
     azimuth = np.arctan2(y, x)
 
-    # Base profile: hidden under the driven ground, then up to meet its rim. Keyed on Chebyshev
-    # distance to follow the driven terrain's square footprint - see HIDE_D/MEET_D above.
+    # Base profile: hidden under the driven ground, then up to meet its rim. Keyed on the drivable
+    # footprint, square plus road - see HIDE_D/MEET_D above.
     height = HIDDEN_Z + (MEET_Z - HIDDEN_Z) * smoothstep(HIDE_D, MEET_D, chebyshev)
 
     # Rolling relief from smoothed white noise. Smoothing a noise field (rather than summing
@@ -123,7 +159,9 @@ def build_far_field(half_m, grid, seed, ridge_amp=RIDGE_AMP_M, relief_amp=RELIEF
     if peak > 0:
         relief /= peak
     height += (
-        relief_amp * relief * smoothstep(MEET_D, MEET_D + RELIEF_RAMP_M, chebyshev)
+        relief_amp
+        * relief
+        * smoothstep(NEAR_HALF_M, NEAR_HALF_M + RELIEF_RAMP_M, chebyshev)
     )
 
     # Ridge band, modulated around the horizon so it forms separate massifs.
@@ -148,11 +186,12 @@ def build_far_field(half_m, grid, seed, ridge_amp=RIDGE_AMP_M, relief_amp=RELIEF
     ridges = ridge_amp * band * (0.35 + 0.65 * 0.5 * (1.0 + modulation))
     height += gaussian_filter(ridges, RIDGE_SIGMA_CELLS, mode="nearest")
 
-    # Nothing inside the driven terrain's footprint may rise above HIDDEN_Z, whatever the noise
-    # did. The relief and ridge terms are already ramped to zero there, so this only guards
-    # against a future parameter change reopening the problem - and it is keyed on the same
-    # Chebyshev footprint, so it covers the corners a radial test would miss.
-    height = np.where(chebyshev < NEAR_HALF_M, np.minimum(height, HIDDEN_Z), height)
+    # Nothing inside HIDE_D may rise above HIDDEN_Z, whatever the noise did. The relief and ridge
+    # terms are already ramped to zero there, so this only guards against a future parameter change
+    # reopening the problem - and it is keyed on the same Chebyshev footprint, so it covers the
+    # corners a radial test would miss. Between HIDE_D and the drivable edge the field rises to
+    # MEET_Z, which the band's rim berm still covers.
+    height = np.where(chebyshev < HIDE_D, np.minimum(height, HIDDEN_Z), height)
 
     return height
 
@@ -214,10 +253,10 @@ def main():
     # to match the profile above. The hidden figure is the one that matters most: any value in it
     # above NEAR_Z_MIN is this field poking up through the driven ground.
     axis = np.linspace(-args.half_m, args.half_m, args.grid)
-    chebyshev = np.maximum(np.abs(axis[None, :]), np.abs(axis[:, None]))
+    chebyshev = NEAR_HALF_M - footprint_depth(axis[None, :], axis[:, None])
     cell_m = 2.0 * args.half_m / args.grid
     rim = height_m[np.abs(chebyshev - NEAR_HALF_M) < cell_m]
-    hidden = height_m[chebyshev < NEAR_HALF_M - cell_m]
+    hidden = height_m[chebyshev < HIDE_D - cell_m]
 
     print(
         f"wrote {args.out} ({args.grid}x{args.grid}, {2 * args.half_m / args.grid:.2f} m/cell)"

@@ -22,7 +22,7 @@
     />
     <rgba haze="0.05 0.05 0.05 1" />
     <global offwidth="1280" offheight="720" azimuth="120" elevation="-20" />
-    <!-- shadowclip sets shadow texel pitch. Casters are all within 13.5 m; 0.6 measured smoothest.
+    <!-- shadowclip sets shadow texel pitch; 0.6 measured smoothest and covers every caster in the 30x30 m area.
          To re-measure, edit this file and reload - setting it on a built Renderer does nothing. -->
     <quality shadowsize="8192" />
     <map shadowclip="0.6" />
@@ -57,7 +57,8 @@
          exactly once needs 1/20 = 0.05 on both axes. The texture image spans the whole plane at
          ~2.4mm/px (see generate_ground_colormap.py), so at 0.05 it is drawn once, not tiled - no
          repeat pitch exists anywhere on the plane, unlike the single-photo texrepeat="0.3 0.3"
-         (~3.3 m tile) tiling this replaced. -->
+         (~3.3 m tile) tiling this replaced. The drivable band's strips use this material at the same
+         per-metre pitch, so the map repeats there. -->
     <material
       name="regolith_ground"
       texture="regolith"
@@ -76,25 +77,96 @@
     <hfield
       name="lunar_hfield"
       file="lunar_hfield.png"
-      size="10 10 0.286 0.1"
+      size="10 10 0.2171 0.1"
     />
     <!-- Render-only twin of the field above, from generate_visual_terrain.py. Same size and geom
          pos as the driven field - it is the same ground, sampled coarser. -->
     <hfield
       name="lunar_hfield_visual"
       file="lunar_hfield_visual.png"
-      size="10 10 0.286 0.1"
+      size="10 10 0.2171 0.1"
     />
-    <!-- Far-field horizon relief from generate_far_terrain.py. Visual only, so the driven ground
-         and its calibration are untouched. size/pos come from that script and change together. -->
+    <!-- Far-field horizon relief from generate_far_terrain.py. It collides, so the rover can drive out the access road, and stays under the driven ground elsewhere. size/pos come from that script and change together. -->
     <hfield
       name="lunar_far_hfield"
       file="lunar_far_hfield.png"
       size="300 300 18.6886 0.1"
     />
     <include file="rocks_assets_generated.xml" />
+    <!-- BAND HFIELDS BEGIN (generate_band_terrain.py) -->
+    <hfield
+      name="lunar_band_n"
+      file="lunar_band_n.png"
+      size="15 2.5 0.7650 0.05"
+    />
+    <hfield
+      name="lunar_band_s"
+      file="lunar_band_s.png"
+      size="15 2.5 0.7459 0.05"
+    />
+    <hfield
+      name="lunar_band_e"
+      file="lunar_band_e.png"
+      size="2.5 10 0.7648 0.05"
+    />
+    <hfield
+      name="lunar_band_w"
+      file="lunar_band_w.png"
+      size="2.5 10 0.7340 0.05"
+    />
+    <hfield
+      name="lunar_band_n_visual"
+      file="lunar_band_n_visual.png"
+      size="10 2.5 0.7429 0.05"
+    />
+    <hfield
+      name="lunar_band_s_visual"
+      file="lunar_band_s_visual.png"
+      size="10 2.5 0.7363 0.05"
+    />
+    <hfield
+      name="lunar_band_e_visual"
+      file="lunar_band_e_visual.png"
+      size="2.5 10 0.7587 0.05"
+    />
+    <hfield
+      name="lunar_band_w_visual"
+      file="lunar_band_w_visual.png"
+      size="2.5 10 0.7300 0.05"
+    />
+    <hfield
+      name="lunar_band_ne_visual"
+      file="lunar_band_ne_visual.png"
+      size="2.5 2.5 0.7430 0.05"
+    />
+    <hfield
+      name="lunar_band_nw_visual"
+      file="lunar_band_nw_visual.png"
+      size="2.5 2.5 0.6895 0.05"
+    />
+    <hfield
+      name="lunar_band_se_visual"
+      file="lunar_band_se_visual.png"
+      size="2.5 2.5 0.7088 0.05"
+    />
+    <hfield
+      name="lunar_band_sw_visual"
+      file="lunar_band_sw_visual.png"
+      size="2.5 2.5 0.6894 0.05"
+    />
+    <hfield
+      name="lunar_band_road"
+      file="lunar_band_road.png"
+      size="3.5 2 0.6958 0.05"
+    />
+    <hfield
+      name="lunar_band_road_visual"
+      file="lunar_band_road_visual.png"
+      size="3.55301 2 0.6917 0.05"
+    />
+    <!-- BAND HFIELDS END -->
     <include file="moon_base_assets.xml" />
-    <include file="boulders_assets.xml" />
+    <include file="landmarks_assets_generated.xml" />
   </asset>
 
   <worldbody>
@@ -102,36 +174,36 @@
          speckle; that does not reproduce on the cratered terrain that replaced its flat plane. -->
     <!-- 1.85 restores the 2x ground illumination the ~28 deg sun costs. A peak, not a slider:
          past this the lit ground clips and lit-vs-shadow contrast falls again. -->
+    <!-- A directional light's shadow map is centred on its pos, so pos sits back along dir far enough
+         that the map covers the 30x30 m drivable area. -->
     <light
-      pos="-9 -4 5"
+      pos="-14.73 -6.38 8.35"
       dir="0.6 0.25 -0.35"
       directional="true"
       diffuse="1.85 1.85 1.75"
       castshadow="true"
     />
 
+    <geom
+      name="far_horizon"
+      type="hfield"
+      hfield="lunar_far_hfield"
+      pos="0 0 -3.1017"
+      material="regolith_ground"
+    />
     <!-- Cratered regolith heightfield (layer 2), replacing the earlier flat plane. Finite
          (matching the old plane's 20x20 m footprint) so wheel contact matches hangar_sim's
          precedent and the ground comfortably bounds the ~1.8 m Dead Reckon Square while staying
          safely inside the shadow frustum above (see the <light> and <visual> comments). pos.z
          must equal generate_terrain.py's printed z_min for its own seed/params - see the
          <hfield> asset comment. -->
-    <geom
-      name="far_horizon"
-      type="hfield"
-      hfield="lunar_far_hfield"
-      pos="0 0 -3.1361"
-      material="regolith_ground"
-      contype="0"
-      conaffinity="0"
-    />
     <!-- Full-resolution ground, collision only. Rendering it costs 134 ms/frame, and shrinking it
          is not an option: a 350x350 collision surface moved closure error 0.6331 -> 1.8232 m. -->
     <geom
       name="ground_plane"
       type="hfield"
       hfield="lunar_hfield"
-      pos="0 0 -0.2095"
+      pos="0 0 -0.1406"
       material="regolith_ground"
       contype="1"
       conaffinity="1"
@@ -142,17 +214,19 @@
       name="ground_visual"
       type="hfield"
       hfield="lunar_hfield_visual"
-      pos="0 0 -0.2095"
+      pos="0 0 -0.1406"
       material="regolith_ground"
       contype="0"
       conaffinity="0"
       group="2"
     />
+    <!-- The drivable 10-15 m band around the cratered centre, from generate_band_terrain.py. -->
+    <include file="band_geoms_generated.xml" />
     <!-- Scattered rock library, see generate_terrain.py. Excluded from the Dead Reckon Square's
          footprint plus margin so the calibration recheck isolates the heightfield's effect. -->
     <include file="rocks_geoms_generated.xml" />
     <include file="moon_base_geoms.xml" />
-    <include file="boulders_geoms.xml" />
+    <include file="landmarks_geoms_generated.xml" />
 
     <!-- Chase shot that keeps the chassis framed from behind/above regardless of where the
          Dead Reckon Square carries it - render-only (mode="targetbody" cameras are exempt from
@@ -252,9 +326,9 @@
        chassis_link's freejoint, then one value per wheel joint in husky_a300.xml's include order
        (front_left, front_right, rear_left, rear_right) - 7 + 4 = 11 values total, matching this
        model's nq (see AGENTS.md's keyframe qpos-size pitfall). z is the local heightfield
-       elevation at (-0.30, 0.50) (0.017057 m, read back from assets/lunar_hfield.png through
-       generate_terrain.py's own row-flip convention with this <hfield>'s elevation_z 0.286 and the
-       ground geom's pos.z -0.2095) plus 0.13597, the chassis_link-to-wheel-bottom offset
+       elevation at (-0.30, 0.50) (0.017755 m, read back from assets/lunar_hfield.png through
+       generate_terrain.py's own row-flip convention with this <hfield>'s elevation_z 0.2171 and the
+       ground geom's pos.z -0.1406) plus 0.13597, the chassis_link-to-wheel-bottom offset
        (husky_a300.xml puts the wheel bodies at +0.02913 under chassis_link and their collision
        cylinders have radius 0.1651). Note this is NOT chassis_link's own pos.z (0.13597), which
        is the flat-plane clearance measured from z=0 and buries the wheels by the local elevation
@@ -266,6 +340,6 @@
        the four wheel cells instead would clear every wheel, at the cost of hanging the base up to
        36 mm above the terrain at the operator-visible spawn pose. -->
   <keyframe>
-    <key name="default" qpos="-0.30 0.50 0.15303 1 0 0 0 0 0 0 0" />
+    <key name="default" qpos="-0.30 0.50 0.15373 1 0 0 0 0 0 0 0" />
   </keyframe>
 </mujoco>

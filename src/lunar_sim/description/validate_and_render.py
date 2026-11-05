@@ -29,9 +29,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 """Phase-1 validation: MJCF smoke test, Dead Reckon Square calibration recheck
-(RECORDED STATE - freejoint chassis pose, not /odom; fails on any boulder
+(RECORDED STATE - freejoint chassis pose, not /odom; fails on any landmark rock
 contact), comparison renders, and the sensor sheet (camera/optical-site frame
-checks, lidar tiling and scan-line returns, labelled mast/mount/boulder views).
+checks, lidar tiling and scan-line returns, labelled mast/mount/rock views).
 
 Run inside the picknikciuser/moveit-pro container (has MuJoCo 3.6 + PIL):
   docker run --rm --entrypoint python3 \
@@ -50,6 +50,8 @@ KeyError at load rather than rendering something misleading.
 import json
 import sys
 import math
+import xml.etree.ElementTree as ET
+from pathlib import Path
 import mujoco
 import numpy as np
 from PIL import Image, ImageDraw
@@ -137,23 +139,28 @@ def smoke_test(model, data):
     print("[smoke] PASS")
 
 
-def dead_reckon_square(model, data):
+def dead_reckon_square(model, data, scene_path):
     """RECORDED STATE calibration recheck: ground-truth chassis freejoint pose
     (xpos/xquat), never /odom (which round-trips the same wrong parameters by
     construction - see README's Skid-steer calibration section)."""
     reset_to_keyframe(model, data)
     chassis_id = require_id(model, mujoco.mjtObj.mjOBJ_BODY, "chassis_link")
     aid = wheel_actuator_ids(model)
-    boulder_ids = {
-        require_id(model, mujoco.mjtObj.mjOBJ_GEOM, name)
-        for name in ("boulder_east", "boulder_north", "boulder_west", "boulder_south")
-    }
+    # Names come from the include file, so a renamed or missing rock fails require_id.
+    rock_names = [
+        g.get("name")
+        for g in ET.parse(
+            Path(scene_path).parent / "landmarks_geoms_generated.xml"
+        ).iter("geom")
+    ]
+    assert rock_names, "landmarks_geoms_generated.xml has no geoms"
+    rock_ids = {require_id(model, mujoco.mjtObj.mjOBJ_GEOM, n) for n in rock_names}
 
     def step_clear_route():
         mujoco.mj_step(model, data)
         for contact in data.contact:
-            if contact.geom1 in boulder_ids or contact.geom2 in boulder_ids:
-                raise AssertionError("Dead Reckon Square touched a boulder")
+            if contact.geom1 in rock_ids or contact.geom2 in rock_ids:
+                raise AssertionError("Dead Reckon Square touched a landmark rock")
 
     def set_wheels(l, r):
         data.ctrl[aid["front_left_wheel_joint"]] = l
@@ -202,7 +209,7 @@ def dead_reckon_square(model, data):
         "closure_error_m": closure_error,
         "corner_turns_deg": diffs,
         "corners_xy": [c.tolist() for c in corners],
-        "boulder_contacts": 0,
+        "landmark_rock_contacts": 0,
     }
 
 
@@ -283,7 +290,7 @@ def sensor_sheet(scene_path, out_prefix):
             100,
             10.0,
             -65,
-            "Four boulders around the route: east, north, west, south",
+            "Landmark rocks around the route",
         ),
     ):
         camera = mujoco.MjvCamera()
@@ -359,7 +366,7 @@ def main():
 
     model, data = load(new_scene)
     smoke_test(model, data)
-    stats = dead_reckon_square(model, data)
+    stats = dead_reckon_square(model, data, new_scene)
 
     # Persist the calibration before any rendering: the renders are optional
     # artifacts, and require_id makes the old-scene comparison render a hard

@@ -1,0 +1,242 @@
+<mujocoinclude>
+  <mesh
+    name="landmark_rock_00"
+    file="rocks/landmark_1.stl"
+    scale="0.5445 0.4273 1.2507"
+  />
+  <mesh
+    name="landmark_rock_01"
+    file="rocks/landmark_5.stl"
+    scale="0.5265 0.4904 1.0906"
+  />
+  <mesh
+    name="landmark_rock_02"
+    file="rocks/landmark_4.stl"
+    scale="0.2263 0.1915 0.0669"
+  />
+  <mesh
+    name="landmark_rock_03"
+    file="rocks/landmark_4.stl"
+    scale="0.2302 0.2292 0.0669"
+  />
+  <mesh
+    name="landmark_rock_04"
+    file="rocks/landmark_5.stl"
+    scale="0.2044 0.2089 0.0855"
+  />
+  <mesh
+    name="landmark_rock_05"
+    file="rocks/landmark_1.stl"
+    scale="0.1796 0.1513 0.1011"
+  />
+  <mesh
+    name="landmark_rock_06"
+    file="rocks/landmark_2.stl"
+    scale="0.5952 0.4776 0.7959"
+  />
+  <mesh
+    name="landmark_rock_07"
+    file="rocks/landmark_5.stl"
+    scale="0.3811 0.4127 0.9419"
+  />
+  <mesh
+    name="landmark_rock_08"
+    file="rocks/landmark_5.stl"
+    scale="0.6268 0.4821 1.0335"
+  />
+  <mesh
+    name="landmark_rock_09"
+    file="rocks/landmark_5.stl"
+    scale="0.5286 0.5017 1.1228"
+  />
+  <mesh
+    name="landmark_rock_10"
+    file="rocks/landmark_4.stl"
+    scale="0.4493 0.4796 0.7830"
+  />
+  <mesh
+    name="landmark_rock_11"
+    file="rocks/landmark_3.stl"
+    scale="0.6141 0.5270 1.5943"
+  />
+  <mesh
+    name="landmark_rock_12"
+    file="rocks/landmark_5.stl"
+    scale="0.6315 0.4998 1.1218"
+  />
+  <mesh
+    name="landmark_rock_13"
+    file="rocks/landmark_6.stl"
+    scale="0.4894 0.4121 1.0603"
+  />
+  <mesh
+    name="landmark_rock_14"
+    file="rocks/landmark_2.stl"
+    scale="0.5267 0.5121 0.7901"
+  />
+  <mesh
+    name="landmark_rock_15"
+    file="rocks/landmark_3.stl"
+    scale="0.4716 0.4646 1.4517"
+  />
+  <mesh
+    name="landmark_rock_16"
+    file="rocks/landmark_1.stl"
+    scale="0.4138 0.3641 0.8346"
+  />
+  <mesh
+    name="landmark_rock_17"
+    file="rocks/landmark_0.stl"
+    scale="0.4088 0.3995 0.6348"
+  />
+  <mesh
+    name="landmark_rock_18"
+    file="rocks/landmark_2.stl"
+    scale="0.5360 0.5701 0.9032"
+  />
+  <mesh
+    name="landmark_rock_19"
+    file="rocks/landmark_3.stl"
+    scale="0.3743 0.3609 1.5409"
+  />
+  <mesh
+    name="landmark_rock_20"
+    file="rocks/landmark_0.stl"
+    scale="0.3810 0.3611 1.0176"
+  />
+  <mesh
+    name="landmark_rock_21"
+    file="rocks/landmark_2.stl"
+    scale="0.4289 0.4205 0.8980"
+  />
+  <mesh
+    name="landmark_rock_22"
+    file="rocks/landmark_1.stl"
+    scale="0.1576 0.1656 0.1059"
+  />
+  <mesh
+    name="landmark_rock_23"
+    file="rocks/landmark_0.stl"
+    scale="0.1923 0.1568 0.0862"
+  />
+  <mesh
+    name="landmark_rock_24"
+    file="rocks/landmark_5.stl"
+    scale="0.1874 0.1975 0.0794"
+  />
+  <mesh
+    name="landmark_rock_25"
+    file="rocks/landmark_6.stl"
+    scale="0.1868 0.1711 0.0852"
+  />
+  <mesh
+    name="landmark_rock_26"
+    file="rocks/landmark_0.stl"
+    scale="0.1597 0.1449 0.0879"
+  />
+  <mesh
+    name="landmark_rock_27"
+    file="rocks/landmark_2.stl"
+    scale="0.1816 0.1544 0.0658"
+  />
+  <mesh
+    name="landmark_rock_28"
+    file="rocks/landmark_1.stl"
+    scale="0.2675 0.2901 0.1011"
+  />
+  <mesh
+    name="landmark_rock_29"
+    file="rocks/landmark_3.stl"
+    scale="0.1805 0.1573 0.1152"
+  />
+  <mesh
+    name="landmark_rock_30"
+    file="rocks/landmark_4.stl"
+    scale="0.1743 0.1834 0.0704"
+  />
+  <mesh
+    name="landmark_rock_31"
+    file="rocks/landmark_3.stl"
+    scale="0.1764 0.1336 0.1089"
+  />
+  <mesh
+    name="landmark_rock_32"
+    file="rocks/landmark_1.stl"
+    scale="0.2533 0.2159 0.1059"
+  />
+  <mesh
+    name="landmark_rock_33"
+    file="rocks/landmark_2.stl"
+    scale="0.2268 0.1715 0.0667"
+  />
+  <mesh
+    name="landmark_rock_34"
+    file="rocks/landmark_4.stl"
+    scale="0.2141 0.1616 0.0657"
+  />
+  <mesh
+    name="landmark_rock_35"
+    file="rocks/landmark_0.stl"
+    scale="0.2262 0.1969 0.0940"
+  />
+  <mesh
+    name="landmark_rock_36"
+    file="rocks/landmark_2.stl"
+    scale="0.1757 0.1494 0.0653"
+  />
+  <mesh
+    name="landmark_rock_37"
+    file="rocks/landmark_0.stl"
+    scale="0.2152 0.1982 0.0868"
+  />
+  <mesh
+    name="landmark_rock_38"
+    file="rocks/landmark_1.stl"
+    scale="0.3068 0.3359 0.1071"
+  />
+  <mesh
+    name="landmark_rock_39"
+    file="rocks/landmark_5.stl"
+    scale="0.1666 0.1498 0.0798"
+  />
+  <mesh
+    name="landmark_mesa"
+    file="rocks/landmark_mesa.stl"
+    scale="2.2457 2.0764 1.3450"
+  />
+  <mesh
+    name="landmark_band_nw"
+    file="rocks/landmark_0.stl"
+    scale="0.8732 1.1009 1.1313"
+  />
+  <mesh
+    name="landmark_band_nw_low"
+    file="rocks/landmark_3.stl"
+    scale="0.5142 0.6878 1.4253"
+  />
+  <mesh
+    name="landmark_band_ne"
+    file="rocks/landmark_2.stl"
+    scale="0.6852 0.6898 0.5059"
+  />
+  <mesh
+    name="landmark_band_n_slab"
+    file="rocks/landmark_1.stl"
+    scale="1.3293 2.0324 1.3268"
+  />
+  <mesh
+    name="landmark_band_sw"
+    file="rocks/landmark_5.stl"
+    scale="1.0338 1.1756 1.0923"
+  />
+  <mesh
+    name="landmark_band_sw_low"
+    file="rocks/landmark_6.stl"
+    scale="0.5470 0.5795 0.6513"
+  />
+  <mesh
+    name="landmark_band_e"
+    file="rocks/landmark_4.stl"
+    scale="0.8514 1.0946 0.8362"
+  />
+</mujocoinclude>
