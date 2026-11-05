@@ -1,6 +1,6 @@
 upstream:
   repository: https://github.com/PickNikRobotics/ros2_kortex.git
-  commit: 732b96f99c8e62849450572f65b649c687fd875f
+  commit: fdf9077abeb8a048a501c08d41b45c8c007bc44c
   branch: main-picknik
 vendored_paths:
   - LICENSE
