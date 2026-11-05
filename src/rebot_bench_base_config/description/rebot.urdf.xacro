@@ -11,8 +11,8 @@
   <xacro:arg name="thermal_cutoff_c" default="100.0" />
   <xacro:arg name="thermal_clear_c" default="75.0" />
   <!-- Real hardware only; joint1-joint6 control mode. "motion" is impedance
-       (MIT): torque = kp * error + kd * velocity error, with no gravity
-       feedforward, so a loaded joint settles short by load torque / kp.
+       (MIT): torque = kp * error + kd * velocity error + effort. The optional
+       gravity controller supplies effort; zero gain keeps plain impedance.
        "position_csp" is the motor's own position loop, which settles on
        target and is capped by the motor's stored speed limit (0x7017). The
        gripper always uses motion. Unsupported values fail expansion. -->
@@ -112,7 +112,7 @@
   </joint>
   <link name="link2">
     <inertial>
-      <origin xyz="-0.117864812717456 -0.00342226413942967 -0.0271551938501484" rpy="0 0 0" />
+      <origin xyz="-0.17333302624602953 -0.015061060521993819 -0.027155193850148404" rpy="0 0 0" />
       <mass value="1.552" />
       <inertia ixx="0.00073374" ixy="-0.00000043" ixz="0.00000851" iyy="0.01255987" iyz="0.00000128" izz="0.01281387" />
     </inertial>
@@ -171,7 +171,7 @@
   </joint>
   <link name="link3">
     <inertial>
-      <origin xyz="0.103427154487799 -0.0664137912104635 -0.0271068687716704" rpy="0 0 0" />
+      <origin xyz="0.1838200060898962 -0.06875720811001694 -0.027106868771670387" rpy="0 0 0" />
       <mass value="1.252" />
       <inertia ixx="0.00046807" ixy="-0.00003456" ixz="-0.00004260" iyy="0.00632695" iyz="0.00000006" izz="0.00648221" />
     </inertial>
@@ -230,7 +230,7 @@
   </joint>
   <link name="link4">
     <inertial>
-      <origin xyz="0.0475544540775559 -0.0441113470158517 -0.0314111924918381" rpy="0 0 0" />
+      <origin xyz="0.25705916121090117 -0.045266975560527896 -0.03141119249183811" rpy="0 0 0" />
       <mass value="0.46" />
       <inertia ixx="0.00045986" ixy="0.00024219" ixz="-0.0" iyy="0.00075258" iyz="-0.0" izz="0.00066742" />
     </inertial>
@@ -264,7 +264,7 @@
   </joint>
   <link name="link5">
     <inertial>
-      <origin xyz="0.0114400622356175 4.7907739316217E-06 0.0380487481818926" rpy="0 0 0" />
+      <origin xyz="-0.045005946432306064 -0.011162314008021191 0.03540671512212996" rpy="0 0 0" />
       <mass value="0.20120457182895" />
       <inertia ixx="7.34238025911107E-05" ixy="1.35700947009798E-08" ixz="-8.58146433770359E-07" iyy="5.5153884237714E-05" iyz="-1.32742144977931E-08" izz="5.29920095811017E-05" />
     </inertial>
@@ -304,7 +304,7 @@
   </joint>
   <link name="link6">
     <inertial>
-      <origin xyz="1.80196022567525E-05 2.48334592051007E-08 0.00434805764057547" rpy="0 0 0" />
+      <origin xyz="-0.001170185357755366 0.023140848967304294 -0.1092238728871268" rpy="0 0 0" />
       <mass value="0.1" />
       <inertia ixx="4.42273835852359E-06" ixy="3.16758463739482E-12" ixz="1.51852818442002E-10" iyy="4.37185522080034E-06" iyz="-2.21864017603015E-12" izz="8.54299378942051E-06" />
     </inertial>
@@ -331,7 +331,7 @@
   </joint>
   <link name="gripper_end">
     <inertial>
-      <origin xyz="-0.112751692515958 0.000128443070436966 -5.72602449749882E-06" rpy="0 0 0" />
+      <origin xyz="-0.13022429654094494 -0.0034316850626901554 -0.0001885648138790362" rpy="0 0 0" />
       <mass value="0.65" />
       <inertia ixx="0.00037354" ixy="-0.00000011" ixz="0.00000050" iyy="0.00015830" iyz="0.00000348" izz="0.00045353" />
     </inertial>
@@ -518,16 +518,19 @@
     `direction` override is needed anywhere - joint frame equals motor frame.
   -->
   <xacro:property name="arm_mode" value="${dict(motion='motion', position_csp='position_csp')['$(arg arm_control_mode)']}" />
-  <xacro:macro name="rebot_joint" params="name id model kp kd mode:=${arm_mode}">
+  <xacro:macro name="rebot_joint" params="name id model kp kd mode:=${arm_mode} feedforward:=true">
     <joint name="${name}">
       <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
         <param name="id">${id}</param>
       </xacro:if>
       <command_interface name="position" />
+      <!-- Optional bounded gravity feedforward, real arm motion mode only. -->
+      <xacro:if value="${'$(arg hardware_interface)' == 'real' and mode == 'motion' and feedforward}">
+        <command_interface name="effort" />
+      </xacro:if>
       <!--
-        Mock only. Every controller in config/control/rebot.ros2_control.yaml
-        commands `position`, and motion mode is driven through `position`
-        alone; the driver exports whatever is declared, so a velocity
+        Mock only. Motion controllers command position; the gravity controller
+        writes effort separately. The driver exports whatever is declared, so a velocity
         declaration here would be claimable and then never written - a joint
         that accepts commands and does not move, with no error to explain it.
       -->
@@ -540,6 +543,10 @@
       <state_interface name="velocity">
         <param name="initial_value">0.0</param>
       </state_interface>
+      <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
+        <!-- Type-2 measured motor torque, not the effort command. -->
+        <state_interface name="effort" />
+      </xacro:if>
     </joint>
     <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
       <!--
@@ -555,6 +562,10 @@
         <param name="control_mode">${mode}</param>
         <param name="kp">${kp}</param>
         <param name="kd">${kd}</param>
+        <!-- LOCAL attended bench override; other motors retain driver defaults. -->
+        <xacro:if value="${name == 'joint2'}">
+          <param name="max_feedforward_effort">18.0</param>
+        </xacro:if>
       </gpio>
     </xacro:if>
   </xacro:macro>
@@ -597,7 +608,7 @@
     <xacro:rebot_joint name="joint4" id="4" model="RS00" kp="50.0" kd="5.0" />
     <xacro:rebot_joint name="joint5" id="5" model="RS00" kp="50.0" kd="4.0" />
     <xacro:rebot_joint name="joint6" id="6" model="RS00" kp="50.0" kd="4.0" />
-    <xacro:rebot_joint name="joint7" id="7" model="RS00" kp="$(arg jaw_kp)" kd="$(arg jaw_kd)" mode="motion" />
+    <xacro:rebot_joint name="joint7" id="7" model="RS00" kp="$(arg jaw_kp)" kd="$(arg jaw_kd)" mode="motion" feedforward="false" />
   </ros2_control>
   </xacro:if>
 </robot>

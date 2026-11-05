@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Gravity Collection Move">
+  <BehaviorTree ID="reBot Gravity Collection Move" _description="Collision-check and execute a native point-to-point joint move at full configured speed, retaining the closed jaw command. No gravity or impedance changes.">
+    <Sequence>
+      <!-- Like the Stack PTP path, plan the six-joint manipulator then append
+           the held jaw. Both PTP states must be arm-only. commanded_state has
+           the explicit joint1..joint7 order from HOME / HoldGripperInTrajectory. -->
+      <Action ID="UnpackRobotStateMessage" robot_state="{commanded_state}" joint_state="{start_joints}" multi_dof_joint_state="{multi_dof}" attached_collision_objects="{attached}" />
+      <Action ID="UnpackJointStateMessage" joint_state="{start_joints}" header="{header}" position="{start_positions}" />
+      <Action ID="RemoveFromVector" input_vector="{start_positions}" index="6" output_vector="{arm_start_positions}" />
+      <Action ID="CreateJointStateMessage" header="{header}" name_="joint1;joint2;joint3;joint4;joint5;joint6" position="{arm_start_positions}" velocity="0;0;0;0;0;0" effort="0;0;0;0;0;0" joint_state="{arm_start_joints}" />
+      <Action ID="CreateRobotStateMessage" joint_state="{arm_start_joints}" multi_dof_joint_state="{multi_dof}" attached_collision_objects="{attached}" is_diff="false" robot_state="{arm_start}" />
+      <Action ID="CreateJointStateMessage" header="{header}" name_="joint1;joint2;joint3;joint4;joint5;joint6" position="{positions}" velocity="0;0;0;0;0;0" effort="0;0;0;0;0;0" joint_state="{target_joints}" />
+      <Action ID="CreateRobotStateMessage" joint_state="{target_joints}" multi_dof_joint_state="{multi_dof}" attached_collision_objects="{attached}" is_diff="false" robot_state="{target}" />
+      <Action ID="GeneratePointToPointTrajectory" planning_group_name="manipulator" start_state="{arm_start}" target_state="{target}" velocity_scale_factor="1.0" acceleration_scale_factor="1.0" jerk_scale_factor="1.0" start_time="0.0" trajectory_sampling_rate="100" joint_trajectory_msg="{arm_trajectory}" />
+      <Action ID="HoldGripperInTrajectory" arm_trajectory="{arm_trajectory}" gripper_position="0.0" trajectory="{trajectory}" />
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+      <Action ID="ValidateTrajectory" planning_scene_msg="{scene}" planning_group_name="manipulator_and_gripper" joint_trajectory_msg="{trajectory}" joint_space_step="0.005" cartesian_space_step="0.002" />
+      <Action ID="RecordRebotTrajectory" trajectory="{trajectory}" />
+      <Action ID="ExecuteTrajectory" joint_trajectory_msg="{trajectory}" execution_pipeline="jtac" controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory" goal_duration_tolerance="-1" />
+      <!-- Carry the actual commanded endpoint forward, as Stack carries its
+           candidate_endpoint. Read the final point directly, not by interpolating
+           an absolute timestamp at the end boundary. The held jaw stays included. -->
+      <Action ID="UnpackJointTrajectoryMessage" joint_trajectory="{trajectory}" joint_names="{end_names}" points="{end_points}" />
+      <Action ID="GetElementOfVector" vector_in="{end_points}" index="-1" element="{end_point}" />
+      <Action ID="UnpackJointTrajectoryPointMessage" joint_trajectory_point="{end_point}" positions="{end_positions}" />
+      <Action ID="CreateJointStateMessage" header="{header}" name_="{end_names}" position="{end_positions}" velocity="0;0;0;0;0;0;0" effort="0;0;0;0;0;0;0" joint_state="{end_joints}" />
+      <Action ID="CreateRobotStateMessage" joint_state="{end_joints}" multi_dof_joint_state="{multi_dof}" attached_collision_objects="{attached}" is_diff="false" robot_state="{commanded_state}" />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Gravity Collection Move">
+      <MetadataFields><Metadata runnable="false" /><Metadata subcategory="reBot Gravity Identification" /></MetadataFields>
+      <input_port name="positions" type="std::vector&lt;double&gt;">joint1-joint6 positions, radians.</input_port>
+      <inout_port name="commanded_state" default="{commanded_state}" type="moveit_msgs::msg::RobotState" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

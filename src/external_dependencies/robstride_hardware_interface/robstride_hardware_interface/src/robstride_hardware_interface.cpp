@@ -271,6 +271,13 @@ CallbackReturn RobstrideHardware::on_init(
       if (jh.direction != 1.0 && jh.direction != -1.0) {
         throw std::invalid_argument("direction must be 1 or -1");
       }
+      jh.max_feedforward_effort = std::stod(
+        GetJointParam(
+          *gpio, "max_feedforward_effort",
+          std::to_string(DefaultMaxFeedforwardEffort(jh.actuator_type))));
+      if (!(jh.max_feedforward_effort >= 0.0)) {
+        throw std::invalid_argument("max_feedforward_effort must be >= 0");
+      }
     } catch (const std::exception & e) {
       RCLCPP_ERROR_STREAM(logger_, "gpio '" << gpio->name << "': " << e.what());
       return CallbackReturn::ERROR;
@@ -918,7 +925,7 @@ return_type RobstrideHardware::write(
           static_cast<float>(target_velocity),
           static_cast<float>(hw_cmd_kp_[i]),
           static_cast<float>(hw_cmd_kd_[i]),
-          static_cast<float>(target_effort));
+          static_cast<float>(frozen_ ? 0.0 : MotorFeedforward(jh, hw_cmd_effort_[i])));
         break;
     }
     frames_by_bus[jh.can_interface].push_back(frame);

@@ -3,10 +3,12 @@
   <BehaviorTree
     ID="Stack Blue on Red"
     _description="Locate two 50 mm cubes with SAM3, pick blue, place it on red, and return home with the jaw closed. Requires calibrated world and RGB camera frames. Speeds come from objectives/rebot_stack_motion.yaml."
+    _favorite="false"
   >
-    <Sequence>
+    <Control ID="Sequence" _collapsed="false">
       <SubTree
         ID="reBot Stack Motion"
+        _collapsed="false"
         joint_velocity_scale_factor="{joint_velocity_scale_factor}"
         joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
         cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
@@ -14,11 +16,12 @@
         gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
         gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
       />
-      <Script code="holding := false; motion_started := false" />
-      <Fallback>
-        <Sequence>
+      <Action ID="Script" code="holding := false; motion_started := false" />
+      <Control ID="Fallback" _collapsed="false">
+        <Control ID="Sequence" _collapsed="false">
           <SubTree
             ID="Pick Blue Cube"
+            _collapsed="false"
             red_top="{red_top}"
             place="{place}"
             holding="{holding}"
@@ -27,6 +30,7 @@
           />
           <SubTree
             ID="reBot Place Blue"
+            _collapsed="false"
             support_top="{red_top}"
             support_object="rebot_red"
             holding="{holding}"
@@ -38,26 +42,27 @@
             gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
             commanded_state="{commanded_state}"
           />
-          <!-- The arm is home; close the empty jaw so all seven joints end at home.
+          <!--The arm is home; close the empty jaw so all seven joints end at home.
                The native Close Gripper plans to the closed limit itself; a
                point-to-point trajectory ending exactly on joint7's 0 rad bound can
-               undershoot it numerically and be refused. -->
-          <SubTree ID="Close Gripper" />
-        </Sequence>
-        <!-- Any failed leg, an IK failure included, ends home rather than
-             wherever the arm stopped. The Objective still fails. -->
-        <Sequence _skipIf="!motion_started">
+               undershoot it numerically and be refused.-->
+          <SubTree ID="Close Gripper" _collapsed="false" />
+        </Control>
+        <!--Any failed leg, an IK failure included, ends home rather than
+             wherever the arm stopped. The Objective still fails.-->
+        <Control ID="Sequence" _collapsed="false" _skipIf="!motion_started">
           <SubTree
             ID="reBot Recover Home"
+            _collapsed="false"
             holding="{holding}"
             velocity_scale_factor="{joint_velocity_scale_factor}"
             acceleration_scale_factor="{joint_acceleration_scale_factor}"
             commanded_state="{commanded_state}"
           />
-          <AlwaysFailure />
-        </Sequence>
-      </Fallback>
-    </Sequence>
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+    </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Stack Blue on Red">

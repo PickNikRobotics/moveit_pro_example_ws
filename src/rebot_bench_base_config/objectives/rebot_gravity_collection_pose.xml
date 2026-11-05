@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Gravity Collection Pose">
+  <BehaviorTree ID="reBot Gravity Collection Pose" _description="Approach the same static target from both sides, settle for 1.5 s and retain a further 2 s of raw recording per side for offline window rejection/retry. All six joints reverse approach direction.">
+    <Sequence>
+      <SubTree ID="reBot Gravity Collection Move" positions="{positive_approach}" commanded_state="{commanded_state}" />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <SubTree ID="reBot Gravity Collection Move" positions="{target}" commanded_state="{commanded_state}" />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action ID="LogMessage" message="Gravity positive approach: static window begins (see ordered pose sequence and trajectory audit)" />
+      <Action ID="WaitForDuration" delay_duration="2.1" />
+      <SubTree ID="reBot Gravity Collection Move" positions="{negative_approach}" commanded_state="{commanded_state}" />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <SubTree ID="reBot Gravity Collection Move" positions="{target}" commanded_state="{commanded_state}" />
+      <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
+      <Action ID="LogMessage" message="Gravity negative approach: static window begins (see ordered pose sequence and trajectory audit)" />
+      <Action ID="WaitForDuration" delay_duration="2.1" />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Gravity Collection Pose">
+      <MetadataFields><Metadata runnable="false" /><Metadata subcategory="reBot Gravity Identification" /></MetadataFields>
+      <input_port name="target" type="std::vector&lt;double&gt;" />
+      <input_port name="positive_approach" type="std::vector&lt;double&gt;" />
+      <input_port name="negative_approach" type="std::vector&lt;double&gt;" />
+      <input_port name="pose_label" type="std::string" />
+      <input_port name="settle_seconds" default="1.5" type="double" />
+      <inout_port name="commanded_state" default="{commanded_state}" type="moveit_msgs::msg::RobotState" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
