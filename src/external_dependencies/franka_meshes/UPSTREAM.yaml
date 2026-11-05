@@ -22,6 +22,7 @@ pruned_paths:
   - everything in the upstream workspace other than src/franka_meshes, which is a robot configuration workspace rather than a mesh package
 modified_paths:
   - src/franka_meshes/script/generate_collision_decomposition.py
+  - src/franka_meshes/test/test_meshes.py
 apache_paths:
   - .
 notes:
@@ -33,3 +34,4 @@ notes:
   - Pinned to the merge commit that landed franka_meshes on upstream main, so drift tracking resolves a real branch tip rather than a pull-request head.
   - The one modified file is the generator's source-mesh lookup, which upstream resolves against its own workspace. It now tries that path first and a vendoring layout second, so the script and its check still run here; nothing else in it changed.
   - The visual meshes are DAE conversions of the same franka_description geometry. dual_arm_sim's MJCF loads them as its visual geoms, which previously rendered the collision meshes and so looked coarser than the real robot.
+  - The other modified file is test_meshes.py, which takes its franka_description mesh directory from the generator's SOURCE_MESHES instead of a fixed path inside the upstream workspace, so it resolves the same way in both layouts.
