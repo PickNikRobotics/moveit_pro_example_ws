@@ -45,11 +45,16 @@ No simulator, no ROS - the MJCF fragments and the vendored xacro are parsed as X
 asserted on by element/attribute, mirroring hangar_sim/test/test_base_geometry.py.
 """
 
+import ast
+import functools
+import math
+import struct
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
 import pytest
+import yaml
 from PIL import Image
 from ament_index_python.packages import get_package_share_directory
 
@@ -384,23 +389,32 @@ def test_every_fixed_camera_has_an_optical_frame_site():
 
 
 def test_far_horizon_stays_below_the_driven_ground():
-    """The far-field horizon hfield is visual only and passes underneath the driven terrain, so
-    inside that terrain's square footprint it must stay below its floor. If it rises above,
-    it pokes up through the ground the robot drives on - which reads as terrain, not as a bug,
-    so nothing else would catch it. Mirrors the guard in generate_far_terrain.py."""
+    """The far-field horizon hfield collides, so the rover can leave by the access road, and passes underneath the drivable terrain (the centre and the band around it), so inside that square footprint it must stay below its floor.
+    If it rises above, it pokes up through the ground the robot drives on - which reads as terrain,
+    not as a bug, so nothing else would catch it.
+    """
     hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
     geoms = _mjcf_elements(HUSKY_SCENE, "geom")
 
-    near_half_m, _, near_elevation_z, _ = _vec(hfields["lunar_hfield"], "size")
+    _, _, near_elevation_z, _ = _vec(hfields["lunar_hfield"], "size")
     near_floor_z = _vec(geoms["ground_plane"], "pos")[2]
+    # The far horizon hides under the whole drivable square, the cratered centre plus the band; the
+    # access road is covered by test_far_horizon_stays_below_the_drawn_band.
+    near_half_m = max(
+        max(
+            abs(_vec(g, "pos")[0]) + _vec(hfields[g.get("hfield")], "size")[0],
+            abs(_vec(g, "pos")[1]) + _vec(hfields[g.get("hfield")], "size")[1],
+        )
+        for g in _ring_geoms().values()
+    )
 
     far_half_m, _, far_elevation_z, _ = _vec(hfields["lunar_far_hfield"], "size")
     far_base_z = _vec(geoms["far_horizon"], "pos")[2]
 
-    assert geoms["far_horizon"].get("contype") == "0", "far horizon must not collide"
+    assert geoms["far_horizon"].get("contype", "1") != "0", "far horizon must collide"
     assert (
-        geoms["far_horizon"].get("conaffinity") == "0"
-    ), "far horizon must not collide"
+        geoms["far_horizon"].get("conaffinity", "1") != "0"
+    ), "far horizon must collide"
 
     png = (
         DESCRIPTION / "assets" / hfields["lunar_far_hfield"].get("file").split("/")[-1]
@@ -428,6 +442,484 @@ def test_far_horizon_stays_below_the_driven_ground():
     assert (
         world_z.max() > near_floor_z + near_elevation_z
     ), "far horizon never rises above the driven terrain, so it contributes no skyline"
+
+
+def _far_z(gx: np.ndarray, gy: np.ndarray) -> np.ndarray:
+    """The far horizon's world z at (gx, gy), bilinear between the samples MuJoCo loads."""
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    geoms = _mjcf_elements(HUSKY_SCENE, "geom")
+    far_half_m, _, far_elevation_z, _ = _vec(hfields["lunar_far_hfield"], "size")
+    far_base_z = _vec(geoms["far_horizon"], "pos")[2]
+    with Image.open(
+        DESCRIPTION / "assets" / hfields["lunar_far_hfield"].get("file").split("/")[-1]
+    ) as image:
+        # MuJoCo keeps 8 bits per hfield sample, so compare against what it loads.
+        raw = np.flipud(np.asarray(image).astype(np.float64))
+    full = 65535.0 if raw.max() > 255 else 255.0
+    values01 = np.round(raw / full * 255.0) / 255.0
+    far = far_base_z + values01 * far_elevation_z
+    far_axis = np.linspace(-far_half_m, far_half_m, far.shape[0])
+    # MuJoCo splits each 2.35 m cell into triangles instead, which differs by up to ~2 cm mid-cell.
+    fx = np.interp(gx, far_axis, np.arange(far_axis.size))
+    fy = np.interp(gy, far_axis, np.arange(far_axis.size))
+    j, i = np.floor(fx).astype(int), np.floor(fy).astype(int)
+    tx, ty = fx - j, fy - i
+    return (
+        far[i, j] * (1 - tx) * (1 - ty)
+        + far[i, j + 1] * tx * (1 - ty)
+        + far[i + 1, j] * (1 - tx) * ty
+        + far[i + 1, j + 1] * tx * ty
+    )
+
+
+def test_far_horizon_stays_below_the_drawn_band():
+    """Where the band is drawn, the far horizon must stay under it: the far field rises to meet the
+    band's edge berm, and rising a little early shows it through the drawn ground."""
+    for name in (n for n in _band_geoms() if n.endswith("_visual")):
+        drawn, (x0, x1, y0, y1) = _hfield_world_z(name)
+        gx, gy = np.meshgrid(
+            np.linspace(x0, x1, drawn.shape[1]), np.linspace(y0, y1, drawn.shape[0])
+        )
+        poke = (_far_z(gx, gy) - drawn).max()
+        assert poke <= 0.0, f"the far horizon rises {poke * 100:.1f} cm through {name}"
+
+
+ROAD_PREFIX = "lunar_band_road"
+
+
+def _band_generator_constant(name: str) -> float:
+    """A numeric constant from generate_band_terrain.py, or the constant it names, read without importing it (it needs scipy)."""
+    tree = ast.parse((DESCRIPTION / "generate_band_terrain.py").read_text())
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(
+            getattr(t, "id", None) == name for t in node.targets
+        ):
+            if isinstance(node.value, ast.Name):
+                return _band_generator_constant(node.value.id)
+            return float(ast.literal_eval(node.value))
+    raise AssertionError(f"generate_band_terrain.py has no {name}")
+
+
+ROAD_WALL_M = _band_generator_constant(
+    "RIM_BERM_M"
+)  # each wall's width, foot to footprint edge
+ROAD_END_FACE_M = _band_generator_constant("ROAD_END_FACE_M")  # each wall's end face
+
+
+def _band_geoms() -> dict[str, ET.Element]:
+    """The band's hfield geoms, from generate_band_terrain.py's include."""
+    geoms = _mjcf_elements(DESCRIPTION / "band_geoms_generated.xml", "geom")
+    assert geoms, "band_geoms_generated.xml has no geoms"
+    return geoms
+
+
+def _ring_geoms() -> dict[str, ET.Element]:
+    """The band strips around the centre, without the access road through the north berm."""
+    return {n: g for n, g in _band_geoms().items() if not n.startswith(ROAD_PREFIX)}
+
+
+def test_band_collision_strips_are_hidden_and_visual_strips_do_not_collide():
+    """The band follows the centre's split: 2 cm collision strips in group 3, drawn by coarser
+    strips that never collide. A collision strip that renders brings back the cost the centre's
+    split removed; a visual strip that collides puts a second, slightly different ground under the
+    wheels."""
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    collision = {n: g for n, g in _band_geoms().items() if not n.endswith("_visual")}
+    visual = {n: g for n, g in _band_geoms().items() if n.endswith("_visual")}
+    assert len(collision) == 5, sorted(collision)  # four sides and the access road
+    assert len(visual) == 9, sorted(
+        visual
+    )  # four sides, four corners and the access road
+    for name, geom in collision.items():
+        assert (
+            geom.get("group") == "3"
+        ), f"{name} must stay in group 3 so it is not rendered"
+        assert geom.get("contype") == "1", name
+        assert geom.get("conaffinity") == "1", name
+        assert name in hfields, f"{name} has no <hfield> in husky_scene.xml"
+    for name, geom in visual.items():
+        assert geom.get("contype") == "0", name
+        assert geom.get("conaffinity") == "0", name
+        assert geom.get("group") == "2", name
+
+
+def test_band_strips_tile_the_ring_around_the_centre():
+    """Each set of strips covers the 10-15 m ring exactly once, so there are neither holes the
+    rover falls through nor overlaps where two grounds fight."""
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    inner = _vec(hfields["lunar_hfield"], "size")[0]
+    for drawn in (False, True):
+        boxes = []
+        for name, geom in _ring_geoms().items():
+            if name.endswith("_visual") != drawn:
+                continue
+            hx, hy = _vec(hfields[geom.get("hfield")], "size")[:2]
+            x, y = _vec(geom, "pos")[:2]
+            boxes.append((x - hx, x + hx, y - hy, y + hy))
+        outer = max(max(-x0, x1, -y0, y1) for x0, x1, y0, y1 in boxes)
+        # Cell centres sit off every strip edge, so each is strictly inside or outside a strip.
+        axis = np.arange(-outer + 0.125, outer, 0.25)
+        gx, gy = np.meshgrid(axis, axis)
+        hits = sum(
+            ((gx > x0) & (gx < x1) & (gy > y0) & (gy < y1)).astype(int)
+            for x0, x1, y0, y1 in boxes
+        )
+        ring = np.maximum(np.abs(gx), np.abs(gy)) > inner
+        kind = "visual" if drawn else "collision"
+        assert (hits[ring] == 1).all(), (
+            f"{kind} strips leave {(hits[ring] == 0).sum()} ring cells uncovered and "
+            f"cover {(hits[ring] > 1).sum()} twice"
+        )
+        assert (hits[~ring] == 0).all(), f"a {kind} strip overlaps the centre"
+
+
+def test_access_road_strips_continue_the_north_band():
+    """The access road's strips start on the north band's outer edge, inside its span, so the road
+    continues the band's ground with neither a gap the rover falls through nor an overlap.
+    """
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    for suffix in ("", "_visual"):
+        north = _band_geoms()[f"lunar_band_n{suffix}"]
+        road = _band_geoms()[f"{ROAD_PREFIX}{suffix}"]
+        nx, ny = _vec(north, "pos")[:2]
+        nhx, nhy = _vec(hfields[north.get("hfield")], "size")[:2]
+        rx, ry = _vec(road, "pos")[:2]
+        rhx, rhy = _vec(hfields[road.get("hfield")], "size")[:2]
+        assert ry - rhy == pytest.approx(
+            ny + nhy, abs=1e-3
+        ), f"{ROAD_PREFIX}{suffix} does not start on the band's edge"
+        assert (
+            nx - nhx <= rx - rhx
+        ), f"{ROAD_PREFIX}{suffix} reaches past the north band"
+        assert (
+            rx + rhx <= nx + nhx
+        ), f"{ROAD_PREFIX}{suffix} reaches past the north band"
+
+
+def test_access_road_strips_meet_the_north_band_without_a_step():
+    """Each road strip's first row is the north strip's last over the road's span, so a wheel driving
+    out through the opening meets no step and the drawn ground shows no crack."""
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    for suffix in ("", "_visual"):
+        north, (nx0, nx1, _, _) = _hfield_world_z(f"lunar_band_n{suffix}")
+        road, (rx0, rx1, _, _) = _hfield_world_z(f"{ROAD_PREFIX}{suffix}")
+        along = np.linspace(rx0, rx1, road.shape[1])
+        expected = np.interp(along, np.linspace(nx0, nx1, north.shape[1]), north[-1])
+        tolerance = (
+            _vec(hfields[f"lunar_band_n{suffix}"], "size")[2]
+            + _vec(hfields[f"{ROAD_PREFIX}{suffix}"], "size")[2]
+        ) / 2 / 255 + 1e-4
+        worst = np.abs(road[0] - expected).max()
+        assert (
+            worst < tolerance
+        ), f"{ROAD_PREFIX}{suffix} steps {worst * 100:.1f} cm from the north band"
+
+
+@functools.lru_cache(maxsize=None)
+def _hfield_world_z(name: str) -> tuple[np.ndarray, tuple[float, float, float, float]]:
+    """World z [row=y from -half, col=x from -half] of a scene hfield, and its geom's
+    (x0, x1, y0, y1) extent."""
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    geoms = {**_mjcf_elements(HUSKY_SCENE, "geom"), **_band_geoms()}
+    geom = next(g for g in geoms.values() if g.get("hfield") == name)
+    hx, hy, elevation_z, _ = _vec(hfields[name], "size")
+    gx, gy, gz = _vec(geom, "pos")
+    with Image.open(DESCRIPTION / "assets" / hfields[name].get("file")) as image:
+        raw = np.asarray(image).astype(np.float64)
+    full = 65535.0 if raw.max() > 255 else 255.0
+    # MuJoCo keeps 8 bits per hfield sample, so compare against what it loads.
+    z = gz + np.flipud(np.round(raw / full * 255.0) / 255.0) * elevation_z
+    z.setflags(write=False)
+    return z, (
+        gx - hx,
+        gx + hx,
+        gy - hy,
+        gy + hy,
+    )
+
+
+def test_band_collision_strips_meet_the_centre_rim():
+    """Each collision strip's row on the 10 m edge carries the centre's own rim heights, so a wheel
+    crossing the edge meets no step. A strip that takes the wrong edge's profile leaves a one-cell
+    ridge or trench along the whole seam, which still tiles and still renders correctly.
+    """
+    centre, (x0, x1, _, _) = _hfield_world_z("lunar_hfield")
+    inner = x1
+    axis = np.linspace(x0, x1, centre.shape[1])
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    for side, (rim, fixed) in {
+        "n": (centre[-1, :], "y"),
+        "s": (centre[0, :], "y"),
+        "e": (centre[:, -1], "x"),
+        "w": (centre[:, 0], "x"),
+    }.items():
+        band, (bx0, bx1, by0, by1) = _hfield_world_z(f"lunar_band_{side}")
+        # Both heightmaps are 8-bit: half of each one's step is how far apart they can be and agree.
+        tolerance = (
+            _vec(hfields["lunar_hfield"], "size")[2]
+            + _vec(hfields[f"lunar_band_{side}"], "size")[2]
+        ) / 2 / 255 + 1e-4
+        if fixed == "y":
+            row = band[0, :] if side == "n" else band[-1, :]
+            along = np.linspace(bx0, bx1, band.shape[1])
+        else:
+            row = band[:, 0] if side == "e" else band[:, -1]
+            along = np.linspace(by0, by1, band.shape[0])
+        inside = np.abs(along) <= inner + 1e-6
+        expected = np.interp(along[inside], axis, rim)
+        worst = np.abs(row[inside] - expected).max()
+        assert worst < tolerance, (
+            f"lunar_band_{side}'s edge row departs from the centre's rim by {worst * 100:.1f} cm - "
+            "re-run generate_band_terrain.py after regenerating the centre"
+        )
+
+
+def _stl_vertices(path: Path) -> np.ndarray:
+    data = path.read_bytes()
+    count = struct.unpack("<I", data[80:84])[0]
+    return (
+        np.frombuffer(
+            data[84:],
+            dtype=np.dtype([("n", "<3f4"), ("v", "<3f4", (3,)), ("a", "<u2")]),
+            count=count,
+        )["v"]
+        .reshape(-1, 3)
+        .astype(np.float64)
+    )
+
+
+def _landmarks() -> list[tuple[str, np.ndarray, np.ndarray, np.ndarray]]:
+    """(name, pos, scale, mesh vertices) for each landmark rock, from the generated includes."""
+    meshes = _mjcf_elements(DESCRIPTION / "landmarks_assets_generated.xml", "mesh")
+    out = []
+    for name, geom in _mjcf_elements(
+        DESCRIPTION / "landmarks_geoms_generated.xml", "geom"
+    ).items():
+        mesh = meshes[geom.get("mesh")]
+        verts = _stl_vertices(DESCRIPTION / "assets" / mesh.get("file"))
+        out.append((name, _vec(geom, "pos"), _vec(mesh, "scale"), verts))
+    assert out, "landmarks_geoms_generated.xml has no geoms"
+    return out
+
+
+def _ground_z(x: float, y: float) -> float:
+    """Collision ground under (x, y), from whichever committed heightmap covers it."""
+    for name in (
+        "lunar_hfield",
+        "lunar_band_n",
+        "lunar_band_s",
+        "lunar_band_e",
+        "lunar_band_w",
+        ROAD_PREFIX,
+    ):
+        z, (x0, x1, y0, y1) = _hfield_world_z(name)
+        if x0 <= x <= x1 and y0 <= y <= y1:
+            col = round((x - x0) / (x1 - x0) * (z.shape[1] - 1))
+            row = round((y - y0) / (y1 - y0) * (z.shape[0] - 1))
+            return float(z[row, col])
+    raise AssertionError(f"({x:.2f}, {y:.2f}) is outside the drivable ground")
+
+
+def _scan_planes_m() -> tuple[float, float]:
+    """Front and rear lidar heights above the ground: chassis, lidar link and lidar camera z."""
+    root = ET.parse(DESCRIPTION / "husky_a300.xml").getroot()
+
+    def z(element: ET.Element) -> float:
+        return float((element.get("pos") or "0 0 0").split()[2])
+
+    chassis = z(root.find(".//body[@name='chassis_link']"))
+    planes = []
+    for link, camera in (
+        ("lidar_front_link", "lidar_front"),
+        ("lidar_rear_link", "lidar_rear"),
+    ):
+        body = root.find(f".//body[@name='{link}']")
+        planes.append(chassis + z(body) + z(body.find(f"camera[@name='{camera}']")))
+    return tuple(planes)
+
+
+def test_edge_berm_is_seen_by_the_front_lidar_and_clears_the_rear():
+    """The berm at the 15 m edge follows the rocks' rule: it reaches the front scan plane by 0.1 m,
+    so the costmaps see where the drivable ground ends, and keeps 0.1 m under the rear one. A berm
+    the front lidar cannot see lets the rover climb off the collision ground unseen."""
+    front, rear = _scan_planes_m()
+    margin = 0.1
+    for side in "nsew":
+        band, (x0, x1, y0, y1) = _hfield_world_z(f"lunar_band_{side}")
+        if side in "ns":
+            # Profiles run across the edge, one per column away from the corners and the opening.
+            coord = np.linspace(y0, y1, band.shape[0])
+            along = np.linspace(x0, x1, band.shape[1])
+            keep = np.abs(along) < 12.0
+            if side == "n":
+                keep &= np.abs(along - _road_extent()[0]) > _road_extent()[1]
+            profiles = band.T[keep]
+        else:
+            coord = np.linspace(x0, x1, band.shape[1])
+            along = np.linspace(y0, y1, band.shape[0])
+            profiles = band[np.abs(along) < 12.0]
+        # Measured from the nominal 13 m foot: the generator moves the foot only outward over band
+        # ground, and checks the exact height above the moved foot itself.
+        foot = np.abs(np.abs(coord) - 13.0).argmin()
+        berm = np.abs(coord) > 13.0
+        tops = profiles[:, berm].max(axis=1) - profiles[:, foot]
+        assert tops.min() >= front + margin, (
+            f"lunar_band_{side}'s berm stands only {tops.min():.3f} m above its foot, under the "
+            f"front scan plane's {front + margin:.3f} m"
+        )
+        assert (
+            tops.max() <= rear - margin
+        ), f"lunar_band_{side}'s berm reaches {tops.max():.3f} m, within {margin} m of the rear scan plane"
+
+
+def _nav2_circumscribed_radius_m() -> float:
+    """The rover's turning radius for Nav2: its local costmap footprint's farthest corner, padded."""
+    params = yaml.safe_load(
+        (DESCRIPTION.parent / "params" / "nav2_params.yaml").read_text()
+    )
+    costmap = params["local_costmap"]["local_costmap"]["ros__parameters"]
+    corners = yaml.safe_load(costmap["footprint"])
+    return max(math.hypot(x, y) for x, y in corners) + costmap["footprint_padding"]
+
+
+def _road_extent() -> tuple[float, float, float]:
+    """The access road's centre x, half-width including its walls, and end y, from its strip."""
+    _, (x0, x1, _, y1) = _hfield_world_z(ROAD_PREFIX)
+    return (x0 + x1) / 2, (x1 - x0) / 2, y1
+
+
+def test_berm_opening_leads_to_a_walled_road():
+    """A man-made berm leaves a way out: the lane through the north berm is drivable from inside the band to the road's open end, where it meets the far horizon's ground, and its side walls follow the berm's rule up to their end faces."""
+    front, rear = _scan_planes_m()
+    margin = 0.1
+    centre_x, half, end = _road_extent()
+    lane_half = half - ROAD_WALL_M
+    turn = 2 * _nav2_circumscribed_radius_m()
+    assert (
+        2 * lane_half >= turn
+    ), f"the {2 * lane_half:.2f} m lane is too narrow to turn the rover in ({turn:.2f} m)"
+    xs = np.linspace(centre_x - lane_half + 0.3, centre_x + lane_half - 0.3, 5)
+    for x in xs:
+        ys = np.arange(12.0, end, 0.1)
+        lane = np.array([_ground_z(x, y) for y in ys])
+        level = f"the lane through the berm opening is not level at x={x:.2f}: {lane.min():.3f}..{lane.max():.3f} m"
+        assert np.abs(np.diff(lane)).max() < 0.03, level
+        assert lane.max() - lane.min() < 0.15, level
+    # At its end the road meets the far horizon's ground, which carries the rover on.
+    road, (rx0, rx1, _, ry1) = _hfield_world_z(ROAD_PREFIX)
+    edge_x = np.linspace(rx0, rx1, road.shape[1])
+    step = road[-1] - _far_z(edge_x, np.full_like(edge_x, ry1))
+    stands = f"the road's end stands {step.min():.3f}..{step.max():.3f} m above the far ground"
+    assert 0.0 <= step.min(), stands
+    assert step.max() < 0.03, stands
+    across = np.arange(0.0, 1.0, 0.02)
+
+    def wall_top(sign, y):
+        foot = centre_x + sign * lane_half
+        return max(_ground_z(foot + sign * d, y) for d in across) - _ground_z(foot, y)
+
+    # Each wall ends in a face that falls steadily to the road; 1 cm covers 8-bit steps.
+    for sign in (-1, 1):
+        sink = [wall_top(sign, y) for y in np.arange(end - ROAD_END_FACE_M, end, 0.02)]
+        falls = f"a road wall does not end in a falling face: {np.round(sink, 3)}"
+        assert np.diff(sink).max() < 0.01, falls
+        assert sink[-1] < 0.05, falls
+    tops = []
+    # From where the berm's and the wall's 0.4 m faces have both reached the crest, to each wall's
+    # end face.
+    for y in np.arange(13.5, end - ROAD_END_FACE_M, 0.1):
+        for sign in (-1, 1):
+            tops.append(wall_top(sign, y))
+    tops = np.array(tops)
+    assert (
+        tops.min() >= front + margin
+    ), f"a road wall stands only {tops.min():.3f} m above its foot"
+    assert (
+        tops.max() <= rear - margin
+    ), f"a road wall reaches {tops.max():.3f} m, within {margin} m of the rear scan plane"
+
+
+def test_landmark_rocks_roll_under_the_rover_or_clear_both_lidar_planes():
+    """Every landmark rock is either low enough for the A300 to roll over, or reaches a lidar plane
+    and keeps its top at least 0.1 m from both, so pitch does not make it flicker in and out of a
+    scan. A rock in between stops the rover while staying invisible to the costmaps. Measured on the
+    exposed top - what stands above the ground under the rock - since the mesh is partly buried.
+    """
+    front, rear = _scan_planes_m()
+    margin = 0.1
+    roll_over = 0.10  # under the 0.136 m belly and the 0.165 m wheel radius
+    angles = np.linspace(0, 2 * np.pi, 16, endpoint=False)
+    for name, pos, scale, verts in _landmarks():
+        top_z = pos[2] + (verts[:, 2] * scale[2]).max()
+        reach = np.hypot(verts[:, 0] * scale[0], verts[:, 1] * scale[1]).max()
+        ring = [
+            _ground_z(pos[0] + reach * math.cos(a), pos[1] + reach * math.sin(a))
+            for a in angles
+        ]
+        # Seen from the centre and from the highest and lowest ground at the rock's edge.
+        for ground in (_ground_z(pos[0], pos[1]), max(ring), min(ring)):
+            top = top_z - ground
+            if top <= roll_over:
+                continue
+            assert (
+                top >= front + margin
+            ), f"{name} stands {top:.3f} m on some side: too tall to roll over, too low for either lidar to see"
+            assert (
+                abs(top - rear) >= margin
+            ), f"{name}'s top stands {top:.3f} m on some side, within {margin} m of the rear lidar plane"
+
+
+def test_small_rocks_roll_under_the_rover():
+    """The scattered small rocks sit below both lidar planes, so none may stand more than 0.10 m above
+    the lowest ground beside it: a taller one stops the rover, or high-centres it, unseen.
+    """
+    roll_over = 0.10  # under the 0.136 m belly and the 0.165 m wheel radius
+    meshes = _mjcf_elements(DESCRIPTION / "rocks_assets_generated.xml", "mesh")
+    geoms = _mjcf_elements(DESCRIPTION / "rocks_geoms_generated.xml", "geom")
+    assert geoms, "rocks_geoms_generated.xml has no geoms"
+    for name, geom in geoms.items():
+        mesh = meshes[geom.get("mesh")]
+        verts = _stl_vertices(DESCRIPTION / "assets" / mesh.get("file")) * _vec(
+            mesh, "scale"
+        )
+        x, y, z = _vec(geom, "pos")
+        reach = np.hypot(verts[:, 0], verts[:, 1]).max()
+        lowest = min(
+            _ground_z(x + dx, y + dy)
+            for dx in (-reach, 0.0, reach)
+            for dy in (-reach, 0.0, reach)
+        )
+        top = z + verts[:, 2].max() - lowest
+        assert top <= roll_over, (
+            f"{name} stands {top:.3f} m above the ground beside it, too tall to roll over and "
+            "below both lidar planes"
+        )
+
+
+def test_landmark_rocks_sit_in_the_ground_under_them():
+    """Each rock's base is buried in the committed ground all the way round, not just at its centre:
+    on a slope a rock seated by its centre sample leaves its downhill edge in the air, and regenerating
+    the terrain without re-running generate_landmarks.py leaves rocks at the old ground's height.
+    """
+    geoms = _mjcf_elements(DESCRIPTION / "landmarks_geoms_generated.xml", "geom")
+    for name, pos, scale, verts in _landmarks():
+        w, _, _, z = _vec(geoms[name], "quat")
+        yaw = 2 * math.atan2(z, w)
+        world = verts * scale
+        c, s = math.cos(yaw), math.sin(yaw)
+        x = pos[0] + c * world[:, 0] - s * world[:, 1]
+        y = pos[1] + s * world[:, 0] + c * world[:, 1]
+        height = world[:, 2].max() - world[:, 2].min()
+        low = world[:, 2] <= world[:, 2].min() + 0.1 * height
+        for vx, vy, vz in zip(x[low], y[low], pos[2] + world[low, 2]):
+            ground = _ground_z(vx, vy)
+            assert (
+                vz <= ground + 0.005
+            ), f"{name}'s base floats {(vz - ground) * 100:.1f} cm above the ground at ({vx:.2f}, {vy:.2f})"
+        depth = _ground_z(pos[0], pos[1]) - (pos[2] + world[:, 2].min())
+        assert (
+            depth <= 0.35 * height + 0.15
+        ), f"{name} is buried {depth:.2f} m deep - stale placement?"
 
 
 def test_driven_ground_is_collision_only_and_hidden_from_rendering():

@@ -132,15 +132,17 @@ local_costmap:
       # Measured from husky_a300.xml: bumpers reach x = +-0.495 m, wheels and arch y = +-0.35 m.
       footprint: "[[0.50, 0.35], [0.50, -0.35], [-0.50, -0.35], [-0.50, 0.35]]"
       footprint_padding: 0.025
-      plugins: ["obstacle_layer", "inflation_layer"]
+      plugins: ["front_obstacle_layer", "rear_obstacle_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
         inflation_radius: 0.75
-      obstacle_layer:
+      # One layer per scan, so each clears only its own marks: a rear ray passing over a
+      # landmark only the front plane reaches would otherwise erase it.
+      front_obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan_front scan_rear
+        observation_sources: scan_front
         scan_front:
           topic: /scan_front_filtered
           max_obstacle_height: 2.0
@@ -156,6 +158,10 @@ local_costmap:
           qos_overriding_options:
             policy_kinds: [reliability]
             reliability: best_effort
+      rear_obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan_rear
         scan_rear:
           topic: /scan_rear_filtered
           max_obstacle_height: 2.0
@@ -182,7 +188,7 @@ global_costmap:
       global_frame: map
       robot_base_frame: footprint
       use_sim_time: False
-      # No saved map yet: a rolling window as large as the 20 x 20 m drivable field, built from the lidars alone.
+      # No saved map yet: a 20 x 20 m rolling window over the 30 x 30 m drivable field, built from the lidars alone.
       rolling_window: true
       width: 20
       height: 20
@@ -190,11 +196,13 @@ global_costmap:
       footprint_padding: 0.025
       resolution: 0.05
       track_unknown_space: false
-      plugins: ["obstacle_layer", "inflation_layer"]
-      obstacle_layer:
+      plugins: ["front_obstacle_layer", "rear_obstacle_layer", "inflation_layer"]
+      # One layer per scan, so each clears only its own marks: a rear ray passing over a
+      # landmark only the front plane reaches would otherwise erase it.
+      front_obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan_front scan_rear
+        observation_sources: scan_front
         scan_front:
           topic: /scan_front_filtered
           max_obstacle_height: 2.0
@@ -210,6 +218,10 @@ global_costmap:
           qos_overriding_options:
             policy_kinds: [reliability]
             reliability: best_effort
+      rear_obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan_rear
         scan_rear:
           topic: /scan_rear_filtered
           max_obstacle_height: 2.0
