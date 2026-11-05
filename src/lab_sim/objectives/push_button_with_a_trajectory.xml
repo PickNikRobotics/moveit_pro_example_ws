@@ -20,39 +20,41 @@
       />
       <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       <!--Plan a path to move in straight line towards the button-->
-      <Action
-        ID="CreatePoseStamped"
-        reference_frame="grasp_link"
-        pose_stamped="{target_pose}"
-        position_xyz="0;0;0.11"
-      />
-      <Action
-        ID="VisualizePose"
-        marker_lifetime="0.000000"
-        marker_name="pose"
-        marker_size="0.100000"
-        pose="{target_pose}"
-      />
-      <Action ID="ResetVector" vector="{path}" />
-      <Action
-        ID="PushBackVector"
-        input_vector="{path}"
-        element="{target_pose}"
-        output_vector="{path}"
-      />
-      <Action
-        ID="PlanCartesianPath"
-        blending_radius="0.020000"
-        debug_solution="{debug_solution}"
-        ik_cartesian_space_density="0.010000"
-        ik_joint_space_density="0.100000"
-        joint_trajectory_msg="{joint_trajectory_msg}"
-        path="{path}"
-        planning_group_name="manipulator"
-        cartesian_constraint="[{constraint_type: position_only}]"
-        tip_links="grasp_link"
-        trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 0.1, acceleration_scale_factor: 0.2}]"
-      />
+      <Control ID="Sequence" name="Plan Path to Button">
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="grasp_link"
+          pose_stamped="{target_pose}"
+          position_xyz="0;0;0.11"
+        />
+        <Action
+          ID="VisualizePose"
+          marker_lifetime="0.000000"
+          marker_name="pose"
+          marker_size="0.100000"
+          pose="{target_pose}"
+        />
+        <Action ID="ResetVector" vector="{path}" />
+        <Action
+          ID="PushBackVector"
+          input_vector="{path}"
+          element="{target_pose}"
+          output_vector="{path}"
+        />
+        <Action
+          ID="PlanCartesianPath"
+          blending_radius="0.020000"
+          debug_solution="{debug_solution}"
+          ik_cartesian_space_density="0.010000"
+          ik_joint_space_density="0.100000"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          path="{path}"
+          planning_group_name="manipulator"
+          cartesian_constraint="[{constraint_type: position_only}]"
+          tip_links="grasp_link"
+          trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 0.1, acceleration_scale_factor: 0.2}]"
+        />
+      </Control>
       <!--Activate the JTAC, tare the sensor and execute the trajectory with compliance. The button stops the arm about 0.05 rad short of the end of the trajectory, so the goal tolerance is 0.1 rad.-->
       <Action
         ID="SwitchController"
