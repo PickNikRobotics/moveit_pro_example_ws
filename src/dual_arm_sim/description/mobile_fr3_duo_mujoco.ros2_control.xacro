@@ -1,11 +1,16 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <!-- MujocoSystem takes the joints and actuators from the MJCF, so none are listed here. -->
+  <xacro:include
+    filename="$(find picknik_accessories)/descriptions/sensors/camera_renderer.urdf.xacro"
+  />
   <xacro:macro
     name="mobile_fr3_duo_mujoco_ros2_control"
     params="mujoco_model mujoco_model_package mujoco_keyframe mujoco_viewer publish_object_tf
             ground_truth_odom_topic ground_truth_odom_frame base_link_name">
     <ros2_control name="mobile_fr3_duo" type="system">
+      <!-- The cameras MOVEIT_PRO_CAMERA_RENDERER applies to; runtime.launch.xml starts one Nyx node each. -->
+      <xacro:camera_renderer_sensors cameras="scene_camera" />
       <sensor name="lidar_front">
         <param name="points_topic">/lidar_front/points</param>
       </sensor>
@@ -27,7 +32,7 @@
         <!-- world -> mj_world comes from launch/navigation.launch.py, so the plugin must not publish it. -->
         <param name="publish_mj_world_tf">false</param>
         <param name="publish_object_tf">${publish_object_tf}</param>
-        <!-- Ground truth as a message only: the odometry bridge adds drift and publishes the planar joints. -->
+        <!-- Ground truth as a message only: the odometry bridge republishes it as planar joints, with noise off at launch. -->
         <param name="publish_odom">true</param>
         <param name="odom_topic">${ground_truth_odom_topic}</param>
         <!-- The frame the true pose is in. MoveIt Pro requires it to differ from the URDF root. -->

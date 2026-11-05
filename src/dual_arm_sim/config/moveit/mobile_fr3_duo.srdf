@@ -411,8 +411,6 @@
     <disable_collisions link1="left_fr3v2_leftfinger" link2="left_fr3v2_link6" reason="Never" />
     <disable_collisions link1="left_fr3v2_leftfinger" link2="left_fr3v2_link7" reason="Never" />
     <disable_collisions link1="left_fr3v2_leftfinger" link2="left_fr3v2_rightfinger" reason="Default" />
-    <disable_collisions link1="left_fr3v2_leftfinger" link2="right_fr3v2_leftfinger" reason="Never" />
-    <disable_collisions link1="left_fr3v2_leftfinger" link2="right_fr3v2_rightfinger" reason="Never" />
     <disable_collisions link1="left_fr3v2_link0" link2="left_fr3v2_link1" reason="Adjacent" />
     <disable_collisions link1="left_fr3v2_link0" link2="left_fr3v2_link2" reason="Never" />
     <disable_collisions link1="left_fr3v2_link0" link2="left_fr3v2_link3" reason="Never" />
@@ -459,7 +457,6 @@
     <disable_collisions link1="left_fr3v2_link6" link2="left_fr3v2_link7" reason="Adjacent" />
     <disable_collisions link1="left_fr3v2_link6" link2="left_fr3v2_rightfinger" reason="Never" />
     <disable_collisions link1="left_fr3v2_link7" link2="left_fr3v2_rightfinger" reason="Never" />
-    <disable_collisions link1="left_fr3v2_rightfinger" link2="right_fr3v2_rightfinger" reason="Never" />
     <disable_collisions link1="right_fr3v2_hand" link2="right_fr3v2_leftfinger" reason="Adjacent" />
     <disable_collisions link1="right_fr3v2_hand" link2="right_fr3v2_link3" reason="Never" />
     <disable_collisions link1="right_fr3v2_hand" link2="right_fr3v2_link4" reason="Never" />

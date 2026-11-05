@@ -91,11 +91,8 @@
 - description: ''
   favorite: false
   joint_group_names:
-  - manipulator
   - left_manipulator
-  - right_manipulator
   - left_manipulator_without_spine
-  - right_manipulator_without_spine
   joint_state:
     effort: []
     header:
@@ -136,10 +133,7 @@
 - description: ''
   favorite: false
   joint_group_names:
-  - manipulator
-  - left_manipulator
   - right_manipulator
-  - left_manipulator_without_spine
   - right_manipulator_without_spine
   joint_state:
     effort: []

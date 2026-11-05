@@ -10,11 +10,14 @@
   <size nuser_cam="4" />
 
   <default>
+    <default class="robot_collision">
+      <geom group="3" />
+    </default>
     <!-- Both sides of a grasp contact use this stiffness; mixing with a soft block lets the pads interpenetrate. -->
     <default class="grasp_contact">
       <geom solref="0.006 1" solimp="0.95 0.99 0.001" />
       <default class="finger_contact">
-        <geom friction="4 0.01 0.0002" />
+        <geom group="3" friction="4 0.01 0.0002" />
       </default>
     </default>
   </default>
@@ -37,10 +40,6 @@
     <mesh
       name="franka_spine_visual"
       file="package://franka_meshes/meshes/accessories/franka_spine_v0_1/visual/franka_spine_visual.obj"
-    />
-    <mesh
-      name="fr3_duo_mount"
-      file="package://franka_description/meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_mount.stl"
     />
     <mesh
       name="fr3_duo_mount_visual"
@@ -69,10 +68,6 @@
     <mesh
       name="fr3_duo_cover_visual"
       file="package://franka_meshes/meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_cover_visual.obj"
-    />
-    <mesh
-      name="franka_head"
-      file="package://franka_description/meshes/accessories/franka_head_v0_2/collision/franka_head.stl"
     />
     <mesh
       name="franka_head_visual"
@@ -115,10 +110,6 @@
       file="package://franka_meshes/meshes/robots/fr3v2/visual/link2_visual.obj"
     />
     <mesh
-      name="link3"
-      file="package://franka_description/meshes/robots/fr3v2/collision/link3.stl"
-    />
-    <mesh
       name="link3_visual"
       file="package://franka_meshes/meshes/robots/fr3v2/visual/link3_visual.obj"
     />
@@ -155,10 +146,6 @@
       file="package://franka_meshes/meshes/robots/fr3v2/collision/link3_convex_07.stl"
     />
     <mesh
-      name="link4"
-      file="package://franka_description/meshes/robots/fr3v2/collision/link4.stl"
-    />
-    <mesh
       name="link4_visual"
       file="package://franka_meshes/meshes/robots/fr3v2/visual/link4_visual.obj"
     />
@@ -193,10 +180,6 @@
     <mesh
       name="link4_convex_07"
       file="package://franka_meshes/meshes/robots/fr3v2/collision/link4_convex_07.stl"
-    />
-    <mesh
-      name="link5"
-      file="package://franka_description/meshes/robots/fr3v2/collision/link5.stl"
     />
     <mesh
       name="link5_visual"
@@ -389,7 +372,7 @@
     />
   </actuator>
   <worldbody>
-    <body name="base" gravcomp="1">
+    <body name="base" childclass="robot_collision" gravcomp="1">
       <body name="planar_base" gravcomp="1">
         <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
         <joint

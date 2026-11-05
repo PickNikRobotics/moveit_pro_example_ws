@@ -50,6 +50,7 @@ struct Scenario
   std::map<std::string, int> calls;
   std::vector<std::string> motions;
   std::vector<std::string> transfer_steps;
+  std::vector<std::string> initialization_parameters;
   std::vector<double> carry_speeds;
   std::vector<double> carry_accelerations;
   int halts = 0;
@@ -78,6 +79,10 @@ public:
   {
     return { BT::InputPort<std::string>("operation"),
              BT::InputPort<std::string>("arm"),
+             BT::InputPort<std::string>("waypoint_name"),
+             BT::InputPort<std::string>("joint_group_name"),
+             BT::InputPort<std::string>("controller_names"),
+             BT::InputPort<std::string>("controller_action_server"),
              BT::InputPort<double>("carry_speed"),
              BT::InputPort<double>("carry_acceleration"),
              BT::InputPort<std::string>("solution"),
@@ -110,6 +115,13 @@ private:
         operation.find("Gripper") != std::string::npos)
     {
       scenario_.motions.push_back(key);
+    }
+    if (operation == "Move to Waypoint" && getInput<std::string>("arm").value().empty())
+    {
+      scenario_.initialization_parameters = { getInput<std::string>("waypoint_name").value(),
+                                              getInput<std::string>("joint_group_name").value(),
+                                              getInput<std::string>("controller_names").value(),
+                                              getInput<std::string>("controller_action_server").value() };
     }
     if (key == scenario_.fail_at && call == scenario_.fail_on_call)
     {
@@ -170,7 +182,8 @@ void substituteOperations(tinyxml2::XMLElement* element, std::string arm = "")
     const std::string detections_empty =
         element->Attribute("detections_empty") ? element->Attribute("detections_empty") : "";
     std::map<std::string, std::string> solution_ports;
-    for (const auto* port : { "solution", "pickup_solution", "carry_solution" })
+    for (const auto* port : { "solution", "pickup_solution", "carry_solution", "waypoint_name", "joint_group_name",
+                              "controller_names", "controller_action_server" })
     {
       if (const auto* value = element->Attribute(port))
       {
@@ -248,14 +261,47 @@ public:
   BT::BehaviorTreeFactory factory;
 };
 
-TEST_F(SortBlocks, EmptyTableSucceedsWithoutMotion)
+TEST_F(SortBlocks, EmptyTableInitializesHomeWithoutTransferMotion)
 {
   // GIVEN neither color has detections.
   auto tree = makeTree();
   // WHEN the sort loop checks both colors.
   EXPECT_EQ(finish(tree), BT::NodeStatus::SUCCESS);
-  // THEN success requires no motion.
-  EXPECT_TRUE(scenario.motions.empty());
+  // THEN only initialization runs, using the controller that can move the spine and both arms.
+  EXPECT_EQ(scenario.motions, (std::vector<std::string>{ "Move to Waypoint:" }));
+  EXPECT_EQ(scenario.initialization_parameters,
+            (std::vector<std::string>{ "Home", "manipulator", "joint_trajectory_admittance_controller",
+                                       "/joint_trajectory_admittance_controller/follow_joint_trajectory" }));
+}
+
+TEST_F(SortBlocks, RegressionHomeFailureStopsBeforePerceptionOrTransfer)
+{
+  // GIVEN initialization fails while blocks are still available.
+  scenario.red = { true };
+  scenario.green = { true };
+  scenario.fail_at = "Move to Waypoint:";
+  auto tree = makeTree();
+  // WHEN Home cannot be reached.
+  EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
+  // THEN the loop must not mask the failure or run perception and transfer.
+  EXPECT_EQ(scenario.calls["Find Red Block:right"], 0);
+  EXPECT_EQ(scenario.calls["Find Green Block:left"], 0);
+  EXPECT_TRUE(scenario.transfer_steps.empty());
+}
+
+TEST_F(SortBlocks, RegressionHomeCompletesBeforeTheFirstTransfer)
+{
+  // GIVEN initialization is still running after navigation.
+  scenario.red = { true };
+  scenario.hold_at = "Move to Waypoint:";
+  auto tree = makeTree();
+  // WHEN the controller has not finished moving Home.
+  EXPECT_EQ(tree.tickExactlyOnce(), BT::NodeStatus::RUNNING);
+  // THEN perception and pickup cannot run with the old spine height.
+  EXPECT_EQ(scenario.calls["Find Red Block:right"], 0);
+  EXPECT_TRUE(scenario.transfer_steps.empty());
+  tree.haltTree();
+  EXPECT_EQ(scenario.halts, 1);
 }
 
 TEST_F(SortBlocks, BothArmsCompleteBeforeExhaustionSucceeds)
@@ -394,7 +440,7 @@ TEST_P(SortBlocksPerceptionFailure, RegressionPerceptionErrorCannotSucceedAsExha
   EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
 
   // THEN no arm may move, and a red perception error must not fall through to green.
-  EXPECT_TRUE(scenario.motions.empty());
+  EXPECT_EQ(scenario.motions, (std::vector<std::string>{ "Move to Waypoint:" }));
   if (scenario.fail_at == "Find Red Block:right")
   {
     EXPECT_EQ(scenario.calls["Find Green Block:left"], 0);
@@ -425,7 +471,7 @@ TEST_F(SortBlocks, RegressionPoseTransformFailureCannotSucceedAsExhaustion)
   EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
 
   // THEN neither stale-pose motion nor the other color's branch is allowed.
-  EXPECT_TRUE(scenario.motions.empty());
+  EXPECT_EQ(scenario.motions, (std::vector<std::string>{ "Move to Waypoint:" }));
   EXPECT_EQ(scenario.calls["Find Green Block:left"], 0);
 }
 

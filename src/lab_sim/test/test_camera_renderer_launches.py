@@ -67,7 +67,8 @@ CONFIGS = (
     RendererConfig(
         "dual_arm_sim",
         SOURCE_ROOT / "dual_arm_sim",
-        SOURCE_ROOT / "dual_arm_sim/description/franka.urdf.xacro",
+        SOURCE_ROOT
+        / "dual_arm_sim/description/mobile_fr3_duo_mujoco.ros2_control.xacro",
         "description/mujoco/scene.xml",
         SOURCE_ROOT / "dual_arm_sim/description/mujoco/scene.xml",
     ),
