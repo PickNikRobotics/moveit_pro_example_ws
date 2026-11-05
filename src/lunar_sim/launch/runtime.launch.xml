@@ -2,5 +2,8 @@
 <launch>
   <include
     file="$(find-pkg-share moveit_studio_agent)/launch/runtime_services.launch.xml"
-  />
+  >
+    <!-- The Husky A300 has no arm, so Meta Quest teleop has nothing to drive. -->
+    <arg name="quest_teleop" value="false" />
+  </include>
 </launch>
