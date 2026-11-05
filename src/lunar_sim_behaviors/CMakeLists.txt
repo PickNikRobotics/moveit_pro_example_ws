@@ -8,7 +8,6 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   geometry_msgs
   moveit_pro_behavior
   moveit_pro_behavior_interface
-  moveit_pro_controllers_msgs
   nav_msgs
   pluginlib)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -19,7 +18,6 @@ add_library(
   lunar_sim_behaviors
   SHARED
   src/dead_reckon_motion.cpp
-  src/teleoperate_base.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   lunar_sim_behaviors

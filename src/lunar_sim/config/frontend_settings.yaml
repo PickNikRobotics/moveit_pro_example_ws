@@ -3,3 +3,6 @@ referenceFrame: map
 
 # MPPI publishes its chosen trajectory on /optimal_trajectory, not the /local_plan that DWB uses.
 nav2LocalPlanTopic: /optimal_trajectory
+
+# BaseJog sends body-frame commands without a frame_id; use the base controller's frame for the velocity overlay.
+nav2CmdVelFrame: footprint

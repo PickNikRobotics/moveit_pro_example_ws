@@ -1,7 +1,4 @@
-# diff_drive_controller is a kinematics controller, not a per-joint velocity controller, so the
-# "base" group's wheel joints are not joint-joggable; unlike Pose Jog, Joint Jog stays unusable on
-# this base (see src/lunar_sim/README.md). An empty planning_groups/controllers pair crashes
-# MoveIt Pro's launch (evaluates to an untyped empty parameter tuple), so this points at "base"
-# inertly instead - Joint Jog is never invoked for this robot.
+# Required, but the wheels have no per-joint velocity controller to Joint Jog. Lists the base because
+# an empty list crashes launch; the Desktop App leaves base_jog's group out, so it shows no Joint tab.
 planning_groups: ["base"]
 controllers: ["platform_velocity_controller"]
