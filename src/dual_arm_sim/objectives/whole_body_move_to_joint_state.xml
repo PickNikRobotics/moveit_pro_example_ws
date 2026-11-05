@@ -21,12 +21,14 @@
           <Action
             ID="SwitchController"
             activate_controllers="joint_trajectory_admittance_controller;base_jgvc"
+            strictness="2"
           />
         </Decorator>
       </Control>
       <Action
         ID="SwitchController"
         activate_controllers="joint_trajectory_admittance_controller;base_jgvc"
+        strictness="2"
       />
     </Control>
   </BehaviorTree>

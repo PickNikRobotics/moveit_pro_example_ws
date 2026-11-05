@@ -14,7 +14,7 @@ These files, and the whole-body and navigation Objectives, are copied from the M
 
 A file-by-file comparison against that second copy belongs here once it exists; it is left out until #1046 lands, so this page describes only what is in this branch.
 
-The robot meshes that are byte-identical to franka_description's are not copied: `description/mujoco/mobile_fr3_duo.xml` loads them from the vendored franka_description through `package://franka_description/meshes/...` paths. Only the converted chassis mesh and the two Menagerie finger meshes are in `description/mujoco/assets/`.
+`description/mujoco/mobile_fr3_duo.xml` loads the robot meshes from the vendored `franka_description` and `franka_meshes` ROS packages through `package://` paths. `franka_meshes` supplies the converted visuals and convex collision parts. The local `description/mujoco/assets/` directory holds the converted chassis visual and two Menagerie finger meshes. Robot collision geoms remain active for physics but are hidden from normal views, cameras and lidars.
 
 ## Scene
 
@@ -44,14 +44,15 @@ only single-digit millimetres of front gap, against a map cell an order of magni
 room to spare on the reach side. The drawing centre in `objectives/writing_demo.xml` is what buys
 that reach room; shifting it toward the robot widens the window, shifting it away narrows it.
 
-Anything that moves either bound lands outside the window: moving the pick table, changing
-`generate_map.py`'s `RESOLUTION`, or lengthening the `Stow` waypoint so the footprint reaches
-further forward. The side tables bound neither edge.
+Moving the pick table or changing `generate_map.py`'s `RESOLUTION` can cross either bound. The
+side tables bound neither edge. Both Nav2 footprints in `params/nav2_params.yaml` were drawn
+by hand from `Stow`; they do not follow changes to the waypoint.
 
-`test/test_scene.py` guards both edges, one test each, and each failure message names the edge
-crossed. **Run it after any of those changes, and do not widen the window by editing the Nav2
-footprint:** the arm-width footprint is deliberate, and the narrow front gap was accepted knowingly
-rather than overlooked.
+After changing `Stow`, check that both the local and global costmap footprints contain the new
+pose. Redraw both if needed, then run `test/test_scene.py`. The test checks the stored footprints
+against the map, not the arms at `Stow`, and also checks the drawing-reach edge. Run it after
+changes to the pick table or map resolution too. **Do not shrink the footprints to make the
+clearance test pass:** the stowed-arm footprint and narrow front gap are deliberate.
 
 ## Frames and odometry
 
@@ -76,7 +77,17 @@ rather than overlooked.
 | `body_jtc` | `whole_body`, `left_manipulator_with_base`, `right_manipulator_with_base` | inactive |
 | `base_pid` | planar joints, chained under `body_jtc` | inactive |
 
-`body_jtc` runs whole-body trajectories. Its planar joints are chained through `base_pid`, a `pid_controller/PidController` that turns their position references into the planar velocity commands `base_jgvc` sends for Nav2. Both pairs claim the planar joints, so one runs at a time: the whole-body Objectives switch `base_pid` and `body_jtc` in, then `joint_trajectory_admittance_controller` and `base_jgvc` back, also when the motion fails.
+`body_jtc` runs whole-body trajectories. Its planar joints are chained through `base_pid`, a `pid_controller/PidController` that turns their position references into the planar velocity commands `base_jgvc` sends for Nav2. Both pairs claim the planar joints, so one runs at a time. The whole-body Objectives switch `base_pid` and `body_jtc` in, then restore `joint_trajectory_admittance_controller` and `base_jgvc` on success or failure. A failed restore fails the Objective.
+
+Stopping a whole-body Objective cancels its trajectory but does not run the trailing controller restore on the tested runtime. `body_jtc` and `base_pid` can remain active. This is not a completed handoff to Nav2 or arm teleoperation. Before resuming, restore the defaults from the ROS runtime environment:
+
+```bash
+ros2 control switch_controllers --strict --deactivate body_jtc base_pid \
+  --activate joint_trajectory_admittance_controller base_jgvc
+ros2 control list_controllers
+```
+
+Confirm that the two default controllers are `active` and the whole-body pair is `inactive`. A switch error needs investigation; do not treat a later Objective as proof that the cancelled one restored its controllers.
 
 ## Objectives
 
@@ -89,10 +100,13 @@ rather than overlooked.
 | "Whole Body Reach Left" | back into open floor, then reach the left gripper sideways past the arm's reach, so the base and the spine move with it |
 | "Whole Body Move to Pose", "Whole Body Move to Joint State" | the shared subtrees: IK on a `*_manipulator_with_base` group, then plan, switch, execute and switch back |
 | "Move Base to Ready", "Navigate to Clicked Point" | stow the arms, then drive with Nav2 to the Base Ready pose or to a clicked point |
+| "Reset MuJoCo Sim For Navigation" | reset the scene to `nav_demo`, with the robot backed away and the arms stowed |
 
 ### Sort Blocks grasp assumptions
 
-`Sort Blocks` uses the overhead scene camera to pick the 50 mm blocks from the front table. `Find Red Block` and `Find Green Block` fit the dominant plane before computing its centroid, rejecting mask-edge points on the sides, table or floor. The top must account for at least 60% of the segmented cloud within 1 mm. This covers the default scene and the measured displaced block resting on another face; it does not infer a safe grasp for arbitrary tilted or touching blocks.
+`Sort Blocks` first moves the spine and both arms to `Home`, including after navigation or a `nav_demo` reset. This sets the spine height used by the saved Place waypoints before the first transfer. It also does this on an empty table.
+
+`Sort Blocks` uses the overhead scene camera to pick the 50 mm blocks from the pick table. `Find Red Block` and `Find Green Block` fit the dominant plane before computing its centroid, rejecting mask-edge points on the sides, table or floor. The top must account for at least 60% of the segmented cloud within 1 mm. This covers the default scene and the measured displaced block resting on another face; it does not infer a safe grasp for arbitrary tilted or touching blocks.
 
 A Find Objective still returns failure when it has no pose. Its `detections_empty` output is true only after successful segmentation with no objects, and is cleared on every attempt. `Sort Blocks` checks both colors before reporting exhaustion and propagates perception, pose-conversion and motion errors instead of treating them as an empty table. Inspect the mask and point-cloud capture after a surface-fit error; separate or reset displaced blocks before retrying.
 

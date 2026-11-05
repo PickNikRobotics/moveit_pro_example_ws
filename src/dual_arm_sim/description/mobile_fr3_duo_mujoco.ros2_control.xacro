@@ -27,7 +27,7 @@
         <!-- world -> mj_world comes from launch/navigation.launch.py, so the plugin must not publish it. -->
         <param name="publish_mj_world_tf">false</param>
         <param name="publish_object_tf">${publish_object_tf}</param>
-        <!-- Ground truth as a message only: the odometry bridge adds drift and publishes the planar joints. -->
+        <!-- Ground truth as a message only: the odometry bridge republishes it as planar joints, with noise off at launch. -->
         <param name="publish_odom">true</param>
         <param name="odom_topic">${ground_truth_odom_topic}</param>
         <!-- The frame the true pose is in. MoveIt Pro requires it to differ from the URDF root. -->

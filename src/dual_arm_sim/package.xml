@@ -33,6 +33,7 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
 
+  <test_depend>ament_index_cpp</test_depend>
   <test_depend>ament_index_python</test_depend>
   <test_depend>mujoco_package_uri</test_depend>
   <test_depend>ament_clang_format</test_depend>
@@ -44,10 +45,13 @@
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>behaviortree_cpp_picknik</test_depend>
+  <test_depend>controller_manager_msgs</test_depend>
   <test_depend>geometry_msgs</test_depend>
   <test_depend>moveit_pro_base</test_depend>
   <test_depend>moveit_pro_behavior_interface</test_depend>
   <test_depend>moveit_pro_task_constructor_core</test_depend>
+  <test_depend>moveit_studio_agent_msgs</test_depend>
+  <test_depend>moveit_studio_internal_msgs</test_depend>
   <test_depend>moveit_studio_utils_py</test_depend>
   <test_depend>nlohmann-json-dev</test_depend>
   <test_depend>pcl_conversions</test_depend>

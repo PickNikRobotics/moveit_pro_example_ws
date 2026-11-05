@@ -16,20 +16,26 @@
       <Action
         ID="SwitchController"
         deactivate_controllers="{command_controllers}"
+        strictness="2"
       />
+      <Action ID="Script" code="reset_ok := false" />
+      <!-- Restore controllers even if the reset fails, then report the reset result. -->
       <Decorator ID="ForceSuccess">
         <Action
           ID="ResetMujocoKeyframe"
           response_timeout="10.000000"
           wait_for_server_available_timeout="3.000000"
           keyframe_name="nav_demo"
+          _onSuccess="reset_ok = true"
         />
       </Decorator>
       <Action
         ID="SwitchController"
         controller_list_action_name="/controller_manager/list_controllers"
         activate_controllers="{command_controllers}"
+        strictness="2"
       />
+      <Condition ID="ScriptCondition" code="reset_ok" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
