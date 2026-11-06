@@ -1,0 +1,141 @@
+- description: ''
+  favorite: false
+  joint_group_names:
+    - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: world
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+      - franka_spine_vertical_joint
+      - left_fr3v2_joint1
+      - left_fr3v2_joint2
+      - left_fr3v2_joint3
+      - left_fr3v2_joint4
+      - left_fr3v2_joint5
+      - left_fr3v2_joint6
+      - left_fr3v2_joint7
+      - right_fr3v2_joint1
+      - right_fr3v2_joint2
+      - right_fr3v2_joint3
+      - right_fr3v2_joint4
+      - right_fr3v2_joint5
+      - right_fr3v2_joint6
+      - right_fr3v2_joint7
+    position:
+      - 0.0
+      - 0.0
+      - -0.7853981633974483
+      - 0.0
+      - -2.356194490192345
+      - 0.0
+      - 1.5707963267948966
+      - 0.7853981633974483
+      - 0.0
+      - -0.7853981633974483
+      - 0.0
+      - -2.356194490192345
+      - 0.0
+      - 1.5707963267948966
+      - 0.7853981633974483
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Ready
+- description: ''
+  favorite: false
+  joint_group_names:
+    - mobile_base
+  joint_state:
+    effort: []
+    header:
+      frame_id: world
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+      - planar_x
+      - planar_y
+      - planar_theta
+    position:
+      - 0.0
+      - 0.0
+      - 0.0
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Base Ready
+- description: ''
+  favorite: false
+  joint_group_names:
+    - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: world
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+      - franka_spine_vertical_joint
+      - left_fr3v2_joint1
+      - left_fr3v2_joint2
+      - left_fr3v2_joint3
+      - left_fr3v2_joint4
+      - left_fr3v2_joint5
+      - left_fr3v2_joint6
+      - left_fr3v2_joint7
+      - right_fr3v2_joint1
+      - right_fr3v2_joint2
+      - right_fr3v2_joint3
+      - right_fr3v2_joint4
+      - right_fr3v2_joint5
+      - right_fr3v2_joint6
+      - right_fr3v2_joint7
+    position:
+      - 0.0
+      - -1.0
+      - 1.0
+      - 0.9
+      - -2.9
+      - -0.3
+      - 2.2
+      - 0.785
+      - 1.0
+      - 1.0
+      - -0.9
+      - -2.9
+      - 0.3
+      - 2.2
+      - -0.785
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Stow

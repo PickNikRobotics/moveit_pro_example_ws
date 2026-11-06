@@ -1,0 +1,120 @@
+<mujoco model="market_sim scene">
+  <!-- The robot comes first, so its joints lead every keyframe's qpos. -->
+  <include file="mobile_fr3_duo.xml" />
+  <include file="market/market_assets.xml" />
+  <include file="../market_assets/visuals/cart_materials.xml" />
+
+  <!-- Sleep lets the resting products cost almost nothing per step; see the README. -->
+  <!-- impratio and noslip keep a grasped product from creeping out of the fingers, as in lab_sim. -->
+  <option
+    timestep="0.003"
+    sleep_tolerance="0.001"
+    impratio="10"
+    noslip_iterations="3"
+  >
+    <flag sleep="enable" />
+  </option>
+
+  <visual>
+    <headlight
+      diffuse="0.5 0.5 0.5"
+      ambient="0.25 0.25 0.25"
+      specular="0 0 0"
+    />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="90" elevation="-30" />
+    <!-- znear and zfar scale with the model extent; this keeps the near clip under the lidars' 0.10 m minimum range. -->
+    <map znear="0.0004" zfar="4" />
+  </visual>
+
+  <asset>
+    <!-- Floor tiles are Poly Haven anti_skid_tiles (CC0); wall plaster is PickNik's.
+         See assets/store_visuals/NOTICE.md. -->
+    <texture
+      type="2d"
+      name="floor_tiles_albedo"
+      file="assets/store_visuals/floor_tiles_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="floor_tiles_normal"
+      file="assets/store_visuals/floor_tiles_normal.png"
+    />
+    <texture
+      type="2d"
+      name="floor_tiles_orm"
+      file="assets/store_visuals/floor_tiles_orm.png"
+    />
+    <!-- texrepeat with texuniform is repeats per metre, so this is a one metre tile. -->
+    <material name="market_floor" texuniform="true" texrepeat="1 1">
+      <layer role="rgb" texture="floor_tiles_albedo" />
+      <layer role="normal" texture="floor_tiles_normal" />
+      <layer role="orm" texture="floor_tiles_orm" />
+    </material>
+    <texture
+      type="2d"
+      name="wall_plaster_albedo"
+      file="assets/store_visuals/wall_plaster_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="wall_plaster_normal"
+      file="assets/store_visuals/wall_plaster_normal.png"
+    />
+    <texture
+      type="2d"
+      name="wall_plaster_orm"
+      file="assets/store_visuals/wall_plaster_orm.png"
+    />
+    <material name="market_wall" texuniform="true" texrepeat="0.5 0.5">
+      <layer role="rgb" texture="wall_plaster_albedo" />
+      <layer role="normal" texture="wall_plaster_normal" />
+      <layer role="orm" texture="wall_plaster_orm" />
+    </material>
+    <material name="store_ceiling" rgba="0.86 0.86 0.85 1" emission="0.2" />
+    <material name="ceiling_light_panel" rgba="1 1 0.96 1" emission="3" />
+  </asset>
+
+  <worldbody>
+    <light
+      pos="0 0 10"
+      dir="0 0.3 -1"
+      directional="true"
+      castshadow="false"
+      diffuse="0.5 0.5 0.5"
+    />
+    <light
+      pos="0 0 10"
+      dir="0 -0.3 -1"
+      directional="true"
+      castshadow="false"
+      diffuse="0.3 0.3 0.3"
+    />
+    <geom name="floor" type="plane" size="0 0 0.05" material="market_floor" />
+
+    <!-- Overview camera over the start pose, looking north along the aisles (RGB only). -->
+    <camera
+      name="scene_camera"
+      mode="fixed"
+      pos="0 -2 10"
+      xyaxes="1 0 0 0 0.7071 0.7071"
+      fovy="75"
+      resolution="640 480"
+      user="1 0 0 0"
+    />
+    <site
+      name="scene_camera_optical_frame"
+      pos="0 -2 10"
+      xyaxes="1 0 0 0 -0.7071 -0.7071"
+      size="0.01"
+      group="3"
+    />
+
+    <include file="market/market_world.xml" />
+    <!-- Visual only: enclosure, lighting and the stocking carts. -->
+    <include file="market/store_visuals_world.xml" />
+  </worldbody>
+
+  <!-- Last, because a key's qpos must cover every joint declared above. -->
+  <include file="market/keyframes.xml" />
+</mujoco>

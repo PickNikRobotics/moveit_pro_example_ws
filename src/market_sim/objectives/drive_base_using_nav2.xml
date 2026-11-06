@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Drive Base using Nav2">
+  <BehaviorTree
+    ID="Drive Base using Nav2"
+    _description="Stow the arms, give Nav2 the base controller, and drive the base to goal_pose with Nav2's default navigate-to-pose tree, planning with the planner named by planner_id. The tree replans while driving and runs Nav2's recoveries."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!-- The Nav2 footprint covers the robot only with its arms stowed. -->
+      <SubTree ID="Stow Arms for Navigation" _collapsed="true" />
+      <!-- Nav2 drives the base through base_jgvc; a base jog leaves it inactive. -->
+      <Action ID="SwitchController" activate_controllers="base_jgvc" />
+      <!-- bt_navigator reads this path, and the launch file that starts it writes the Smac
+           copy with that planner selected. GridBased uses Nav2's installed tree. Both
+           absolute: BehaviorTree.CPP rejects a relative tree path. -->
+      <Action
+        ID="Script"
+        code="nav_tree := planner_id == 'GridBased' ? '/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml' : '/tmp/market_sim/behavior_trees/navigate_to_pose_smac.xml'"
+      />
+      <Action
+        ID="NavigateToPoseAction"
+        action_name="/navigate_to_pose"
+        pose_stamped="{goal_pose}"
+        behavior_tree_path="{nav_tree}"
+        ignore_stamp_time="true"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Drive Base using Nav2">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+      <input_port
+        name="goal_pose"
+        default="{goal_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      >
+        Goal for the base, in map.
+      </input_port>
+      <input_port name="planner_id" default="GridBased" type="std::string">
+        Nav2 planner: GridBased (NavFn) or SmacLattice (SMAC).
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

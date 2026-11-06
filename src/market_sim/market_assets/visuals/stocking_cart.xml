@@ -1,0 +1,462 @@
+<body name="cart" pos="-0.65 -0.17 0" quat="0 0 0 1">
+  <geom
+    name="cart_leg_0"
+    type="box"
+    size="0.011 0.011 0.3475"
+    pos="-0.12 -0.13 0.4325"
+    material="cart_frame"
+  />
+  <geom
+    type="box"
+    size="0.026 0.026 0.003"
+    pos="-0.12 -0.13 0.082"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="cylinder"
+    size="0.008 0.006"
+    pos="-0.12 -0.13 0.073"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.014 0.0025 0.024"
+    pos="-0.112 -0.146 0.054"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.014 0.0025 0.024"
+    pos="-0.112 -0.114 0.054"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_wheel_0"
+    type="cylinder"
+    size="0.036 0.011"
+    pos="-0.108 -0.13 0.036"
+    euler="1.5708 0 0"
+    material="cart_rubber"
+  />
+  <geom
+    type="cylinder"
+    size="0.016 0.0135"
+    pos="-0.108 -0.13 0.036"
+    euler="1.5708 0 0"
+    material="cart_hub"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_leg_1"
+    type="box"
+    size="0.011 0.011 0.3475"
+    pos="-0.12 0.13 0.4325"
+    material="cart_frame"
+  />
+  <geom
+    type="box"
+    size="0.026 0.026 0.003"
+    pos="-0.12 0.13 0.082"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="cylinder"
+    size="0.008 0.006"
+    pos="-0.12 0.13 0.073"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.014 0.0025 0.024"
+    pos="-0.112 0.114 0.054"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.014 0.0025 0.024"
+    pos="-0.112 0.146 0.054"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_wheel_1"
+    type="cylinder"
+    size="0.036 0.011"
+    pos="-0.108 0.13 0.036"
+    euler="1.5708 0 0"
+    material="cart_rubber"
+  />
+  <geom
+    type="cylinder"
+    size="0.016 0.0135"
+    pos="-0.108 0.13 0.036"
+    euler="1.5708 0 0"
+    material="cart_hub"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_leg_2"
+    type="box"
+    size="0.011 0.011 0.3475"
+    pos="0.44 -0.13 0.4325"
+    material="cart_frame"
+  />
+  <geom
+    type="box"
+    size="0.026 0.026 0.003"
+    pos="0.44 -0.13 0.082"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="cylinder"
+    size="0.008 0.006"
+    pos="0.44 -0.13 0.073"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.014 0.0025 0.024"
+    pos="0.448 -0.146 0.054"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.014 0.0025 0.024"
+    pos="0.448 -0.114 0.054"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_wheel_2"
+    type="cylinder"
+    size="0.036 0.011"
+    pos="0.452 -0.13 0.036"
+    euler="1.5708 0 0"
+    material="cart_rubber"
+  />
+  <geom
+    type="cylinder"
+    size="0.016 0.0135"
+    pos="0.452 -0.13 0.036"
+    euler="1.5708 0 0"
+    material="cart_hub"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_leg_3"
+    type="box"
+    size="0.011 0.011 0.3475"
+    pos="0.44 0.13 0.4325"
+    material="cart_frame"
+  />
+  <geom
+    type="box"
+    size="0.026 0.026 0.003"
+    pos="0.44 0.13 0.082"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="cylinder"
+    size="0.008 0.006"
+    pos="0.44 0.13 0.073"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.014 0.0025 0.024"
+    pos="0.448 0.114 0.054"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.014 0.0025 0.024"
+    pos="0.448 0.146 0.054"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_wheel_3"
+    type="cylinder"
+    size="0.036 0.011"
+    pos="0.452 0.13 0.036"
+    euler="1.5708 0 0"
+    material="cart_rubber"
+  />
+  <geom
+    type="cylinder"
+    size="0.016 0.0135"
+    pos="0.452 0.13 0.036"
+    euler="1.5708 0 0"
+    material="cart_hub"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.28 0.011 0.011"
+    pos="0.16 -0.13 0.769"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.28 0.011 0.011"
+    pos="0.16 0.13 0.769"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.011 0.13 0.011"
+    pos="-0.12 0 0.769"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.011 0.13 0.011"
+    pos="0.44 0 0.769"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.011 0.13 0.011"
+    pos="0.12 0 0.769"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.28 0.011 0.011"
+    pos="0.16 -0.13 0.19"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.28 0.011 0.011"
+    pos="0.16 0.13 0.19"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.011 0.13 0.011"
+    pos="-0.12 0 0.19"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    type="box"
+    size="0.011 0.13 0.011"
+    pos="0.44 0 0.19"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_tray"
+    type="box"
+    size="0.29 0.14 0.01"
+    pos="0.16 0 0.79"
+    material="cart_tote"
+  />
+  <geom
+    name="cart_lower_shelf"
+    type="box"
+    size="0.28 0.13 0.008"
+    pos="0.16 0 0.18"
+    material="cart_shelf"
+  />
+  <geom
+    name="cart_wall_robot_lip"
+    type="box"
+    size="0.004 0.14 0.0075"
+    pos="-0.126 0 0.8075"
+    material="cart_tote"
+  />
+  <geom
+    type="box"
+    size="0.007 0.143 0.004"
+    pos="-0.126 0 0.813"
+    material="cart_tote"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_wall_far"
+    type="box"
+    size="0.004 0.14 0.04"
+    pos="0.126 0 0.84"
+    material="cart_tote"
+  />
+  <geom
+    type="box"
+    size="0.007 0.143 0.004"
+    pos="0.126 0 0.878"
+    material="cart_tote"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_wall_left"
+    type="box"
+    size="0.13 0.004 0.04"
+    pos="0 0.136 0.84"
+    material="cart_tote"
+  />
+  <geom
+    type="box"
+    size="0.133 0.007 0.004"
+    pos="0 0.136 0.878"
+    material="cart_tote"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_wall_right"
+    type="box"
+    size="0.13 0.004 0.0075"
+    pos="0 -0.136 0.8075"
+    material="cart_tote"
+  />
+  <geom
+    type="box"
+    size="0.133 0.007 0.004"
+    pos="0 -0.136 0.813"
+    material="cart_tote"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_far_bin_end"
+    type="box"
+    size="0.004 0.14 0.04"
+    pos="0.446 0 0.84"
+    material="cart_tote"
+  />
+  <geom
+    type="box"
+    size="0.007 0.143 0.004"
+    pos="0.446 0 0.878"
+    material="cart_tote"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_far_bin_left"
+    type="box"
+    size="0.16 0.004 0.04"
+    pos="0.28 0.136 0.84"
+    material="cart_tote"
+  />
+  <geom
+    type="box"
+    size="0.163 0.007 0.004"
+    pos="0.28 0.136 0.878"
+    material="cart_tote"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_far_bin_right"
+    type="box"
+    size="0.16 0.004 0.04"
+    pos="0.28 -0.136 0.84"
+    material="cart_tote"
+  />
+  <geom
+    type="box"
+    size="0.163 0.007 0.004"
+    pos="0.28 -0.136 0.878"
+    material="cart_tote"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_handle_upright_0"
+    type="capsule"
+    size="0.011"
+    fromto="0.44 -0.13 0.76 0.5 -0.13 0.97"
+    material="cart_frame"
+  />
+  <geom
+    type="sphere"
+    size="0.013"
+    pos="0.5 -0.13 0.97"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_handle_upright_1"
+    type="capsule"
+    size="0.011"
+    fromto="0.44 0.13 0.76 0.5 0.13 0.97"
+    material="cart_frame"
+  />
+  <geom
+    type="sphere"
+    size="0.013"
+    pos="0.5 0.13 0.97"
+    material="cart_frame"
+    contype="0"
+    conaffinity="0"
+  />
+  <geom
+    name="cart_handle"
+    type="capsule"
+    size="0.011"
+    fromto="0.5 -0.13 0.97 0.5 0.13 0.97"
+    material="cart_frame"
+  />
+  <geom
+    type="capsule"
+    size="0.016"
+    fromto="0.5 -0.0975 0.97 0.5 0.0975 0.97"
+    material="cart_rubber"
+    contype="0"
+    conaffinity="0"
+  />
+</body>

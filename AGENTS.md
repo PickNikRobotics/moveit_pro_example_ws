@@ -482,6 +482,22 @@ it and navigation still succeeded, so only the topic check found it.
 Note `RewrittenYaml` rewrites a key **everywhere it appears** in the file, not per-node, so one
 `odom_topic` entry also hits `velocity_smoother`'s.
 
+## Known issue: Nav2 Jazzy can keep driving the base after a navigation aborts
+
+With Nav2 Jazzy (the 1.3.x in the MoveIt Pro image), if the controller server acknowledges a new
+path-following goal later than the navigator's `default_server_timeout`, the navigator drops that
+goal without cancelling it and aborts the navigation. The controller keeps driving the base along
+the old path, with no Objective running, until the next navigation goal replaces it. It is more
+likely under heavy CPU load. The navigator logs "Timed out while waiting for action server to
+acknowledge goal request for follow_path" just before the abort.
+
+This is fixed in Nav2 after Jazzy. `market_sim/params/nav2_params.yaml` raises `default_server_timeout`
+above Nav2's default to make the trigger rarer; that does not remove it. `hangar_sim` and `lunar_sim`
+keep Nav2's default: the raise was made for market_sim's long store drives and is not measured on the
+smaller scenes, so treat it as that config's mitigation rather than a workspace-wide setting. The
+remaining mitigation would be a node that cancels a `follow_path` goal still executing when no
+`navigate_to_pose` goal is active.
+
 ## One trajectory controller, several planning groups
 
 When a config puts every joint on a single `joint_trajectory_controller` (the
@@ -498,6 +514,31 @@ still-moving robot violated. Such a publisher has to yield: gate it on a
 heartbeat the driving Objective ticks, and on the controller's
 `follow_joint_trajectory/_action/status`. `so101_base_config`'s
 `script/so101_arm_bridge.py` does both.
+
+## The objective_server heartbeat does not mean the controllers are up
+
+`objective_test_fixture` treats the first `/objective_server_heartbeat` message as "the agent is
+ready", and that says nothing about `controller_manager`. The spawners load serially and slowly
+(measured around 8 s each), so a config declaring many controllers can have its first Objective
+run before its controllers exist, failing on `SwitchController` with "<name> is not an existing
+controller" - a startup race that reads like a broken tree. A config with that many controllers
+needs its integration test to gate on `controller_manager/list_controllers` reporting every
+`controllers_active_at_startup` entry `active`; see `controllers_active` in
+`src/market_sim/test/objectives_integration_test.py`.
+
+Two neighbouring traps in the same tests. A pytest run that dies in a fixture leaves
+`ros2_control_node` and its spawners alive, and a second `controller_manager` on the same DDS
+graph makes every spawner fail with `Failed to acquire lock in 20 seconds`; restart the container
+rather than `pkill`, which reliably misses some. And `docker exec` does not inherit the caller's
+environment, so an env var that selects test scope has to be passed with `docker exec -e` or it
+is silently empty and the tests it gates are skipped while the run still reports success.
+
+## An rclpy node that only catches KeyboardInterrupt cannot shut down cleanly
+
+`rclpy` raises `ExternalShutdownException` on SIGINT, not `KeyboardInterrupt`. A node that
+catches only the latter ignores SIGINT until launch escalates to SIGTERM five seconds later, then
+exits non-zero with a traceback from inside `wait_for_ready_callbacks`. Every `rclpy.spin` here
+should catch both; `src/market_sim/scripts/*.py` show the shape.
 
 ## Maintaining this file
 
