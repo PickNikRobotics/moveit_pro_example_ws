@@ -83,93 +83,62 @@
         contour_crop_angle_span="3.18"
         contour_crop_angle_start="1.65"
       />
+      <!--
+        Offset every contour pose 0.1 m back along its own z-axis, so the tool stands off the surface. Plan Path With
+        MTC places grasp_link exactly on each waypoint, so the standoff is applied to the path instead of as a tip
+        offset.
+      -->
+      <Action ID="ResetVector" vector="{tool_path}" />
+      <Decorator
+        ID="ForEach"
+        index="{contour_index}"
+        out="{contour_pose}"
+        vector_in="{contour_path}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="TransformPose"
+            input_pose="{contour_pose}"
+            output_pose="{tool_pose}"
+            translation_xyz="0;0;-0.1"
+          />
+          <Action
+            ID="PushBackVector"
+            input_vector="{tool_path}"
+            element="{tool_pose}"
+            output_vector="{tool_path}"
+          />
+        </Control>
+      </Decorator>
       <Action
         ID="VisualizePath"
         marker_lifetime="0.000000"
         marker_name="path"
-        path="{contour_path}"
+        path="{tool_path}"
         pose_marker_size="0.04000"
         show_poses="true"
       />
-      <!--Setup an MTC task to find a way to move along the contour-->
-      <Action
-        ID="GetElementOfVector"
-        element="{first_pose}"
-        index="0"
-        vector_in="{contour_path}"
+      <!--
+        Move to the first waypoint and follow the rest of the path. A broad IK search at the first waypoint
+        (max_ik_solutions) gives Path IK many start configurations to try; lower it if planning takes too long.
+      -->
+      <SubTree
+        ID="Plan Path With MTC"
+        _collapsed="true"
+        path="{tool_path}"
+        planning_group_name="manipulator"
+        ik_frame="grasp_link"
+        end_effector_group="fanuc_ee"
+        max_ik_solutions="4"
+        ik_timeout_s="1.0"
+        blending_radius="0.005"
+        solution="{mtc_solution}"
       />
-      <Action
-        ID="TransformPose"
-        input_pose="{first_pose}"
-        output_pose="{first_pose}"
-        translation_xyz="0;0;-0.12"
+      <SubTree
+        ID="Execute MTC Solution"
+        solution="{mtc_solution}"
+        goal_duration_tolerance="-1.0"
       />
-      <Control ID="Sequence">
-        <Action ID="ResetVector" vector="{ik_targets}" />
-        <Action
-          ID="PushBackVector"
-          input_vector="{ik_targets}"
-          element="{first_pose}"
-          output_vector="{ik_targets}"
-        />
-        <Action
-          ID="InitializeMTCTask"
-          task="{mtc_task}"
-          task_id="planning_task"
-          timeout="-1.000000"
-        />
-        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-        <Action
-          ID="SetupMTCConnectWithProRRT"
-          acceleration_scale_factor="1.000000"
-          max_iterations="5000"
-          planning_group_name="manipulator"
-          seed="0"
-          task="{mtc_task}"
-          trajectory_sampling_rate="100"
-          velocity_scale_factor="1.000000"
-        />
-        <Action
-          ID="SetupMTCBatchPoseIK"
-          end_effector_group="fanuc_ee"
-          end_effector_link="grasp_link"
-          ik_group="manipulator"
-          ik_timeout_s="1"
-          max_ik_solutions="4"
-          monitored_stage="current state"
-          target_poses="{ik_targets}"
-          task="{mtc_task}"
-        />
-        <Action
-          ID="SetupMTCPathIK"
-          ignore_environment_collisions="false"
-          planning_group_name="manipulator"
-          task="{mtc_task}"
-          path="{contour_path}"
-          tip_offset="0;0;0.1;0.0;0.0;0.0"
-          acceleration_scale_factor="0.100000"
-          blending_radius="0.0050000"
-          ik_cartesian_space_density="0.010000"
-          ik_joint_space_density="0.100000"
-          cartesian_constraint="[{constraint_type: position_and_orientation}]"
-          trajectory_sampling_rate="100"
-          velocity_scale_factor="0.100000"
-        />
-        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
-        <SubTree
-          ID="Execute MTC Solution"
-          _collapsed="true"
-          solution="{mtc_solution}"
-          goal_duration_tolerance="-1.0"
-          controller_names="joint_trajectory_admittance_controller"
-          execution_pipeline="jtac"
-          admittance_parameters_msg="{admittance_parameters_msg}"
-          controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
-          goal_position_tolerance="{goal_position_tolerance}"
-          path_position_tolerance="{path_position_tolerance}"
-          absolute_force_torque_threshold="{absolute_force_torque_threshold}"
-        />
-      </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
