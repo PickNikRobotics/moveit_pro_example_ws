@@ -33,6 +33,9 @@ hardware:
       # Publishes the forward stereo pair for visual odometry. Off because it adds two unusable entries to the
       # camera picker. Rebuild hangar_sim after changing this value.
       - enable_vo: false
+      # Runs slam_toolbox in place of beluga_amcl, for the Build Map Objective. Restart the Runtime after changing
+      # this value; set it back to false to localize against the saved map.
+      - slam: false
 
   # Additional launch file included with the persistent driver process (Nav2 sim drivers).
   # [Optional, defaults to a blank launch file if not specified]
