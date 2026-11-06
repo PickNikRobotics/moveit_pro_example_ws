@@ -111,12 +111,14 @@ EXECUTE_TIMEOUT_OVERRIDES_S = {
 EXECUTE_TIMEOUT_OVERRIDES_S.update(
     {f"Navigate to Aisle {aisle}": FAR_DRIVE_BUDGET_S for aisle in FAR_DRIVES}
 )
+# About 25 m from the start pose, over 70 s at the 0.35 m/s speed limit.
+EXECUTE_TIMEOUT_OVERRIDES_S["Navigate to Demo Dock D4"] = 180.0
 
 # Looping objectives to cancel partway through rather than run to completion.
 cancel_objectives: set[str] = set()
 
-# Objectives to skip entirely: they wait for input from the UI, which the headless CI
-# backend cannot give. Expand this set from the first CI run rather than guessing.
+# Objectives to skip entirely, because the headless CI backend cannot run them; each entry
+# gives its reason. Expand this set from the first CI run rather than guessing.
 skip_objectives: set[str] = {
     "Navigate with NavFn",  # Waits for a clicked goal.
     "Navigate with SMAC",  # Waits for a clicked goal.
@@ -136,6 +138,14 @@ skip_objectives: set[str] = {
     "Calibrate Multiple Cameras",
     "Generate Calibration Waypoints",
     "Writing Demo",  # Long-running drawing objective times out on the CI backend.
+    # Manual-only: survey loops of roughly 400 m and 210 m that need a Runtime started with
+    # MARKET_SIM_SLAM=true and MARKET_SIM_GROUND_TRUTH_NAV=true, which this launch never sets.
+    "Build Market Map",
+    "Finish Market Map Survey",
+    # Manual-only: the demo backs blindly out of the D4 dock, so it must start docked, not at
+    # the keyframe; its continuation starts partway along B2. Each drives over 90 m.
+    "Demo D4 B2 South and Return",
+    "Continue B2 South and Return D4",
 }
 
 # One drive per kind of row runs by default (B2, E5, I2), to stay inside the CTest timeout;

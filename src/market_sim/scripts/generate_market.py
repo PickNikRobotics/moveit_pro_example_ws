@@ -114,6 +114,9 @@ AD_GOAL_COLUMNS = {"A1": 6, "B2": 11, "C3": 6, "D4": 4}
 WALL_THICKNESS = 0.2
 WALL_HEIGHT = 2.5
 REGISTER_HALF_SIZE = (0.5, 1.3, 0.45)
+# Simulation dock: front face clears the stowed Duo's 0.861 m forward reach at D4 (25, 0).
+DOCK_CENTER = (26.32, 0.0, 0.45)
+DOCK_HALF_SIZE = (0.25, 1.0, 0.45)
 # The robot boots here, on the open floor south of row 1; world and map share this origin.
 START_LINE_INDEX = 19
 
@@ -699,13 +702,13 @@ def rack_urdf(layout, shelf, world):
                     ]
         lines.append("  </link>")
 
-    # Walls and registers: one box each, read from the simulator's own geoms.
+    # Walls, registers and the demo dock: one box each, read from the simulator's own geoms.
     for tag, attributes, _ in world:
         attrs = dict(attributes)
         name = attrs.get("name", "")
         if tag != "geom" or attrs.get("type") != "box":
             continue
-        if not (name.startswith("wall_") or name.startswith("register_")):
+        if not name.startswith(("wall_", "register_", "demo_dock_")):
             continue
         pos = [float(v) for v in attrs["pos"].split()]
         half = [float(v) for v in attrs["size"].split()]
@@ -823,6 +826,25 @@ def build_world(layout, shelf):
             [(wx + sx * hx, wy + sy * hy, 0) for sx in (-1, 1) for sy in (-1, 1)]
         )
 
+    nodes.append(
+        element(
+            "geom",
+            [
+                ("name", "demo_dock_d4"),
+                ("type", "box"),
+                ("pos", fmt(DOCK_CENTER)),
+                ("size", fmt(DOCK_HALF_SIZE)),
+                ("material", "market_steel"),
+                ("group", "2"),
+            ],
+        )
+    )
+    dx, dy, _ = DOCK_CENTER
+    hx, hy, _ = DOCK_HALF_SIZE
+    footprints.append(
+        [(dx + sx * hx, dy + sy * hy, 0) for sx in (-1, 1) for sy in (-1, 1)]
+    )
+
     t = WALL_THICKNESS
     first, last = layout.bottom_wall_columns
     walls = {
@@ -858,7 +880,7 @@ def build_world(layout, shelf):
 
 
 def localization_footprints(layout, shelf, footprints):
-    """What the lidars see at their height: the shelf boxes crossing it, the registers, the walls.
+    """What the lidars see at their height: shelf boxes crossing it, registers, the dock, walls.
 
     The scan plane passes over the bottom deck to the back panel, so the full gondola footprint
     that Nav2 keeps the base out of would give AMCL a deck's depth of slack.
@@ -886,7 +908,7 @@ def localization_footprints(layout, shelf, footprints):
                         for sy in (-1, 1)
                     ]
                 )
-    # build_world lists the gondolas first, then the registers and walls.
+    # build_world lists the gondolas first, then the registers, the dock and the walls.
     return seen + footprints[len(layout.gondolas) :]
 
 

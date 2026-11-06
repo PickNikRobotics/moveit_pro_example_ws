@@ -19,14 +19,23 @@
   <exec_depend>beluga_amcl</exec_depend>
   <exec_depend>franka_description</exec_depend>
   <exec_depend>franka_meshes</exec_depend>
+  <exec_depend>fuse_loss</exec_depend>
+  <exec_depend>fuse_models</exec_depend>
+  <exec_depend>fuse_msgs</exec_depend>
+  <exec_depend>fuse_optimizers</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>imu_sensor_broadcaster</exec_depend>
+  <exec_depend>laser_filters</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
+  <exec_depend>moveit_pro_controllers_msgs</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>moveit_studio_utils_py</exec_depend>
   <depend>nav2_bt_navigator</depend>
   <!-- One entry per node the persist launch file starts, plus every plugin the params name.
        Not nav2_bringup: it is unused here and pulls a Gazebo stack into the user image. -->
   <exec_depend>nav2_behaviors</exec_depend>
+  <exec_depend>nav2_common</exec_depend>
   <exec_depend>nav2_controller</exec_depend>
   <exec_depend>nav2_costmap_2d</exec_depend>
   <exec_depend>nav2_lifecycle_manager</exec_depend>
@@ -34,32 +43,40 @@
   <exec_depend>nav2_mppi_controller</exec_depend>
   <exec_depend>nav2_navfn_planner</exec_depend>
   <exec_depend>nav2_planner</exec_depend>
-  <exec_depend>nav2_rotation_shim_controller</exec_depend>
   <exec_depend>nav2_smac_planner</exec_depend>
   <exec_depend>nav2_smoother</exec_depend>
   <exec_depend>nav2_velocity_smoother</exec_depend>
   <exec_depend>nav2_waypoint_follower</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>picknik_accessories</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
+  <exec_depend>picknik_nyx_renderer</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>slam_toolbox</exec_depend>
   <exec_depend>std_msgs</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
-  <exec_depend>topic_tools</exec_depend>
 
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_index_python</test_depend>
+  <test_depend>behaviortree_cpp_picknik</test_depend>
   <test_depend>controller_manager_msgs</test_depend>
+  <test_depend>moveit_pro_behavior_interface</test_depend>
+  <test_depend>pluginlib</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
+  <test_depend>python3-catkin-pkg</test_depend>
   <test_depend>python3-numpy</test_depend>
   <test_depend>python3-pil</test_depend>
   <test_depend>python3-yaml</test_depend>
   <test_depend>rclpy</test_depend>
+  <test_depend>xacro</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

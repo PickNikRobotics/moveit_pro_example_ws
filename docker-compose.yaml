@@ -13,26 +13,39 @@ x-remote-inference-environment: &remote-inference-env
   - MOVEIT_INFERENCE_CA_FILE=${MOVEIT_INFERENCE_CA_FILE:+/run/inference-ca.pem}
   - MOVEIT_INFERENCE_HTTP_TIMEOUT
 
+# Every service that builds the workspace image. Set INSTALL_NYX=true on the
+# host to install the optional Nyx renderer (src/market_sim/README.md).
+x-nyx-build: &nyx-build
+  args:
+    INSTALL_NYX: ${INSTALL_NYX:-false}
+
 services:
 
   # The base image that all MoveIt Pro services extend off of. Builds the user workspace.
-  base: {}
+  base:
+    build: *nyx-build
 
   # Starts the MoveIt Pro Runtime: the Agent and the web bridge the
   # MoveIt Pro Desktop App connects to.
   runtime:
+    build: *nyx-build
     environment: *remote-inference-env
     volumes:
       - ${MOVEIT_INFERENCE_CA_FILE:-/dev/null}:/run/inference-ca.pem:ro
 
   # Starts the robot drivers.
   drivers:
+    build: *nyx-build
+    environment:
+      - MARKET_SIM_SLAM=${MARKET_SIM_SLAM:-false}
+      - MARKET_SIM_GROUND_TRUTH_NAV=${MARKET_SIM_GROUND_TRUTH_NAV:-false}
     volumes:
       # Allow access to host hardware e.g. RealSense cameras
       - /dev:/dev
 
   # Developer specific configuration when running `moveit_pro dev`.
   dev:
+    build: *nyx-build
     environment: *remote-inference-env
     volumes:
       - ${MOVEIT_INFERENCE_CA_FILE:-/dev/null}:/run/inference-ca.pem:ro

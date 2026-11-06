@@ -3,7 +3,7 @@
   <BehaviorTree
     ID="Add Racks to Planning Scene"
     _description="Add the store's shelf racks to the planning scene, so arm motions plan around them. Collision checking uses one box per gondola; the shelf meshes are visual only and load just when show_visual_geometry is set."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!-- The racks are placed in world, which the generated URDF's poses are already in. -->
