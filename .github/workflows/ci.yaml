@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: 'moveit_pro branch whose moveit-pro-ci branch image to use (defaults to the triggering branch)'
+        description: 'Published MoveIt Pro image branch (e.g. main or v10.2); required on workspace feature branches'
         required: false
         default: ''
   repository_dispatch:
@@ -53,8 +53,9 @@ jobs:
   #     sends the paired example_ws PR's head SHA there when its own body
   #     carries a `needs: moveit_pro_example_ws/#N` token, and the version-paired
   #     example_ws branch to check out when it does not.
-  #   - everything else (push, schedule, workflow_dispatch): image_tag = the
-  #     triggering ref's branch name.
+  #   - `workflow_dispatch`: use the explicit core image branch, or default to
+  #     the triggering branch only on main/release branches.
+  #   - push, schedule: image_tag = the triggering ref's branch name.
   resolve:
     name: Resolve dispatch context
     runs-on: ubuntu-22.04
@@ -65,8 +66,8 @@ jobs:
       moveit_pro_sha: ${{ steps.resolve.outputs.moveit_pro_sha }}
       moveit_pro_pr_number: ${{ steps.resolve.outputs.moveit_pro_pr_number }}
     steps:
-      - name: Check out stack resolver
-        if: github.event_name == 'pull_request'
+      - name: Check out image resolvers
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -336,13 +337,20 @@ jobs:
                 // fallback left on this path.
                 image_ref = `${containerRegistryUrl}/${ciImageRepository}:pr-${needsPrNumber}-{0}-amd64`;
               }
+            } else if (event === 'workflow_dispatch') {
+              const { resolveManualImageTag } = require('./.github/scripts/manual_image_tag.cjs');
+              try {
+                image_tag = resolveManualImageTag({
+                  imageTag: context.payload.inputs?.image_tag || '',
+                  ref: context.ref || '',
+                });
+              } catch (error) {
+                core.setFailed(error.message);
+                return;
+              }
             } else {
-              // push, schedule, workflow_dispatch. A `workflow_dispatch` input
-              // (`image_tag`, declared at the top of this file) names the
-              // moveit_pro branch whose `branch-<ref>` image to pull; honor it
-              // before falling back to the triggering branch name.
-              const dispatchTag = (context.payload.inputs && context.payload.inputs.image_tag) || '';
-              image_tag = dispatchTag || (context.ref || 'refs/heads/main').replace(/^refs\/heads\//, '');
+              // Push and schedule run on a main/release branch.
+              image_tag = (context.ref || 'refs/heads/main').replace(/^refs\/heads\//, '');
             }
 
             // moveit_pro_ci v0.9.0 appends NOTHING, so build a complete,
