@@ -498,6 +498,8 @@ untextured materials with approximate albedo. See
 [moon base provenance and placement](description/moon_base_provenance.md) for
 coordinates, ground-height sampling, and the material limitations.
 
+`description/lunar_scene_objects.urdf` is the same moon base as a scene file of its own, separate from the robot model, written from `moon_base_geoms.xml` by `description/generate_scene_urdf.py`; re-run it after changing the base, and the geometry test fails until you do. The **Load Lunar Scene Objects** Objective adds it to the planning scene with `AddURDF`, so the Desktop App's 3D view shows the buildings; running it again removes the base first, so nothing else in the planning scene is cleared. The base becomes collision geometry for MoveIt, though nothing in `lunar_sim` collision-checks against it today: Nav2 does not read the planning scene. `AddURDF` fixes the objects in `odom` when they are added, while the rover is drawn at its odometry pose, so the 3D view's rover-to-building offset is the odometry drift since loading (a rover parked on the landing pad also reads as touching it). Re-running re-anchors the base only once a localizer corrects `map -> odom`, and anchoring scene objects to `map` is PickNikRobotics/moveit_pro#22754.
+
 [Validation results and labelled renders](docs/moon_base_validation.md) record the
 unchanged square closure and turn measurements, clearance checks, and sensor rays.
 `description/validate_moon_base.py` reproduces those checks and the render sheet

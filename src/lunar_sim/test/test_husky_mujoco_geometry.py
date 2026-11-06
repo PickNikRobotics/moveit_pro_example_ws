@@ -47,6 +47,7 @@ asserted on by element/attribute, mirroring hangar_sim/test/test_base_geometry.p
 
 import ast
 import functools
+import importlib.util
 import math
 import struct
 import xml.etree.ElementTree as ET
@@ -61,6 +62,7 @@ from ament_index_python.packages import get_package_share_directory
 DESCRIPTION = Path(__file__).resolve().parent.parent / "description"
 HUSKY_A300 = DESCRIPTION / "husky_a300.xml"
 HUSKY_SCENE = DESCRIPTION / "husky_scene.xml"
+SCENE_OBJECTS_URDF = DESCRIPTION / "lunar_scene_objects.urdf"
 
 CLEARPATH_A300_URDF = (
     Path(get_package_share_directory("clearpath_platform_description"))
@@ -1041,6 +1043,148 @@ def test_visual_ground_matches_the_driven_ground_it_stands_in_for():
         "the visual twin does not match the current driven heightfield - re-run "
         "generate_visual_terrain.py after regenerating lunar_hfield.png"
     )
+
+
+def _scene_generator():
+    spec = importlib.util.spec_from_file_location(
+        "generate_scene_urdf", DESCRIPTION / "generate_scene_urdf.py"
+    )
+    generator = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(generator)
+    return generator
+
+
+def _rotation(axis: str, angle: float) -> np.ndarray:
+    """A rotation about one coordinate axis, built here independently of the generator."""
+    c, s = math.cos(angle), math.sin(angle)
+    return {
+        "x": np.array([[1, 0, 0], [0, c, -s], [0, s, c]]),
+        "y": np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]]),
+        "z": np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]]),
+    }[axis]
+
+
+def test_scene_objects_urdf_matches_the_moon_base():
+    """lunar_scene_objects.urdf is the moon base as a scene file, written from moon_base_geoms.xml by
+    generate_scene_urdf.py; a stale copy would show the base in the 3D view where it no longer is.
+    """
+    committed = SCENE_OBJECTS_URDF.read_text()
+    assert (
+        committed == _scene_generator().scene_urdf()
+    ), "lunar_scene_objects.urdf is stale: re-run description/generate_scene_urdf.py"
+
+
+def test_scene_urdf_conversion_matches_mujoco_conventions():
+    """The conversion's maths against hand-built cases: MuJoCo's intrinsic xyz euler, URDF's
+    fixed-axis rpy (including at pitch 90 deg), fromto directions, and a capsule's end spheres.
+    """
+    g = _scene_generator()
+    expected = _rotation("x", 0.3) @ _rotation("y", -0.2) @ _rotation("z", 0.7)
+    assert np.allclose(g.mujoco_euler("0.3 -0.2 0.7"), expected)
+    for roll, pitch, yaw in (
+        (0.3, -0.4, 1.1),
+        (0.2, math.pi / 2, 0.0),
+        (-1.0, -math.pi / 2, 0.0),
+    ):
+        rotation = _rotation("z", yaw) @ _rotation("y", pitch) @ _rotation("x", roll)
+        r, p, y = g.urdf_rpy(rotation)
+        assert np.allclose(
+            _rotation("z", y) @ _rotation("y", p) @ _rotation("x", r), rotation
+        )
+    for direction in ((0, 0, 1), (0, 0, -1), (1, 2, 3), (-0.5, 0, 0)):
+        d = np.array(direction, dtype=float)
+        assert np.allclose(g.z_to(d) @ [0, 0, 1], d / np.linalg.norm(d))
+    capsule = ET.Element(
+        "geom", name="leg", type="capsule", fromto="1 2 3 1 2 5", size="0.1"
+    )
+    cylinder, *ends = g.shapes(capsule)
+    assert cylinder[2] == "cylinder"
+    assert float(cylinder[3]["length"]) == pytest.approx(2.0)
+    assert sorted(tuple(np.round(e[0], 9)) for e in ends) == [(1, 2, 3), (1, 2, 5)]
+    crate = ET.Element("geom", name="crate", type="box", size="1 1 1", quat="1 0 0 0")
+    with pytest.raises(SystemExit):
+        g.shapes(crate)
+
+
+def _rpy(text: str) -> np.ndarray:
+    """A URDF origin's rpy as a rotation matrix."""
+    r, p, y = (float(v) for v in text.split())
+    return _rotation("z", y) @ _rotation("y", p) @ _rotation("x", r)
+
+
+def _assert_shape_matches(name, part, xyz, rot, shape, mj_pos, mj_rot, size):
+    """One URDF shape against its compiled MuJoCo geom: position, axis or rotation, and size."""
+    if part in ("1", "2"):  # a capsule's end sphere, at one end of its segment
+        tip = mj_rot[:, 2] * size[1]
+        assert (
+            min(np.linalg.norm(xyz - (mj_pos + s * tip)) for s in (-1, 1)) < 1e-6
+        ), name
+        return
+    assert np.linalg.norm(xyz - mj_pos) < 1e-6, f"{name} is not where MuJoCo puts it"
+    if shape.tag == "box":
+        assert np.allclose(rot, mj_rot, atol=1e-6), f"{name} is rotated differently"
+        assert np.allclose(_vec(shape, "size") / 2, size, atol=1e-6), name
+        return
+    assert abs(rot[:, 2] @ mj_rot[:, 2]) > 1 - 1e-9, f"{name}'s axis differs"
+    assert float(shape.get("radius")) == pytest.approx(size[0], abs=1e-6), name
+    assert float(shape.get("length")) / 2 == pytest.approx(size[1], abs=1e-6), name
+
+
+def test_scene_objects_urdf_matches_mujocos_compiled_base():
+    """Every URDF shape sits where MuJoCo compiles the matching moon base geom, with the same axis and
+    size, so the 3D view draws the buildings where the simulator has them."""
+    mujoco = pytest.importorskip("mujoco")
+    model = mujoco.MjModel.from_xml_path(str(HUSKY_SCENE))
+    data = mujoco.MjData(model)
+    mujoco.mj_forward(model, data)
+    root = ET.parse(SCENE_OBJECTS_URDF).getroot()
+    joints = {
+        j.find("child").get("link"): j.find("origin") for j in root.findall("joint")
+    }
+    checked = 0
+    for link in (link for link in root.findall("link") if link.get("name") in joints):
+        joint = joints[link.get("name")]
+        body_xyz, body_rot = _vec(joint, "xyz"), _rpy(joint.get("rpy"))
+        for visual in link.findall("visual"):
+            name, part = visual.get("name"), None
+            geom_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, name)
+            if geom_id < 0:  # a capsule's cylinder (_0) or end sphere (_1, _2)
+                name, part = name.rsplit("_", 1)
+                geom_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, name)
+            assert geom_id >= 0, f"{visual.get('name')} has no MuJoCo geom"
+            origin = visual.find("origin")
+            _assert_shape_matches(
+                name,
+                part,
+                body_xyz + body_rot @ _vec(origin, "xyz"),
+                body_rot @ _rpy(origin.get("rpy")),
+                visual.find("geometry")[0],
+                data.geom_xpos[geom_id],
+                data.geom_xmat[geom_id].reshape(3, 3),
+                model.geom_size[geom_id],
+            )
+            checked += 1
+    assert checked == len(root.findall(".//visual")), "a URDF shape was not compared"
+
+
+def test_scene_objects_urdf_is_loadable():
+    """AddURDF rejects a URDF without collision geometry, and urdfdom drops unresolved materials and
+    joints, so every building link carries collision and every reference resolves."""
+    root = ET.parse(SCENE_OBJECTS_URDF).getroot()
+    links = {link.get("name"): link for link in root.findall("link")}
+    materials = {m.get("name") for m in root.findall("material")}
+    children = {j.find("child").get("link") for j in root.findall("joint")}
+    assert children == set(links) - {
+        "lunar_scene_root"
+    }, "a link is not joined to the root"
+    for name in children:
+        assert (
+            links[name].find("collision") is not None
+        ), f"{name} has no collision geometry"
+        for visual in links[name].findall("visual"):
+            assert (
+                visual.find("material").get("name") in materials
+            ), f"{name} uses an undefined material"
 
 
 def test_enable_vo_publishes_the_oakd_pair_as_mono8_rectified_stereo():
