@@ -16,6 +16,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>clearpath_platform_description</depend>
+  <exec_depend>beluga_amcl</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>diff_drive_controller</exec_depend>
   <exec_depend>fuse_models</exec_depend>
@@ -34,11 +35,15 @@
   <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>nav2_bringup</exec_depend>
   <exec_depend>nav2_common</exec_depend>
+  <exec_depend>nav2_lifecycle_manager</exec_depend>
+  <exec_depend>nav2_map_server</exec_depend>
   <!-- open_loop, which nav2_params.yaml sets, is silently ignored before 1.3.13. -->
   <exec_depend version_gte="1.3.13">nav2_mppi_controller</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
   <exec_depend>rclcpp_components</exec_depend>
+  <exec_depend>slam_toolbox</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>topic_tools</exec_depend>
 
   <test_depend>action_msgs</test_depend>
   <test_depend>ament_cmake_copyright</test_depend>
