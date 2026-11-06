@@ -26,8 +26,12 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-# Loads the Nav2 navigation servers into the container robot_drivers_to_persist_sim.launch.py starts.
+# Loads the Nav2 navigation servers and semantic keep-out servers into the container
+# robot_drivers_to_persist_sim.launch.py starts.
 
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
@@ -43,6 +47,8 @@ def generate_launch_description():
     container_name = LaunchConfiguration("container_name")
 
     lifecycle_nodes = [
+        "keepout_filter_mask_server",
+        "keepout_costmap_filter_info_server",
         "controller_server",
         "smoother_server",
         "planner_server",
@@ -67,6 +73,29 @@ def generate_launch_description():
     load_composable_nodes = LoadComposableNodes(
         target_container=container_name,
         composable_node_descriptions=[
+            ComposableNode(
+                package="nav2_map_server",
+                plugin="nav2_map_server::MapServer",
+                name="keepout_filter_mask_server",
+                parameters=[
+                    configured_params,
+                    {
+                        "yaml_filename": os.path.join(
+                            get_package_share_directory("lunar_sim"),
+                            "maps",
+                            "lunar_keepout_mask.yaml",
+                        )
+                    },
+                ],
+                remappings=remappings,
+            ),
+            ComposableNode(
+                package="nav2_map_server",
+                plugin="nav2_map_server::CostmapFilterInfoServer",
+                name="keepout_costmap_filter_info_server",
+                parameters=[configured_params],
+                remappings=remappings,
+            ),
             ComposableNode(
                 package="nav2_controller",
                 plugin="nav2_controller::ControllerServer",
