@@ -8,6 +8,7 @@ install(
     config
     description
     launch
+    maps
     objectives
     params
     waypoints
@@ -30,6 +31,10 @@ if(BUILD_TESTING)
           ENV ${LUNAR_SIM_UNIT_TEST_ENV})
   ament_add_pytest_test(
           base_jog_config_test test/test_base_jog_config.py
+          TIMEOUT 30
+          ENV ${LUNAR_SIM_UNIT_TEST_ENV})
+  ament_add_pytest_test(
+          map_mode_config_test test/test_map_mode_config.py
           TIMEOUT 30
           ENV ${LUNAR_SIM_UNIT_TEST_ENV})
   # Redirect ROS node logs into the test_results tree so the test-results CI artifact ships them back too.
