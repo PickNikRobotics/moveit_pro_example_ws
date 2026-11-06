@@ -52,8 +52,13 @@ import numpy as np
 import torch
 import yaml
 from lerobot.configs.types import RTCAttentionSchedule
+from lerobot.policies.groot.processor_groot import (
+    GrootN17ActionDecodeStep,
+    GrootN17PackInputsStep,
+)
 from lerobot.policies.pi05.modeling_pi05 import PI05Policy
 from lerobot.processor import RenameObservationsProcessorStep
+from lerobot.types import TransitionKey
 from safetensors.torch import save_file
 from vla_inference_server import (
     INFER_ABANDONED_SECONDS,
@@ -478,6 +483,25 @@ class TestParseArgsCoercion(unittest.TestCase):
         self.assertIn("int8", args.config_error)
         self.assertFalse(args.int8)
 
+    def test_groot_rtc_ramp_rate_is_read_from_yaml(self) -> None:
+        """A groot_rtc_ramp_rate in the YAML reaches the argument; unset, 0 keeps the checkpoint's rate."""
+        for text, expected in (("groot_rtc_ramp_rate: 3\n", 3.0), ("fps: 10\n", 0.0)):
+            with self.subTest(text=text):
+                with tempfile.NamedTemporaryFile(
+                    "w", suffix=".yaml", delete=False
+                ) as f:
+                    f.write(text)
+                    path = f.name
+                try:
+                    with patch(
+                        "sys.argv", ["vla_inference_server.py", "--config", path]
+                    ):
+                        args = parse_args()
+                finally:
+                    os.unlink(path)
+                self.assertEqual(args.groot_rtc_ramp_rate, expected)
+                self.assertEqual(args.config_error, "")
+
     def test_boolean_int8_is_honored(self) -> None:
         """A real YAML boolean reaches the flag, so the knob works as documented."""
         # GIVEN a serving config asking for int8
@@ -697,6 +721,7 @@ class TestReloadIdleWindow(unittest.TestCase):
             rtc_schedule="EXP",
             state_dim=8,
             int8=False,
+            groot_rtc_ramp_rate=0.0,
         )
         runner = MagicMock()
         runner.policy.config.input_features = {}
@@ -787,6 +812,7 @@ class TestImmutableCheckpointLoading(unittest.TestCase):
                 "EXP",
                 8,
                 checkpoint_revision=revision,
+                groot_rtc_ramp_rate=0.0,
             )
 
         download.assert_called_once_with("acme/model", revision=revision)
@@ -801,8 +827,8 @@ class TestImmutableCheckpointLoading(unittest.TestCase):
             postprocessor_overrides={"device_processor": {"device": "cpu"}},
         )
 
-    def test_policy_runner_legacy_call_uses_existing_mutable_defaults(self) -> None:
-        """The original positional constructor remains valid and follows Hub HEAD."""
+    def test_policy_runner_without_a_revision_follows_hub_head(self) -> None:
+        """Without checkpoint_revision, the runner reads the config and weights at Hub HEAD."""
         config = SimpleNamespace(input_features={}, rtc_config=None)
         policy = MagicMock(config=config)
         policy_class = SimpleNamespace(from_pretrained=MagicMock(return_value=policy))
@@ -820,7 +846,9 @@ class TestImmutableCheckpointLoading(unittest.TestCase):
                 return_value=(SimpleNamespace(steps=[]), SimpleNamespace(steps=[])),
             ) as processors,
         ):
-            PolicyRunner("acme/model", "pi05", "cpu", 8, "EXP", 8)
+            PolicyRunner(
+                "acme/model", "pi05", "cpu", 8, "EXP", 8, groot_rtc_ramp_rate=0.0
+            )
 
         download.assert_not_called()
         read_config.assert_called_once_with("acme/model")
@@ -899,6 +927,290 @@ class TestHubAccessErrorMessage(unittest.TestCase):
         message = hub_access_error_message("org/typo", gated=False, token_present=True)
         self.assertIn("org/typo", message)
         self.assertIn("vla_serving.yaml", message)
+
+
+def groot_relative_steps() -> tuple[GrootN17PackInputsStep, GrootN17ActionDecodeStep]:
+    """GR00T N1.7 pack/decode steps for a 2-joint relative arm plus an absolute gripper.
+
+    The arm's relative stats widen per chunk step (step i spans +-0.1(i+1) and
+    +-0.2(i+1) rad), as a trained checkpoint's do, so a row encoded with the wrong
+    step's stats decodes to a different position.
+    """
+    horizon = 4
+    raw_stats = {
+        "state": {
+            "arm": {"min": [-3.0, -3.0], "max": [3.0, 3.0]},
+            "grip": {"min": [0.0], "max": [0.8]},
+        },
+        "action": {
+            "arm": {
+                "min": [-3.0, -3.0],
+                "max": [3.0, 3.0],
+                "q01": [-3.0, -3.0],
+                "q99": [3.0, 3.0],
+            },
+            "grip": {"min": [0.0], "max": [0.8], "q01": [0.0], "q99": [0.8]},
+        },
+        "relative_action": {
+            "arm": {
+                "min": [[-0.1 * (i + 1), -0.2 * (i + 1)] for i in range(horizon)],
+                "max": [[0.1 * (i + 1), 0.2 * (i + 1)] for i in range(horizon)],
+            }
+        },
+    }
+    modality_config = {
+        "state": {"modality_keys": ["arm", "grip"]},
+        "action": {
+            "modality_keys": ["arm", "grip"],
+            "action_configs": [
+                {
+                    "rep": "RELATIVE",
+                    "type": "NON_EEF",
+                    "format": "DEFAULT",
+                    "state_key": None,
+                },
+                {
+                    "rep": "ABSOLUTE",
+                    "type": "NON_EEF",
+                    "format": "DEFAULT",
+                    "state_key": None,
+                },
+            ],
+            "delta_indices": list(range(horizon)),
+        },
+    }
+    pack = GrootN17PackInputsStep(
+        raw_stats=raw_stats, modality_config=modality_config, use_percentiles=True
+    )
+    decode = GrootN17ActionDecodeStep(
+        env_action_dim=3,
+        raw_stats=raw_stats,
+        modality_config=modality_config,
+        use_percentiles=True,
+        use_relative_action=True,
+        pack_step=pack,
+    )
+    return pack, decode
+
+
+def decode_against(
+    pack: GrootN17PackInputsStep,
+    decode: GrootN17ActionDecodeStep,
+    normalized: torch.Tensor,
+    state: list,
+) -> np.ndarray:
+    """Decode normalized (T, 3) actions to absolute ones relative to `state`.
+
+    Sets the raw state the pack step caches during preprocessing, which needs
+    camera images to run for real.
+    """
+    pack._last_raw_state = {
+        "arm": np.asarray([state[:2]], dtype=np.float32),
+        "grip": np.asarray([state[2:]], dtype=np.float32),
+    }
+    out = decode({TransitionKey.ACTION: normalized.unsqueeze(0).float()})
+    return out[TransitionKey.ACTION][0].numpy()
+
+
+class TestGrootRtcPrefix(unittest.TestCase):
+    """PolicyRunner._groot_rtc_prefix: the absolute carryover re-encoded against the current state."""
+
+    def setUp(self) -> None:
+        self.pack, self.decode = groot_relative_steps()
+        self.runner = PolicyRunner.__new__(PolicyRunner)
+        self.runner.groot_pack_step = self.pack
+        self.runner.device = "cpu"
+
+    def test_prefix_decodes_back_to_the_carried_positions(self) -> None:
+        """Decoding the prefix against the current state returns the absolute tail it came from."""
+        state = [0.5, -1.0, 0.2]
+        tail = np.array(
+            [[0.52, -1.05, 0.3], [0.55, -1.1, 0.4], [0.6, -1.2, 0.5]], dtype=np.float32
+        )
+        prefix = self.runner._groot_rtc_prefix(tail, state)
+        np.testing.assert_allclose(
+            decode_against(self.pack, self.decode, prefix, state), tail, atol=1e-6
+        )
+
+
+class RecordingGrootPolicy:
+    """Stands in for a GrootPolicy and records what each prediction saw."""
+
+    def __init__(self, chunk: torch.Tensor):
+        self.chunk = chunk
+        self.calls: list[dict] = []
+
+    def reset(self) -> None:
+        pass
+
+    def predict_action_chunk(self, batch: dict, **kwargs) -> torch.Tensor:
+        self.calls.append(kwargs)
+        return self.chunk
+
+
+class TestGrootInfer(unittest.TestCase):
+    """PolicyRunner.infer on a GR00T checkpoint with an RTC carryover."""
+
+    STATE = [0.5, -1.0, 0.2]
+
+    def make_runner(
+        self, policy: RecordingGrootPolicy, reanchors: bool
+    ) -> PolicyRunner:
+        pack, decode = groot_relative_steps()
+        runner = PolicyRunner.__new__(PolicyRunner)
+        runner.is_groot = True
+        runner.groot_reanchors = reanchors
+        runner.groot_pack_step = pack
+        runner.device = "cpu"
+        runner.lock = threading.Lock()
+        runner.guidance_horizon = 2
+        runner.policy = policy
+        runner.pre = lambda obs: obs
+        runner.post = lambda chunk: torch.full_like(chunk, 7.0)
+        return runner
+
+    def test_re_encoded_prefix_reaches_the_model_and_the_carryover_is_absolute(
+        self,
+    ) -> None:
+        """The model gets the tail re-encoded against the current state, and the caller
+        gets absolute actions to carry over.
+        """
+        policy = RecordingGrootPolicy(torch.zeros(1, 4, 3))
+        runner = self.make_runner(policy, reanchors=True)
+        tail = np.array([[0.6, -1.0, 0.4]] * 4, dtype=np.float32)
+        absolute, carryover = runner.infer({}, self.STATE, "warmup", tail, 1, 0)
+
+        kwargs = policy.calls[0]
+        self.assertEqual(kwargs["inference_delay"], 1)
+        # inference_delay 1 + the server's guidance width 2 = 3 overlap rows.
+        np.testing.assert_allclose(
+            kwargs["prev_chunk_left_over"][:, 0].numpy(), [1.0, 0.5, 1 / 3], atol=1e-6
+        )
+        np.testing.assert_array_equal(carryover, absolute)
+        np.testing.assert_array_equal(absolute, np.full((4, 3), 7.0))
+
+    def test_carryover_not_re_encoded_is_cut_to_the_overlap(self) -> None:
+        """A checkpoint whose carryover the server does not re-encode (absolute actions,
+        or LeRobot's relative fallback) gets its normalized carryover as is, cut to the
+        frozen prefix plus the guidance width, and it is returned for the next call.
+        """
+        chunk = torch.full((1, 4, 3), 0.25)
+        policy = RecordingGrootPolicy(chunk)
+        runner = self.make_runner(policy, reanchors=False)
+        tail = np.arange(12, dtype=np.float32).reshape(4, 3) / 12
+        absolute, carryover = runner.infer({}, self.STATE, "warmup", tail, 1, 0)
+
+        kwargs = policy.calls[0]
+        # inference_delay 1 + the server's guidance width 2 = 3 overlap rows.
+        np.testing.assert_allclose(kwargs["prev_chunk_left_over"].numpy(), tail[:3])
+        np.testing.assert_array_equal(carryover, chunk.squeeze(0).numpy())
+        np.testing.assert_array_equal(absolute, np.full((4, 3), 7.0))
+
+    def test_first_call_passes_no_prefix(self) -> None:
+        """Without a carryover the model runs unguided."""
+        policy = RecordingGrootPolicy(torch.zeros(1, 4, 3))
+        runner = self.make_runner(policy, reanchors=True)
+        runner.infer({}, self.STATE, "warmup", None, 0, 0)
+        kwargs = policy.calls[0]
+        self.assertNotIn("prev_chunk_left_over", kwargs)
+
+
+class TestGrootLoad(unittest.TestCase):
+    """PolicyRunner on a LeRobot GR00T checkpoint: settings reaching the model and the RTC path."""
+
+    def load(
+        self,
+        pre_steps: list,
+        ramp_rate: float,
+        device: str,
+    ) -> tuple[PolicyRunner, MagicMock]:
+        policy = MagicMock()
+        policy.config = SimpleNamespace(
+            use_relative_actions=True, input_features={}, rtc_config=None
+        )
+
+        def build(_checkpoint, config):
+            self.build_device = config.device
+            return policy
+
+        self.policy_class = SimpleNamespace(
+            from_pretrained=MagicMock(side_effect=build)
+        )
+        policy_class = self.policy_class
+        with (
+            patch(
+                "vla_inference_server.PreTrainedConfig.from_pretrained",
+                return_value=SimpleNamespace(device="cpu"),
+            ),
+            patch("vla_inference_server.get_policy_class", return_value=policy_class),
+            patch(
+                "vla_inference_server.make_pre_post_processors",
+                return_value=(
+                    SimpleNamespace(steps=pre_steps),
+                    SimpleNamespace(steps=[]),
+                ),
+            ),
+            patch("vla_inference_server.log") as log,
+        ):
+            runner = PolicyRunner(
+                "/models/groot",
+                "groot",
+                device,
+                8,
+                "EXP",
+                8,
+                groot_rtc_ramp_rate=ramp_rate,
+            )
+        return runner, log
+
+    def test_configured_ramp_rate_reaches_the_model(self) -> None:
+        """GrootPolicy builds its model with the config's rtc_ramp_rate."""
+        pack, _ = groot_relative_steps()
+        self.load([pack], ramp_rate=0.01, device="cpu")
+        config = self.policy_class.from_pretrained.call_args.kwargs["config"]
+        self.assertEqual(config.rtc_ramp_rate, 0.01)
+
+    def test_per_step_relative_stats_turn_on_re_encoding(self) -> None:
+        pack, _ = groot_relative_steps()
+        runner, log = self.load([pack], ramp_rate=1.0, device="cpu")
+        self.assertTrue(runner.groot_reanchors)
+        # LeRobot would drop the re-encoded prefix with its guard still on.
+        self.assertFalse(runner.policy.config.use_relative_actions)
+        log.assert_not_called()
+
+    def test_relative_checkpoint_without_per_step_stats_runs_without_rtc(self) -> None:
+        """LeRobot's generic relative fallback keeps LeRobot's guard: the server does not
+        re-encode, and says so at load."""
+        fallback_pack = MagicMock(spec=GrootN17PackInputsStep)
+        fallback_pack._uses_relative_action_groups.return_value = False
+        runner, log = self.load([fallback_pack], ramp_rate=1.0, device="cpu")
+        self.assertFalse(runner.groot_reanchors)
+        self.assertTrue(runner.policy.config.use_relative_actions)
+        self.assertIn("ignores the RTC carryover", log.call_args.args[0])
+
+    def test_zero_ramp_rate_keeps_the_checkpoints_own(self) -> None:
+        pack, _ = groot_relative_steps()
+        self.load([pack], ramp_rate=0.0, device="cpu")
+        config = self.policy_class.from_pretrained.call_args.kwargs["config"]
+        self.assertFalse(hasattr(config, "rtc_ramp_rate"))
+
+    def test_ramp_rate_below_the_floor_is_refused_before_loading(self) -> None:
+        """A negative or near-zero rate freezes or inverts GR00T's guided steps."""
+        for rate in (-2.0, float("nan"), 0.001):
+            with self.subTest(rate=rate):
+                with self.assertRaisesRegex(ValueError, "groot_rtc_ramp_rate"):
+                    self.load([], ramp_rate=rate, device="cpu")
+                self.policy_class.from_pretrained.assert_not_called()
+
+    def test_preprocessor_without_the_pack_step_names_it(self) -> None:
+        with self.assertRaisesRegex(ValueError, "GrootN17PackInputsStep"):
+            self.load([], ramp_rate=0.0, device="cpu")
+
+    def test_groot_builds_on_the_serving_device(self) -> None:
+        """GR00T has nothing to trim on the cpu, so it skips the cpu-first load."""
+        pack, _ = groot_relative_steps()
+        self.load([pack], ramp_rate=1.0, device="cuda:0")
+        self.assertEqual(self.build_device, "cuda:0")
 
 
 class TestResolveRtcHorizon(unittest.TestCase):
