@@ -107,6 +107,8 @@
             box_center_pose="{region_pose}"
             box_dimensions="{region_dimensions}"
           />
+          <!-- SURFACE projection follows the measured surface: each waypoint sits one standoff above the cloud
+               along the local normal. Only the points of point_cloud inside the region box are used. -->
           <Action
             ID="GenerateSurfaceCoveragePath"
             region_pose="{region_pose}"
@@ -115,37 +117,33 @@
             point_spacing="0.02"
             standoff="0.04"
             margin="0.0"
+            point_cloud="{selected_cloud}"
+            projection_mode="SURFACE"
             coverage_path="{coverage_path}"
+            region_cloud="{surface_cloud}"
           />
-
-          <!-- The raster covers the region's bounding box, whose corners reach past the drawn selection
-               once perspective skews it into a non-rectangular patch. Crop it back to what the operator
-               selected, so the sweep does not run over neighbouring objects. -->
-          <Action
-            ID="CropPosesToPointCloudFootprint"
-            poses="{coverage_path}"
-            point_cloud="{region_cloud}"
-            margin="0.0"
-            poses_cropped="{covered_path}"
-          />
+          <!-- Show the cloud the sweep was projected onto: point_cloud cropped to the region box. -->
+          <Action ID="SendPointCloudToUI" point_cloud="{surface_cloud}" />
 
           <!-- Draw the coverage path as green grid lines over the region so the operator sees the
                sweep before it is planned, approved, and executed. marker_lifetime 0 keeps it up. -->
           <Action
             ID="VisualizePath"
-            path="{covered_path}"
+            path="{coverage_path}"
             marker_name="coverage_path"
             line_color_rgb="0;255;0"
             line_width="0.005"
             marker_lifetime="0"
           />
+          <!-- Track all 6 DOF so the tool holds the surface-normal orientation of each waypoint. -->
           <Action
             ID="PlanCartesianPath"
-            path="{covered_path}"
+            path="{coverage_path}"
             planning_group_name="manipulator"
             tip_links="grasp_link"
             blending_radius="0.001"
             trajectory_timing="[{mode: time_optimal}]"
+            cartesian_constraint="[{constraint_type: position_and_orientation}]"
             joint_trajectory_msg="{coverage_trajectory}"
           />
           <SubTree
