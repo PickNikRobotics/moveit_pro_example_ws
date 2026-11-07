@@ -3,4 +3,45 @@
   <include
     file="$(find-pkg-share moveit_studio_agent)/launch/runtime_services.launch.xml"
   />
+
+  <!-- Nyx path-traced cameras for MOVEIT_PRO_CAMERA_RENDERER nyx or both, one node per camera. The robot description defines the values and the default, and fails on any other. picknik_nyx_renderer is an optional dependency: only images with the Nyx runtime ship it. -->
+  <let name="camera_renderer" value="$(env MOVEIT_PRO_CAMERA_RENDERER '')" />
+  <let
+    name="nyx_enabled"
+    value="$(eval '&quot;$(var camera_renderer)&quot; in (&quot;nyx&quot;, &quot;both&quot;)')"
+  />
+  <let
+    name="nyx_namespace"
+    value="$(eval '&quot;nyx&quot; if &quot;$(var camera_renderer)&quot; == &quot;both&quot; else &quot;&quot;')"
+  />
+  <include
+    file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
+    if="$(var nyx_enabled)"
+  >
+    <arg
+      name="mjcf"
+      value="$(find-pkg-share factory_sim)/description/scene.xml"
+    />
+    <arg
+      name="scene_dir"
+      value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/factory_sim"
+    />
+    <arg name="camera" value="scene_camera" />
+    <arg name="topic_namespace" value="$(var nyx_namespace)" />
+  </include>
+  <include
+    file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
+    if="$(var nyx_enabled)"
+  >
+    <arg
+      name="mjcf"
+      value="$(find-pkg-share factory_sim)/description/scene.xml"
+    />
+    <arg
+      name="scene_dir"
+      value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/factory_sim"
+    />
+    <arg name="camera" value="bin_camera_left" />
+    <arg name="topic_namespace" value="$(var nyx_namespace)" />
+  </include>
 </launch>

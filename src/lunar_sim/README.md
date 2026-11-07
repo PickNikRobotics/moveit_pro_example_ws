@@ -83,8 +83,8 @@ for the same pattern).
 
 The ground plane's color map (`description/assets/lunar_regolith_untiled.png`, built by
 `description/generate_ground_colormap.py`) covers the whole 20x20 m plane once
-(`texrepeat="0.05 0.05"` - with `texuniform="true"` that value is repeats per metre, so 1/20 m
-draws the image exactly once) at real lunar photo detail with no repeating tile anywhere on it (the [drivable band](#drivable-band)'s strips use the same material at the same pitch, so the map repeats there) - built
+(`texrepeat="0.1 0.1"` - with `texuniform="true"`, MuJoCo repeats every `2 / texrepeat` metres,
+so 0.1 draws the image once across 20 m) at real lunar photo detail with no repeating tile anywhere on it (the [drivable band](#drivable-band)'s strips use the same material at the same pitch, so the map repeats there) - built
 from nine real lunar surface photographs rather than a terrestrial stand-in or a single repeating tile:
 **NASA Apollo 15/17 Hasselblad frames**, including AS15-86-11671 (Apollo 15, Station 7, Spur
 Crater, EVA-2 - the "Genesis Rock" in-situ documentation photo). Public domain, NASA/JSC;
@@ -97,7 +97,7 @@ Earlier attempts used terrestrial CC0 photo scans (ambientCG/Poly Haven gravel, 
 desiccated-mudflat sets) at the right tile-scale detail but didn't read as lunar on inspection -
 they're photographs of Earth ground, not the Moon. A single repeating Apollo tile (this ground's
 first iteration, `texrepeat="0.3 0.3"`) fixed the "reads as lunar" problem but showed an obvious
-~3.3 m repeat grid; nine distinct frames, randomly placed/rotated/mirrored across the whole plane,
+~6.7 m repeat grid; nine distinct frames, randomly placed/rotated/mirrored across the whole plane,
 fixes that without needing more than nine real photographs.
 
 `generate_ground_colormap.py` is a reproducible, seeded, committed build step (unlike the earlier
