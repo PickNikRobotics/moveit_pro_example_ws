@@ -71,9 +71,11 @@ state_estimator:
       # we use a static transform publisher (see fuse.launch.py) to publish the april tag offsets to the target frame
       # the target frame is the frame that we wish to estimate the state of
       # the target frame should be the center of mass of the object for optimal performance, as the motion model assumes that it is operating on the center of mass of the object
-      # the april tag (`satellite_tag_x`) will be a descendent of the estimation frame (`servicer_camera_optical_frame`) in the tf tree
+      # each april tag (`satellite_tag_x` from the servicer camera's detector, `satellite_tag_x_wrist` from the wrist camera's) will be a descendent of its estimation frame in the tf tree
       # thus, we need a different leaf in the tf tree to represent each satellite tag's correspondence to the target frame
-      transforms: ["satellite_tag_0", "satellite_tag_1", "satellite_tag_2"]
+      transforms:
+        ["satellite_tag_0", "satellite_tag_1", "satellite_tag_2",
+        "satellite_tag_0_wrist", "satellite_tag_1_wrist", "satellite_tag_2_wrist"]
 
       # this frame is the frame that we are actually estimating
       # fuse will publish an odom from the `estimation_frame` to this frame (and optionally a tf, too)

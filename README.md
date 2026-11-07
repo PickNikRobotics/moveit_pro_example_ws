@@ -22,6 +22,24 @@ git submodule update --init src/moveit_pro_sam2
 
 The `moveit_pro_sam3` package is part of this repository but contains no model files. Its build downloads the SAM3 ONNX files; see `src/moveit_pro_sam3/README.md`.
 
+## Nyx path-traced cameras
+
+The MuJoCo configurations select their RGB camera renderer with `MOVEIT_PRO_CAMERA_RENDERER`:
+
+- `opengl`, unset or empty: MuJoCo OpenGL on each camera's normal colour topic. This is the default.
+- `nyx`: Nyx replaces MuJoCo colour on each camera's normal colour topic; MuJoCo still publishes depth and point clouds.
+- `both`: MuJoCo publishes under `<camera>/opengl/*` and Nyx under `<camera>/nyx/*`, for side-by-side comparison. Nothing publishes on `<camera>/color` in this mode.
+
+Use an image provisioned with the Nyx runtime. Before launching a configuration in `nyx` or `both` mode, export its scene into `$USER_WS/.nyx_scenes/<config>`; re-export after any scene or asset change. For example, lab_sim uses:
+
+```bash
+ros2 run picknik_nyx_renderer nyx_export_scene \
+    --mjcf "$(ros2 pkg prefix --share lab_sim)/description/scene.xml" \
+    --out-dir "$USER_WS/.nyx_scenes/lab_sim"
+```
+
+This directory is gitignored. The configuration's `runtime.launch.xml` starts Nyx nodes only when the environment variable selects `nyx` or `both`.
+
 ## Robot Configs
 
 - `april_tag_sim`

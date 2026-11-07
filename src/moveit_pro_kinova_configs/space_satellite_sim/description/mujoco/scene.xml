@@ -2,6 +2,16 @@
   <compiler angle="radian" meshdir="assets" />
   <option integrator="implicitfast" timestep="0.003" gravity="0 0 0" />
 
+  <!-- The environment the path tracers light the scene with (VAPR, and Nyx through nyx_export_scene): picknik_vapr's
+       `space` sky, a sun at elevation 25 and world azimuth 130 against stars, with NASA's Blue Marble below. MuJoCo
+       ignores <custom> and keeps its skybox. 1.8 is the uvfix spike's measured multiplier, which keeps the lit gold near
+       its OpenGL brightness. -->
+  <custom>
+    <text name="environment:sky" data="space" />
+    <numeric name="environment:sky" data="1.8 0" />
+    <text name="environment:sun_light" data="sun" />
+  </custom>
+
   <include file="gen3_7dof_assets.xml" />
 
   <statistic center="0.3 0 0.4" extent="1" />
@@ -25,44 +35,139 @@
     <texture type="2d" name="ar_marker_0" file="assets/tag36_11_00000.png" />
     <texture type="2d" name="ar_marker_1" file="assets/tag36_11_00001.png" />
     <texture type="2d" name="ar_marker_2" file="assets/tag36_11_00002.png" />
+    <texture
+      type="2d"
+      name="servicer_platform_silver_alb"
+      file="assets/servicer_platform_silver_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="servicer_platform_silver_nrm"
+      file="assets/servicer_platform_silver_normal.png"
+    />
+    <texture
+      type="2d"
+      name="servicer_platform_silver_orm"
+      file="assets/servicer_platform_silver_orm.png"
+    />
+    <texture
+      type="2d"
+      name="metal_rafti_alb"
+      file="assets/metal_rafti_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="metal_rafti_nrm"
+      file="assets/metal_rafti_normal.png"
+    />
+    <texture
+      type="2d"
+      name="metal_rafti_orm"
+      file="assets/metal_rafti_orm.png"
+    />
+    <texture
+      type="2d"
+      name="landsat_gold_alb"
+      file="assets/landsat_gold_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="landsat_gold_nrm"
+      file="assets/landsat_gold_normal.png"
+    />
+    <texture
+      type="2d"
+      name="landsat_gold_orm"
+      file="assets/landsat_gold_orm.png"
+    />
+    <texture
+      type="2d"
+      name="servicer_platform_gold_alb"
+      file="assets/servicer_platform_gold_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="servicer_platform_gold_nrm"
+      file="assets/servicer_platform_gold_normal.png"
+    />
+    <texture
+      type="2d"
+      name="servicer_platform_gold_orm"
+      file="assets/servicer_platform_gold_orm.png"
+    />
     <material name="ar_marker_0" texture="ar_marker_0" texuniform="false" />
     <material name="ar_marker_1" texture="ar_marker_1" texuniform="false" />
     <material name="ar_marker_2" texture="ar_marker_2" texuniform="false" />
-    <material name="landsat_gold" rgba="1.0 0.85 0.6  1" reflectance="0.2" />
-    <material name="metal_rafti" rgba="0.8 0.8 0.8 1" reflectance="0.5" />
+    <!-- Multi-layer insulation, not gold plating: low metalness and roughness 0.45 let its own colour show under the sun in a path tracer, where a full metal would only mirror the black sky. -->
+    <material
+      name="landsat_gold"
+      rgba="1.0 0.85 0.6 1"
+      reflectance="0.2"
+      roughness="0.45"
+      metallic="0.2"
+    >
+      <layer role="rgb" texture="landsat_gold_alb" />
+      <layer role="normal" texture="landsat_gold_nrm" />
+      <layer role="orm" texture="landsat_gold_orm" />
+    </material>
+    <material
+      name="metal_rafti"
+      metallic="1"
+      roughness="1.0"
+      rgba="0.8 0.8 0.8 1"
+      reflectance="0.5"
+    >
+      <layer role="rgb" texture="metal_rafti_alb" />
+      <layer role="normal" texture="metal_rafti_nrm" />
+      <layer role="orm" texture="metal_rafti_orm" />
+    </material>
     <material
       name="servicer_platform_blue"
       rgba="0.1 0.1 0.7 1"
       reflectance="0.5"
     />
+    <!-- Also MLI, so also rough. See the note on landsat_gold above. -->
     <material
       name="servicer_platform_gold"
       rgba="0.7 0.6 0.4 1"
       reflectance="0.5"
-    />
+      roughness="0.45"
+      metallic="0.2"
+    >
+      <layer role="rgb" texture="servicer_platform_gold_alb" />
+      <layer role="normal" texture="servicer_platform_gold_nrm" />
+      <layer role="orm" texture="servicer_platform_gold_orm" />
+    </material>
     <material
       name="servicer_platform_silver"
+      metallic="1"
+      roughness="1.0"
       rgba="0.6 0.6 0.6 1"
       reflectance="0.5"
-    />
+    >
+      <layer role="rgb" texture="servicer_platform_silver_alb" />
+      <layer role="normal" texture="servicer_platform_silver_nrm" />
+      <layer role="orm" texture="servicer_platform_silver_orm" />
+    </material>
+    <!-- The *_uv.obj meshes carry box-projected texture coordinates so their texture maps sample correctly; geometry is unchanged. -->
     <mesh name="april_tag" file="april_tag.obj" />
-    <mesh name="landsat" file="landsat/landsat.obj" />
+    <mesh name="landsat" file="landsat/landsat_uv.obj" />
     <mesh name="landsat_white" file="landsat/landsat_white.obj" />
     <mesh name="landsat_glass" file="landsat/landsat_glass.obj" />
     <mesh name="landsat_collision_1" file="landsat/landsat_collision_1.obj" />
     <mesh name="landsat_collision_2" file="landsat/landsat_collision_2.obj" />
     <mesh name="landsat_collision_3" file="landsat/landsat_collision_3.obj" />
     <mesh name="landsat_collision_4" file="landsat/landsat_collision_4.obj" />
-    <mesh name="rafti" file="rafti/rafti.obj" />
+    <mesh name="rafti" file="rafti/rafti_uv.obj" />
     <mesh name="rafti_collision_1" file="rafti/rafti_collision_1.obj" />
     <mesh name="rafti_collision_2" file="rafti/rafti_collision_2.obj" />
     <mesh name="rafti_collision_3" file="rafti/rafti_collision_3.obj" />
     <mesh name="rafti_collision_4" file="rafti/rafti_collision_4.obj" />
     <mesh name="rafti_collision_5" file="rafti/rafti_collision_5.obj" />
-    <mesh name="epastar" file="servicer_platform/epastar.obj" />
-    <mesh name="interface" file="servicer_platform/interface.obj" />
-    <mesh name="rpo_suite" file="servicer_platform/rpo_suite.obj" />
-    <mesh name="pole" file="servicer_platform/pole.obj" />
+    <mesh name="epastar" file="servicer_platform/epastar_uv.obj" />
+    <mesh name="interface" file="servicer_platform/interface_uv.obj" />
+    <mesh name="rpo_suite" file="servicer_platform/rpo_suite_uv.obj" />
+    <mesh name="pole" file="servicer_platform/pole_uv.obj" />
     <mesh name="solar_panels" file="servicer_platform/solar_panels.obj" />
     <mesh
       name="epastar_collision"
@@ -84,19 +189,29 @@
   </asset>
 
   <worldbody>
-    <light pos="1 1 1.5" dir="0 0 -1" directional="true" />
+    <!-- The sky's sun for MuJoCo's own renderer, which cannot light from the sky image: dir is minus
+         picknik_vapr.sky.sun_direction for the `space` preset. environment:sun_light names it, so VAPR and Nyx, which
+         light from the sky's sun, leave it out. Turning the sky with environment:sky's rotation turns its sun; turn this
+         dir by the same angle about +Z. -->
+    <light
+      name="sun"
+      pos="1 1 1.5"
+      dir="0.5826 -0.6943 -0.4226"
+      directional="true"
+    />
+    <!-- Frames the servicer and target together. The site is the camera turned 180 degrees about X: MuJoCo's camera frame is x right, y up, z behind, and REP 145's optical frame is x right, y down, z forward. -->
     <camera
       name="scene_camera"
-      pos="-0.3 0.3 1.0"
+      pos="5.5942 5.4715 4.3720"
       fovy="58"
       mode="fixed"
       resolution="1280 720"
-      euler="0 -1.0472 -1.5708"
+      xyaxes="-0.64279 0.76604 0 -0.38302 -0.32139 0.86603"
     />
     <site
       name="scene_camera_optical_frame"
-      pos="-0.3 0.3 1.0"
-      euler="3.1416 1.0472 1.5708"
+      pos="5.5942 5.4715 4.3720"
+      xyaxes="-0.64279 0.76604 0 0.38302 0.32139 -0.86603"
       size="0.03"
     />
     <body name="landsat">
@@ -157,7 +272,7 @@
         <body name="ar_marker_0" pos="0 -.2 .132" quat="1 0 0 0">
           <geom
             type="box"
-            size="0.0625 0.0625 0.005"
+            size="0.125 0.125 0.005"
             rgba="1 1 1 1"
             material="ar_marker_0"
           />
@@ -165,7 +280,7 @@
         <body name="ar_marker_1" pos="0.2 0.2 .132" quat="1 0 0 0">
           <geom
             type="box"
-            size="0.0625 0.0625 0.005"
+            size="0.125 0.125 0.005"
             rgba="1 1 1 1"
             material="ar_marker_1"
           />
@@ -173,7 +288,7 @@
         <body name="ar_marker_2" pos="-0.2 0.2 .132" quat="1 0 0 0">
           <geom
             type="box"
-            size="0.0625 0.0625 0.005"
+            size="0.125 0.125 0.005"
             rgba="1 1 1 1"
             material="ar_marker_2"
           />
@@ -183,7 +298,7 @@
     <body name="servicer_platform_with_arm">
       <camera
         name="servicer_camera"
-        pos="0.6 1 0"
+        pos="0.780168 0.615580 0"
         fovy="58"
         mode="fixed"
         resolution="1280 720"
@@ -192,7 +307,7 @@
       />
       <site
         name="servicer_camera_optical_frame"
-        pos="0.6 1 0"
+        pos="0.780168 0.615580 0"
         euler="-1.5708 2 0.0"
         size="0.03"
       />

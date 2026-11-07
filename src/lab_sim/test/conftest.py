@@ -80,8 +80,8 @@ def pytest_runtest_logreport(report):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def capture_rosout():
-    """Run capture_rosout.py as a subprocess to mirror /rosout to NDJSON.
+def capture_rosout(request):
+    """Mirror /rosout to NDJSON only for the objective integration test.
 
     Subprocess isolation is mandatory — see the module docstring for the
     fork/DDS interaction that requires it. The subprocess has its own
@@ -92,7 +92,14 @@ def capture_rosout():
     before backend nodes (also writing into it) start, and so the
     subprocess's first ``mkdir(exist_ok=True)`` has nothing to race on.
     """
-    out_dir = Path(os.environ.get("ROS_LOG_DIR", "."))
+    if not any(
+        str(path).endswith("objectives_integration_test.py")
+        for path in request.config.args
+    ):
+        yield
+        return
+
+    out_dir = Path(os.environ["ROS_LOG_DIR"])
     out_dir.mkdir(parents=True, exist_ok=True)
 
     script = Path(__file__).parent / "capture_rosout.py"

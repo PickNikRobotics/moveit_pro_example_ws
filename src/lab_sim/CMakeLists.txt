@@ -61,6 +61,17 @@ if(BUILD_TESTING)
   target_compile_definitions(test_surface_coverage_capture PRIVATE
     LAB_OBJECTIVE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/objectives")
   find_package(ament_cmake_pytest REQUIRED)
+  set(LAB_SIM_CAMERA_RENDERER_TEST_ENV
+      MOVEIT_CONFIG_PACKAGE=lab_sim
+      USER_WS=${CMAKE_CURRENT_SOURCE_DIR}/../..)
+  ament_add_pytest_test(
+          test_camera_renderer test/test_camera_renderer.py
+          ENV ${LAB_SIM_CAMERA_RENDERER_TEST_ENV})
+  # This static test reads every renderer-enabled config's source launch and description files.
+  ament_add_pytest_test(
+          test_camera_renderer_launches test/test_camera_renderer_launches.py
+          TIMEOUT 30
+          ENV ${LAB_SIM_CAMERA_RENDERER_TEST_ENV})
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
   # Redirect ROS node logs into the test_results tree so the test-results CI

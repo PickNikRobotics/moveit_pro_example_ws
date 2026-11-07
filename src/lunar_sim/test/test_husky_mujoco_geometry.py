@@ -316,6 +316,25 @@ def _vec(element: ET.Element, attr: str) -> np.ndarray:
     return np.array([float(v) for v in value.split()])
 
 
+def test_regolith_material_draws_the_whole_colour_map_once_across_the_ground() -> None:
+    """Keep the committed lunar map's 20 m extent and texuniform tiling in agreement.
+
+    MuJoCo repeats a texuniform texture every ``2 / texrepeat`` metres. A wrong repeat
+    silently crops or repeats the nine-frame map although the model still loads.
+    """
+    materials = _mjcf_elements(HUSKY_SCENE, "material")
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    geoms = _mjcf_elements(HUSKY_SCENE, "geom")
+
+    regolith = materials["regolith_ground"]
+    assert regolith.get("texture") == "regolith"
+    assert regolith.get("texuniform") == "true"
+    texrepeat = _vec(regolith, "texrepeat")
+    ground = geoms["ground_plane"]
+    extent = 2 * _vec(hfields[ground.get("hfield")], "size")[:2]
+    assert np.allclose(2 / texrepeat, extent)
+
+
 def _urdf_joint_origin_xyz(source: Path, joint_suffix: str) -> np.ndarray:
     """The xyz of a fixed joint's <origin> in a vendored URDF/xacro file.
 
