@@ -20,8 +20,7 @@ hardware:
       path: "config/moveit/picknik_ur.srdf"
     urdf_params:
       - mujoco_model_package: "hand_eye_calibration_sim"
-      # Shares lab_sim's description but starts no Nyx nodes, so it stays on MuJoCo.
-      - camera_renderer: "opengl"
+      - nyx_cameras: "scene_camera_narrow scene_camera_wide wrist_camera"
 # Configuration for loading behaviors and objectives.
 # [Required]
 objectives:

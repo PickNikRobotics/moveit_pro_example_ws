@@ -27,7 +27,7 @@ hardware:
   robot_description:
     urdf:
       package: "grinding_sim"
-      path: "description/ur20.urdf"
+      path: "description/ur20.urdf.xacro"
     srdf:
       package: "grinding_sim"
       path: "config/moveit/ur20.srdf"

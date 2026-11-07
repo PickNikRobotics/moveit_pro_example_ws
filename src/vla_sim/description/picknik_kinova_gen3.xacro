@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
 <robot name="gen3" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include
+    filename="$(find picknik_accessories)/descriptions/sensors/camera_renderer.urdf.xacro"
+  />
     <xacro:arg name="mujoco_model" default="description/mujoco/cube_stack_scene.xml" />
     <xacro:arg name="mujoco_viewer" default="false" />
 
@@ -677,6 +680,9 @@
         <param name="tf_publish_rate">60</param>
         <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
       </hardware>
+      <!-- MOVEIT_PRO_CAMERA_RENDERER's sensor overrides for these cameras; see the macro for the
+           values. runtime.launch.xml starts one Nyx node per camera listed here. -->
+      <xacro:camera_renderer_sensors cameras="overview_camera scene_camera wrist_camera" />
     </ros2_control>
 
 </robot>

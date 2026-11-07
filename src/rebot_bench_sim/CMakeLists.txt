@@ -8,8 +8,8 @@ install(
   DIRECTORY
     config
     description
-    objectives
     launch
+    objectives
   DESTINATION
     share/${PROJECT_NAME}
   PATTERN "*.xml.xacro" EXCLUDE
@@ -47,27 +47,41 @@ if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+  # pytest's launch_testing hook imports objectives_integration_test.py while collecting any test
+  # in this directory, so every test needs its config selection and workspace root.
+  set(REBOT_BENCH_SIM_TEST_ENV
+      MOVEIT_CONFIG_PACKAGE=rebot_bench_sim
+      USER_WS=${CMAKE_CURRENT_SOURCE_DIR}/../..)
   ament_add_pytest_test(
           rebot_bench_sim_inherits_base_test test/test_config_inheritance.py
-          TIMEOUT 60)
+          TIMEOUT 60
+          ENV ${REBOT_BENCH_SIM_TEST_ENV})
   ament_add_pytest_test(
           rebot_bench_sim_scene_model_test test/test_scene_model.py
-          TIMEOUT 120)
+          TIMEOUT 120
+          ENV ${REBOT_BENCH_SIM_TEST_ENV})
   ament_add_pytest_test(
           rebot_bench_sim_grasp_proxy_test test/test_sim_grasp_proxy.py
-          TIMEOUT 60)
+          TIMEOUT 60
+          ENV ${REBOT_BENCH_SIM_TEST_ENV})
   ament_add_pytest_test(
           rebot_bench_sim_compressed_cameras_test test/test_sim_compressed_cameras.py
-          TIMEOUT 60)
+          TIMEOUT 60
+          ENV ${REBOT_BENCH_SIM_TEST_ENV})
   ament_add_pytest_test(
           rebot_bench_sim_recorder_test test/test_record_stack_evidence.py
-          TIMEOUT 60)
-  ament_add_pytest_test(rebot_leader_startup_test test/test_leader_startup.py TIMEOUT 60)
+          TIMEOUT 60
+          ENV ${REBOT_BENCH_SIM_TEST_ENV})
+  ament_add_pytest_test(
+          rebot_leader_startup_test test/test_leader_startup.py
+          TIMEOUT 60
+          ENV ${REBOT_BENCH_SIM_TEST_ENV})
   # Runs every Objective against the MuJoCo twin, like lab_sim's suite.
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py
           TIMEOUT 600
           ENV MOVEIT_CONFIG_PACKAGE=rebot_bench_sim
+              MOVEIT_PRO_CAMERA_RENDERER=opengl
               MOVEIT_HOST_USER_WORKSPACE=${CMAKE_SOURCE_DIR}
               ROS_LOG_DIR=${CMAKE_CURRENT_BINARY_DIR}/test_results/${PROJECT_NAME}/ros_logs)
 endif()

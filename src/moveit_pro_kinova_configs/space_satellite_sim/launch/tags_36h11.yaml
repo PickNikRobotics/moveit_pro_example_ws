@@ -6,7 +6,7 @@
         # silently receives zero frames.
         qos_profile: sensor_data
         family: 36h11           # tag family name
-        size: 0.173             # tag edge size in meter
+        size: 0.2               # default tag edge size in meter: the black square (the listed tags override it)
         max_hamming: 0          # maximum allowed hamming distance (corrected bits)
 
         # see "apriltag.h" 'struct apriltag_detector' for more documentation on these optional parameters
@@ -22,4 +22,4 @@
         tag:
             ids: [0, 1, 2]            # tag ID
             frames: [satellite_tag_0, satellite_tag_1, satellite_tag_2]  # optional frame name
-            sizes: [0.1, 0.1, 0.1]   # optional tag-specific edge size
+            sizes: [0.2, 0.2, 0.2]   # optional tag-specific edge size: the black square, 0.8 of the 0.25 m tag geom face (scene.xml ar_marker_*)
