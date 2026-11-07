@@ -14,11 +14,11 @@
   />
   <xacro:property
     name="mujoco_color_on_real_topic"
-    value="${ dict(opengl=True, nyx=False, both=False)[camera_renderer or 'opengl'] }"
+    value="${ dict(opengl=True, nyx=False, both=False, vapr=True)[camera_renderer or 'opengl'] }"
   />
   <xacro:property
     name="mujoco_color_under_opengl"
-    value="${ dict(opengl=False, nyx=False, both=True)[camera_renderer or 'opengl'] }"
+    value="${ dict(opengl=False, nyx=False, both=True, vapr=False)[camera_renderer or 'opengl'] }"
   />
   <xacro:property name="layout" value="${xacro.load_yaml('$(arg layout)')}" />
 
@@ -70,6 +70,10 @@
       <xacro:unless value="${mujoco_color_on_real_topic or mujoco_color_under_opengl}">
         <param name="color_enabled">false</param>
       </xacro:unless>
+      <!-- vapr: VAPR publishes every output on these topics instead. -->
+      <xacro:if value="${camera_renderer == 'vapr'}">
+        <param name="camera_enabled">false</param>
+      </xacro:if>
       <param name="depth_topic">/wrist_mounted_camera/depth/image_rect_raw</param>
       <param name="points_topic">/wrist_mounted_camera/depth/color/points</param>
     </sensor>
@@ -86,6 +90,10 @@
       <xacro:unless value="${mujoco_color_on_real_topic or mujoco_color_under_opengl}">
         <param name="color_enabled">false</param>
       </xacro:unless>
+      <!-- vapr: VAPR publishes every output on these topics instead. -->
+      <xacro:if value="${camera_renderer == 'vapr'}">
+        <param name="camera_enabled">false</param>
+      </xacro:if>
       <param name="depth_topic">/scene_camera/depth/image_rect_raw</param>
       <param name="points_topic">/scene_camera/depth/color/points</param>
     </sensor>

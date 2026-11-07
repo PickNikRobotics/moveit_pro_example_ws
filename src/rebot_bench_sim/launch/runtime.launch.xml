@@ -102,4 +102,18 @@
       <arg name="topic_namespace" value="nyx" />
     </include>
   </group>
+  <!-- VAPR (experimental) for MOVEIT_PRO_CAMERA_RENDERER vapr: one node renders both cameras the robot description hands over, on the real cameras' topics that description names, so no remap is needed. It reads the URDF from robot_description and the MJCF directly, so it needs no scene export. -->
+  <include
+    file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
+    if="$(eval '&quot;$(var camera_renderer)&quot; == &quot;vapr&quot;')"
+  >
+    <arg name="backend" value="vapr" />
+    <arg
+      name="mjcf"
+      value="$(find-pkg-share rebot_bench_sim)/description/scene.xml"
+    />
+    <arg name="camera" value="scene_camera_color,d435_color" />
+    <arg name="robot_description" value="true" />
+    <arg name="topic_namespace" value="" />
+  </include>
 </launch>

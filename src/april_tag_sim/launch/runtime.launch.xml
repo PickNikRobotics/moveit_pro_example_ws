@@ -14,6 +14,10 @@
     name="nyx_namespace"
     value="$(eval '&quot;nyx&quot; if &quot;$(var camera_renderer)&quot; == &quot;both&quot; else &quot;&quot;')"
   />
+  <let
+    name="vapr_enabled"
+    value="$(eval '&quot;$(var camera_renderer)&quot; == &quot;vapr&quot;')"
+  />
   <include
     file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
     if="$(var nyx_enabled)"
@@ -43,5 +47,19 @@
     />
     <arg name="camera" value="wrist_camera" />
     <arg name="topic_namespace" value="$(var nyx_namespace)" />
+  </include>
+  <!-- VAPR (experimental) for MOVEIT_PRO_CAMERA_RENDERER vapr: one node renders the cameras the robot description hands over to it, on the topics MuJoCo would publish. It reads the URDF from robot_description and the MJCF directly, so it needs no scene export. -->
+  <include
+    file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
+    if="$(var vapr_enabled)"
+  >
+    <arg name="backend" value="vapr" />
+    <arg
+      name="mjcf"
+      value="$(find-pkg-share april_tag_sim)/description/scene.xml"
+    />
+    <arg name="camera" value="scene_camera,wrist_camera" />
+    <arg name="robot_description" value="true" />
+    <arg name="topic_namespace" value="" />
   </include>
 </launch>

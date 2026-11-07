@@ -26,7 +26,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Keep every MuJoCo config's Nyx launch cameras aligned with its robot description."""
+"""Keep every MuJoCo config's Nyx and VAPR launch sensors aligned with its robot description."""
 
 from __future__ import annotations
 
@@ -174,27 +174,42 @@ def _xacro_arg_default(root: ET.Element, name: str) -> str:
     return default
 
 
-def _renderer_sensors(config: RendererConfig) -> set[str]:
-    """The cameras whose MuJoCo sensor overrides the description selects."""
+def _renderer_macro(config: RendererConfig) -> tuple[ET.Element, ET.Element]:
+    """The description's root and its one camera_renderer_sensors call."""
     root = ET.parse(config.description).getroot()
-    if config.direct_sensor_names:
-        return {
-            sensor.get("name")
-            for sensor in root.iter()
-            if _local_name(sensor) == "sensor" and sensor.get("name")
-        }
-
     macros = [
         element
         for element in root.iter()
         if _local_name(element) == "camera_renderer_sensors"
     ]
     assert len(macros) == 1
-    cameras = macros[0].get("cameras")
+    return root, macros[0]
+
+
+def _renderer_sensors(config: RendererConfig) -> set[str]:
+    """The cameras whose MuJoCo sensor overrides the description selects."""
+    if config.direct_sensor_names:
+        root = ET.parse(config.description).getroot()
+        return {
+            sensor.get("name")
+            for sensor in root.iter()
+            if _local_name(sensor) == "sensor" and sensor.get("name")
+        }
+
+    root, macro = _renderer_macro(config)
+    cameras = macro.get("cameras")
     assert cameras is not None
     if cameras == "$(arg nyx_cameras)":
         cameras = config.nyx_cameras_override or _xacro_arg_default(root, "nyx_cameras")
     return set(cameras.split())
+
+
+def _vapr_lidars(config: RendererConfig) -> list[str]:
+    """The 3D lidars the description hands over to VAPR beside its cameras, in order."""
+    if config.direct_sensor_names:
+        return []
+    _, macro = _renderer_macro(config)
+    return (macro.get("lidars") or "").split()
 
 
 def _scene_cameras(path: Path, seen: set[Path] | None = None) -> set[str]:
@@ -220,15 +235,31 @@ def _scene_cameras(path: Path, seen: set[Path] | None = None) -> set[str]:
     return cameras
 
 
-def _nyx_launches(config: RendererConfig) -> tuple[ET.Element, list[ET.Element]]:
-    """The root and Nyx camera includes in one config's runtime launch file."""
+def _renderer_launches(
+    config: RendererConfig,
+) -> tuple[ET.Element, list[ET.Element], list[ET.Element]]:
+    """The root, Nyx camera includes and VAPR includes in one config's runtime launch file."""
     root = ET.parse(config.directory / "launch/runtime.launch.xml").getroot()
-    launches = [
+    includes = [
         include
         for include in root.iter("include")
         if include.get("file", "").endswith("nyx_camera.launch.py")
     ]
-    return root, launches
+
+    def backend(include: ET.Element) -> str | None:
+        return next(
+            (
+                a.get("value")
+                for a in include.findall("arg")
+                if a.get("name") == "backend"
+            ),
+            None,
+        )
+
+    nyx = [include for include in includes if backend(include) is None]
+    vapr = [include for include in includes if backend(include) == "vapr"]
+    assert len(nyx) + len(vapr) == len(includes), "an include names an unknown backend"
+    return root, nyx, vapr
 
 
 @pytest.mark.parametrize("config", CONFIGS, ids=lambda config: config.package)
@@ -245,7 +276,7 @@ def test_runtime_launch_cameras_match_the_renderer_description(
     assert runtime_match.group(1) == config.package
     assert runtime_match.group(2) == "launch/runtime.launch.xml"
 
-    root, launches = _nyx_launches(config)
+    root, launches, vapr_launches = _renderer_launches(config)
     launch_args = [
         {arg.get("name"): arg.get("value") for arg in launch.findall("arg")}
         for launch in launches
@@ -267,6 +298,10 @@ def test_runtime_launch_cameras_match_the_renderer_description(
                 "nyx_namespace",
                 '$(eval \'"nyx" if "$(var camera_renderer)" == "both" else ""\')',
             ),
+            (
+                "vapr_enabled",
+                '$(eval \'"$(var camera_renderer)" == "vapr"\')',
+            ),
         ]
         assert launches
         assert len(launches) == len(_renderer_sensors(config))
@@ -277,6 +312,24 @@ def test_runtime_launch_cameras_match_the_renderer_description(
             assert launch["topic_namespace"] == "$(var nyx_namespace)"
     if config.scene is not None:
         assert cameras <= _scene_cameras(config.scene)
+
+    # One VAPR node takes every camera the description selects, then its 3D lidars, by name, so it renders exactly the
+    # sensors the description hands over to it with camera_enabled=false.
+    assert len(vapr_launches) == 1
+    vapr = {
+        arg.get("name"): arg.get("value") for arg in vapr_launches[0].findall("arg")
+    }
+    vapr_sensors = vapr["camera"].split(",")
+    assert set(vapr_sensors[: len(cameras)]) == cameras
+    assert vapr_sensors[len(cameras) :] == _vapr_lidars(config)
+    assert vapr["mjcf"] == expected_mjcf
+    assert vapr["robot_description"] == "true"
+    assert vapr["topic_namespace"] == ""
+    assert "scene_dir" not in vapr, "VAPR reads the MJCF directly"
+    if not config.direct_sensor_names:
+        assert vapr_launches[0].get("if") == "$(var vapr_enabled)"
+    if config.scene is not None:
+        assert set(vapr_sensors) <= _scene_cameras(config.scene)
 
 
 def test_renderer_is_environment_only() -> None:

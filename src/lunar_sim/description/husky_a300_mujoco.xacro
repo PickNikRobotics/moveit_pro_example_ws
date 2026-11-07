@@ -188,8 +188,9 @@
       <state_interface name="position" />
       <state_interface name="velocity" />
     </joint>
-    <!-- MOVEIT_PRO_CAMERA_RENDERER's sensor overrides for these cameras; see the macro for the
-         values. runtime.launch.xml starts one Nyx node per camera listed here. -->
-    <xacro:camera_renderer_sensors cameras="scene_camera oakd_color sensor_arch_rear_camera_mount" />
+    <!-- MOVEIT_PRO_CAMERA_RENDERER's sensor overrides for these cameras, and for vapr the lidars;
+         see the macro for the values. runtime.launch.xml starts one Nyx node per camera listed
+         here, or one VAPR node for the cameras and lidars together. -->
+    <xacro:camera_renderer_sensors cameras="scene_camera oakd_color sensor_arch_rear_camera_mount" lidars="lidar_front lidar_rear" />
   </ros2_control>
 </robot>

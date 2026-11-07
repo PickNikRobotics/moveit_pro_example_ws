@@ -101,9 +101,10 @@
         <state_interface name="linear_acceleration.y"/>
         <state_interface name="linear_acceleration.z"/>
       </sensor>
-      <!-- MOVEIT_PRO_CAMERA_RENDERER's sensor overrides for these cameras; see the macro for the
-           values. runtime.launch.xml starts one Nyx node per camera listed here. -->
-      <xacro:camera_renderer_sensors cameras="scene_camera wrist_camera" />
+      <!-- MOVEIT_PRO_CAMERA_RENDERER's sensor overrides for these cameras, and for vapr the lidars;
+           see the macro for the values. runtime.launch.xml starts one Nyx node per camera listed
+           here, or one VAPR node for the cameras and lidars together. -->
+      <xacro:camera_renderer_sensors cameras="scene_camera wrist_camera" lidars="lidar_front lidar_rear" />
     </ros2_control>
   </xacro:macro>
 </robot>
