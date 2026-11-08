@@ -1,6 +1,6 @@
 upstream:
   repository: https://github.com/PickNikRobotics/fanuc.git
-  commit: 8cbefe8793b35995ec1bb03e1b98c84d4de17e37
+  commit: dc2fd5977a3c09aeb210b681a8d73c2034f1c97a
   branch: ros2-descriptions
 vendored_paths:
   - LICENSE
