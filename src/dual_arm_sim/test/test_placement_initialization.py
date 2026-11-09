@@ -219,30 +219,62 @@ def test_place_waypoint_groups_have_all_their_active_joints(release_targets, arm
 
 
 @pytest.mark.parametrize(
-    "field, value, message",
+    "name, changes, message",
     [
-        ("planning_group", "no_such_group", "Unknown group: no_such_group"),
-        ("waypoint_groups", ["no_such_group"], "Unknown group: no_such_group"),
-        ("hand_frame", "no_such_frame", "Unknown hand frame: no_such_frame"),
         (
-            "hand_frame",
-            "left_fr3v2_hand_tcp",
+            "unknown_planning_group",
+            {"planning_group": "no_such_group"},
+            "Unknown group: no_such_group",
+        ),
+        (
+            "unknown_waypoint_group",
+            {"waypoint_groups": ["no_such_group"]},
+            "Unknown group: no_such_group",
+        ),
+        (
+            "unknown_hand_frame",
+            {"hand_frame": "no_such_frame"},
+            "Unknown hand frame: no_such_frame",
+        ),
+        (
+            "unmoved_hand_frame",
+            {"hand_frame": "left_fr3v2_hand_tcp"},
             "Planning group does not move hand frame: left_fr3v2_hand_tcp",
         ),
-        ("corner_y", None, "corner_y"),
-        ("approach", {"xyz": [0.7, 0.0]}, "approach"),
+        ("missing_corner_y", {"corner_y": None}, "key 'corner_y' not found"),
+        (
+            "short_approach",
+            {"approach": {"xyz": [0.7, 0.0], "wxyz": [1, 0, 0, 0]}},
+            "approach needs 3 xyz and 4 wxyz numbers",
+        ),
+        (
+            "text_approach",
+            {"approach": {"xyz": [0.7, 0.0, "high"], "wxyz": [1, 0, 0, 0]}},
+            "approach needs 3 xyz and 4 wxyz numbers",
+        ),
+        (
+            "missing_home",
+            {"initialize_sort": True, "home": None},
+            "key 'home' not found",
+        ),
+        (
+            "text_waypoint",
+            {"waypoint": {SPINE: "high"}},
+            "waypoint must map joint names to numbers",
+        ),
     ],
 )
 def test_probe_rejects_malformed_cases(
-    release_targets, run_probe, field, value, message
+    release_targets, run_probe, name, changes, message
 ):
-    """A case naming an unknown group or frame, or missing a field, must fail the probe cleanly."""
+    """A case naming an unknown group or frame, or with a missing or mistyped field, must fail cleanly."""
     case = copy.deepcopy(release_targets["template"])
-    case["name"] = "malformed_" + field
-    if value is None:
-        del case[field]
-    else:
-        case[field] = value
+    case["name"] = "malformed_" + name
+    for field, value in changes.items():
+        if value is None:
+            del case[field]
+        else:
+            case[field] = value
     process, _ = run_probe(case["name"], [case])
     assert process.returncode == 3, process.stdout + process.stderr
     assert message in process.stderr

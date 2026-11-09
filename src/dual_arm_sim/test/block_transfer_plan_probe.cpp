@@ -253,17 +253,42 @@ int main(int argc, char** argv)
     {
       return "case is not an object";
     }
-    for (const auto* key : { "name", "joints", "waypoint", "place_waypoint", "corner_y" })
+    const auto numbers = [](const Json& values) {
+      return std::all_of(values.begin(), values.end(), [](const Json& value) { return value.is_number(); });
+    };
+    for (const auto* key : { "name", "place_waypoint" })
     {
-      std::ignore = item.at(key);
+      if (!item.at(key).is_string())
+      {
+        return std::string(key) + " must be a string";
+      }
     }
-    if (item.at("approach").at("xyz").size() != 3 || item.at("approach").at("wxyz").size() != 4)
+    if (!item.at("corner_y").is_number())
     {
-      return "approach needs 3 xyz and 4 wxyz values";
+      return "corner_y must be a number";
+    }
+    const auto& xyz = item.at("approach").at("xyz");
+    const auto& wxyz = item.at("approach").at("wxyz");
+    if (!xyz.is_array() || !wxyz.is_array() || xyz.size() != 3 || wxyz.size() != 4 || !numbers(xyz) || !numbers(wxyz))
+    {
+      return "approach needs 3 xyz and 4 wxyz numbers";
+    }
+    const bool initialize_sort = item.value("initialize_sort", false);
+    auto joint_maps = std::vector<std::string>{ "joints", "waypoint" };
+    if (initialize_sort)
+    {
+      joint_maps.push_back("home");
+    }
+    for (const auto& key : joint_maps)
+    {
+      if (!item.at(key).is_object() || !numbers(item.at(key)))
+      {
+        return key + " must map joint names to numbers";
+      }
     }
     auto groups = item.at("waypoint_groups").get<std::vector<std::string>>();
     groups.push_back(item.at("planning_group").get<std::string>());
-    if (item.value("initialize_sort", false))
+    if (initialize_sort)
     {
       const auto home_groups = item.at("home_groups").get<std::vector<std::string>>();
       groups.insert(groups.end(), home_groups.begin(), home_groups.end());
@@ -295,7 +320,9 @@ int main(int argc, char** argv)
   }
   for (const auto& item : cases)
   {
-    const auto name = item.is_object() ? item.value("name", std::string("?")) : std::string("?");
+    const auto name = item.is_object() && item.contains("name") && item.at("name").is_string() ?
+                          item.at("name").get<std::string>() :
+                          std::string("?");
     try
     {
       if (const auto error = invalid_case(item))
