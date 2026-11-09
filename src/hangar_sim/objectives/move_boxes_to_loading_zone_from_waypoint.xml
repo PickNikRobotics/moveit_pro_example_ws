@@ -256,7 +256,7 @@
                       end_effector_group_name="gripper"
                       generate_centroid_grasps="true"
                       grasp_poses="{grasp_poses}"
-                      num_orientation_samples="8"
+                      num_orientation_samples="1"
                       padding_dimension="0.01"
                       planning_scene_msg="{planning_scene}"
                       samples_per_plane="2"
@@ -276,11 +276,10 @@
                       the outer Objective's `place_pose`) costs nothing at the
                       cup.
 
-                      Tradeoff: this collapses the 20 wrist-angle samples to one
-                      orientation per (face, position, flip), so candidates that
-                      only succeeded at a non-trivial wrist angle now fail IK.
-                      The centroid grasp and the bidirectional flip variant
-                      remain, which has sufficed for top-face picks of cubes.
+                      One wrist sample preserves the centroid and random spatial
+                      samples without repeating poses whose orientations are
+                      overwritten below. The generator also emits two flipped
+                      variants, which coincide here because ee_to_tcp is identity.
                     -->
                     <Action
                       ID="ResetPoseStampedVector"
