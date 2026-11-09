@@ -26,7 +26,6 @@
 
 #include <behaviortree_cpp/bt_factory.h>
 #include <gtest/gtest.h>
-#include <tinyxml2.h>
 #include <controller_manager_msgs/srv/list_controllers.hpp>
 #include <controller_manager_msgs/srv/switch_controller.hpp>
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
@@ -39,6 +38,7 @@
 #include <chrono>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
@@ -77,7 +77,7 @@ private:
 
 class ControllerRestoration : public ::testing::Test
 {
-protected:
+public:
   using List = controller_manager_msgs::srv::ListControllers;
   using Switch = controller_manager_msgs::srv::SwitchController;
   using Reset = moveit_studio_internal_msgs::srv::ResetMujocoKeyframe;
@@ -105,6 +105,7 @@ protected:
     list = services->create_service<List>(
         "/controller_manager/list_controllers",
         [&](const List::Request::SharedPtr, const List::Response::SharedPtr out) {
+          const auto lock = std::scoped_lock(state_mutex);
           for (const auto& [name, state] : states)
           {
             controller_manager_msgs::msg::ControllerState controller;
@@ -122,6 +123,7 @@ protected:
     switching = services->create_service<Switch>(
         "/controller_manager/switch_controller",
         [&](const Switch::Request::SharedPtr request, const Switch::Response::SharedPtr out) {
+          const auto lock = std::scoped_lock(state_mutex);
           strictnesses.push_back(request->strictness);
           const bool invalid = !unactivatable.empty() &&
                                std::find(request->activate_controllers.begin(), request->activate_controllers.end(),
@@ -145,6 +147,7 @@ protected:
         });
     reset = services->create_service<Reset>("/mujoco_system/reset_keyframe",
                                             [&](const Reset::Request::SharedPtr, const Reset::Response::SharedPtr out) {
+                                              const auto lock = std::scoped_lock(state_mutex);
                                               ++resets;
                                               out->success = reset_succeeds;
                                               out->message = reset_succeeds ? "reset" : "fixture reset failed";
@@ -190,6 +193,19 @@ protected:
     return status;
   }
 
+  struct Snapshot
+  {
+    std::map<std::string, std::string> states;
+    std::vector<int> strictnesses;
+    int resets;
+  };
+
+  Snapshot snapshot()
+  {
+    const auto lock = std::scoped_lock(state_mutex);
+    return { states, strictnesses, resets };
+  }
+
   BT::Tree wholeBody()
   {
     factory.registerBehaviorTreeFromFile(WHOLE_BODY_XML);
@@ -213,76 +229,99 @@ protected:
   rclcpp::Service<List>::SharedPtr list;
   rclcpp::Service<Switch>::SharedPtr switching;
   rclcpp::Service<Reset>::SharedPtr reset;
+  // Guards what service callbacks write; tests read it through snapshot().
+  std::mutex state_mutex;
   std::map<std::string, std::string> states;
   std::vector<int> strictnesses;
-  std::string unactivatable;
-  BT::NodeStatus motion_status = BT::NodeStatus::SUCCESS;
-  bool reset_succeeds = true;
   int resets = 0;
+  // Callbacks only read these; tests write them only while no service request is in flight.
+  std::string unactivatable;
+  bool reset_succeeds = true;
+  BT::NodeStatus motion_status = BT::NodeStatus::SUCCESS;
   int motions = 0;
 };
 
 TEST_F(ControllerRestoration, RegressionSuccessfulMotionCannotHidePartialRestore)
 {
+  // GIVEN one default controller cannot activate.
   unactivatable = "joint_trajectory_admittance_controller";
   auto tree = wholeBody();
+  // WHEN the successful motion attempts its restore.
   EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
-  EXPECT_EQ(strictnesses, (std::vector<int>{ Switch::Request::STRICT }));
-  EXPECT_EQ(states[unactivatable], "inactive");
+  // THEN strict restoration exposes the failure instead of dropping the controller.
+  const auto result = snapshot();
+  EXPECT_EQ(result.strictnesses, (std::vector<int>{ Switch::Request::STRICT }));
+  EXPECT_EQ(result.states.at(unactivatable), "inactive");
 }
 
 TEST_F(ControllerRestoration, SuccessfulMotionRestoresBothDefaults)
 {
+  // GIVEN a successful motion and activatable defaults.
   auto tree = wholeBody();
+  // WHEN the restore completes.
   EXPECT_EQ(finish(tree), BT::NodeStatus::SUCCESS);
-  EXPECT_EQ(states["joint_trajectory_admittance_controller"], "active");
-  EXPECT_EQ(states["base_jgvc"], "active");
-  EXPECT_EQ(states["body_jtc"], "inactive");
-  EXPECT_EQ(states["base_pid"], "inactive");
-  // Re-running with defaults already active must not fail strict switching.
+  // THEN the defaults own control and repeating the restore is idempotent.
+  const auto result = snapshot();
+  EXPECT_EQ(result.states.at("joint_trajectory_admittance_controller"), "active");
+  EXPECT_EQ(result.states.at("base_jgvc"), "active");
+  EXPECT_EQ(result.states.at("body_jtc"), "inactive");
+  EXPECT_EQ(result.states.at("base_pid"), "inactive");
   EXPECT_EQ(finish(tree), BT::NodeStatus::SUCCESS);
-  EXPECT_EQ(strictnesses.size(), 1U);
+  EXPECT_EQ(snapshot().strictnesses.size(), 1U);
 }
 
 TEST_F(ControllerRestoration, FailedMotionRestoresAndStillReportsFailure)
 {
+  // GIVEN a failed motion with activatable defaults.
   motion_status = BT::NodeStatus::FAILURE;
   auto tree = wholeBody();
+  // WHEN the failure branch restores control.
   EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
-  EXPECT_EQ(states["joint_trajectory_admittance_controller"], "active");
-  EXPECT_EQ(states["base_jgvc"], "active");
-  EXPECT_EQ(strictnesses, (std::vector<int>{ Switch::Request::STRICT }));
+  // THEN both defaults activate without hiding the motion failure.
+  const auto result = snapshot();
+  EXPECT_EQ(result.states.at("joint_trajectory_admittance_controller"), "active");
+  EXPECT_EQ(result.states.at("base_jgvc"), "active");
+  EXPECT_EQ(result.strictnesses, (std::vector<int>{ Switch::Request::STRICT }));
 }
 
-TEST_F(ControllerRestoration, CancellationDoesNotTickRestoreOnThisRuntime)
+TEST_F(ControllerRestoration, HaltDoesNotTickTheTrailingRestore)
 {
+  // GIVEN a running motion boundary; this fixture does not model controller activation or stopping.
   motion_status = BT::NodeStatus::RUNNING;
   auto tree = wholeBody();
   ASSERT_EQ(tree.tickExactlyOnce(), BT::NodeStatus::RUNNING);
+  // WHEN the shipped tree is halted.
   tree.haltTree();
-  EXPECT_TRUE(strictnesses.empty());
-  EXPECT_EQ(states["body_jtc"], "active");
-  EXPECT_EQ(states["base_pid"], "active");
+  // THEN no trailing restore request is sent; actual controller stop remains a runtime check.
+  EXPECT_TRUE(snapshot().strictnesses.empty());
+  EXPECT_EQ(motions, 1);
 }
 
 TEST_F(ControllerRestoration, RegressionResetFailureRestoresControllersButFails)
 {
+  // GIVEN a reset service failure after deactivation.
   auto tree = navigationReset();
   reset_succeeds = false;
+  // WHEN the reset reports failure.
   EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
-  EXPECT_EQ(resets, 1);
-  EXPECT_EQ(states["body_jtc"], "active");
-  EXPECT_EQ(states["base_pid"], "active");
-  EXPECT_EQ(strictnesses, (std::vector<int>{ Switch::Request::STRICT, Switch::Request::STRICT }));
+  // THEN entry controllers are restored and a later successful reset has no stale failure.
+  const auto result = snapshot();
+  EXPECT_EQ(result.resets, 1);
+  EXPECT_EQ(result.states.at("body_jtc"), "active");
+  EXPECT_EQ(result.states.at("base_pid"), "active");
+  EXPECT_EQ(result.strictnesses, (std::vector<int>{ Switch::Request::STRICT, Switch::Request::STRICT }));
   reset_succeeds = true;
   EXPECT_EQ(finish(tree), BT::NodeStatus::SUCCESS);
 }
 
 TEST_F(ControllerRestoration, ResetRestoreFailureCannotReportSuccess)
 {
+  // GIVEN the reset can complete but an entry controller cannot reactivate.
   unactivatable = "body_jtc";
   auto tree = navigationReset();
+  // WHEN restoration fails.
   EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
-  EXPECT_EQ(resets, 1);
+  // THEN a completed reset cannot turn the failed restore into success.
+  EXPECT_EQ(snapshot().resets, 1);
 }
 }  // namespace

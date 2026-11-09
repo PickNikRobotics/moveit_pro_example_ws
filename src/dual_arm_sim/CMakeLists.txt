@@ -43,6 +43,7 @@ if(BUILD_TESTING)
   find_package(sensor_msgs REQUIRED)
   find_package(geometry_msgs REQUIRED)
   find_package(controller_manager_msgs REQUIRED)
+  find_package(moveit_studio_agent_msgs REQUIRED)
   find_package(moveit_studio_internal_msgs REQUIRED)
   find_package(rclcpp REQUIRED)
   find_package(pcl_conversions REQUIRED)
@@ -72,7 +73,7 @@ if(BUILD_TESTING)
     moveit_pro_base::moveit_pro_base_planning_scene
     moveit_pro_task_constructor_core::moveit_pro_task_constructor_core
     pluginlib::pluginlib nlohmann_json::nlohmann_json tinyxml2::tinyxml2
-    ament_index_cpp::ament_index_cpp)
+    ament_index_cpp::ament_index_cpp ${moveit_studio_agent_msgs_TARGETS})
   find_package(ament_lint_auto REQUIRED)
   find_package(ament_cmake_pytest REQUIRED)
   ament_lint_auto_find_test_dependencies()
@@ -92,7 +93,7 @@ if(BUILD_TESTING)
           ENV BLOCK_TRANSFER_PROBE=$<TARGET_FILE:block_transfer_plan_probe>)
   ament_add_pytest_test(
           placement_initialization_test test/test_placement_initialization.py
-          TIMEOUT 30
+          TIMEOUT 60
           ENV BLOCK_TRANSFER_PROBE=$<TARGET_FILE:block_transfer_plan_probe>)
   ament_add_pytest_test(
           base_twist_to_planar_test test/test_base_twist_to_planar.py

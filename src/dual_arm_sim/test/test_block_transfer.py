@@ -50,7 +50,7 @@ GRIP_DRIFT_ALLOWANCE_M = 0.025
 
 
 @pytest.fixture(scope="module")
-def transfer_plans(tmp_path_factory):
+def transfer_plans(tmp_path_factory, shipped_transfers):
     """Use current config/model sources and real planners without any live ROS service."""
     directory = tmp_path_factory.mktemp("block_transfer")
     mujoco.mj_loadAllPluginLibraries(
@@ -58,9 +58,7 @@ def transfer_plans(tmp_path_factory):
     )
     model = mujoco.MjModel.from_xml_path(str(PACKAGE / "description/mujoco/scene.xml"))
     waypoints = {
-        waypoint["name"]: dict(
-            zip(waypoint["joint_state"]["name"], waypoint["joint_state"]["position"])
-        )
+        waypoint["name"]: waypoint
         for waypoint in yaml.safe_load(
             (PACKAGE / "waypoints/waypoints.yaml").read_text()
         )
@@ -74,9 +72,15 @@ def transfer_plans(tmp_path_factory):
             if int(model.jnt_type[joint])
             in (int(mujoco.mjtJoint.mjJNT_HINGE), int(mujoco.mjtJoint.mjJNT_SLIDE))
         }
-        case["waypoint"] = waypoints[
-            "Place Right" if case["arm"] == "right" else "Place Left"
-        ]
+        transfer = shipped_transfers[case["arm"]]
+        waypoint = waypoints[transfer["place_waypoint"]]
+        case["planning_group"] = transfer["planning_group"]
+        case["hand_frame"] = transfer["hand_frame"]
+        case["place_waypoint"] = transfer["place_waypoint"]
+        case["corner_y"] = float(transfer["corner_y"])
+        case["waypoint_groups"] = waypoint["joint_group_names"]
+        state = waypoint["joint_state"]
+        case["waypoint"] = dict(zip(state["name"], state["position"]))
     unreachable = copy.deepcopy(cases[0])
     unreachable["name"] = "unreachable"
     unreachable["approach"]["xyz"][0] = 2.5
@@ -132,7 +136,7 @@ def test_unreachable_transfer_returns_no_executable_solution(transfer_plans) -> 
 
 @pytest.mark.parametrize("case", STATES, ids=lambda case: case["name"])
 def test_regression_complete_transfer_clears_blocks_and_splits_at_grasp(
-    transfer_plans, case
+    transfer_plans, shipped_transfers, case
 ) -> None:
     """Recorded near/far/cross-table pickups must plan, close at the block, and carry clear."""
     model, plans = transfer_plans
@@ -141,7 +145,7 @@ def test_regression_complete_transfer_clears_blocks_and_splits_at_grasp(
     data = mujoco.MjData(model)
     data.qpos[:] = case["qpos"]
     mujoco.mj_forward(model, data)
-    tcp = model.body(case["arm"] + "_fr3v2_hand_tcp").id
+    tcp = model.body(shipped_transfers[case["arm"]]["hand_frame"]).id
     block = model.body(case["block"]).id
     geom = int(model.body_geomadr[block])
     initial_center = data.geom_xpos[geom].copy()

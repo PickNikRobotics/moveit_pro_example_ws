@@ -25,12 +25,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // Offline companion for test_block_transfer.py. Only local fixture services; no robot execution.
+#include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -146,12 +148,17 @@ int main(int argc, char** argv)
   factory.registerSimpleAction(
       "SetupMTCCurrentState",
       [&](BT::TreeNode& behavior) {
-        const auto task = behavior.getInput<moveit_pro::task_constructor::TaskPtr>("task").value();
+        const auto task = behavior.getInput<moveit_pro::task_constructor::TaskPtr>("task");
+        if (!task || !task.value())
+        {
+          std::cerr << "SetupMTCCurrentState fixture: " << (task ? "null task" : task.error()) << '\n';
+          return BT::NodeStatus::FAILURE;
+        }
         auto state = std::make_unique<moveit_pro::task_constructor::stages::FixedState>("current state");
         state->setState(scene);
-        // CurrentState does not check fixed table/table-leg overlaps; moving-group checks remain enabled below.
+        // Fixed table overlaps are not checked here; moving-group checks stay on below.
         state->setIgnoreCollisions(true);
-        task->add(std::move(state));
+        task.value()->add(std::move(state));
         return BT::NodeStatus::SUCCESS;
       },
       { BT::InputPort<moveit_pro::task_constructor::TaskPtr>("task") });
@@ -192,8 +199,13 @@ int main(int argc, char** argv)
     factory.registerSimpleAction("ApplyJointState",
                                  [&](BT::TreeNode& behavior) {
                                    const auto target =
-                                       behavior.getInput<moveit_msgs::msg::RobotState>("target_joint_state").value();
-                                   scene->getCurrentStateNonConst().setVariableValues(target.joint_state);
+                                       behavior.getInput<moveit_msgs::msg::RobotState>("target_joint_state");
+                                   if (!target)
+                                   {
+                                     std::cerr << "ApplyJointState fixture: " << target.error() << '\n';
+                                     return BT::NodeStatus::FAILURE;
+                                   }
+                                   scene->getCurrentStateNonConst().setVariableValues(target.value().joint_state);
                                    scene->getCurrentStateNonConst().update();
                                    return BT::NodeStatus::SUCCESS;
                                  },
@@ -235,10 +247,73 @@ int main(int argc, char** argv)
   std::ifstream input(argv[1]);
   const Json cases = Json::parse(input);
   Json results = Json::array();
+  // Check every case before planning any, so a bad case exits 3 instead of aborting mid-run.
+  const auto invalid_case = [&](const Json& item) -> std::optional<std::string> {
+    if (!item.is_object())
+    {
+      return "case is not an object";
+    }
+    for (const auto* key : { "name", "joints", "waypoint", "place_waypoint", "corner_y" })
+    {
+      std::ignore = item.at(key);
+    }
+    if (item.at("approach").at("xyz").size() != 3 || item.at("approach").at("wxyz").size() != 4)
+    {
+      return "approach needs 3 xyz and 4 wxyz values";
+    }
+    auto groups = item.at("waypoint_groups").get<std::vector<std::string>>();
+    groups.push_back(item.at("planning_group").get<std::string>());
+    if (item.value("initialize_sort", false))
+    {
+      const auto home_groups = item.at("home_groups").get<std::vector<std::string>>();
+      groups.insert(groups.end(), home_groups.begin(), home_groups.end());
+    }
+    for (const auto& name : groups)
+    {
+      if (!context->robot_model->getJointModelGroup(name))
+      {
+        return "Unknown group: " + name;
+      }
+    }
+    const auto frame = item.at("hand_frame").get<std::string>();
+    if (!context->robot_model->hasLinkModel(frame))
+    {
+      return "Unknown hand frame: " + frame;
+    }
+    // A frame the planning group does not move would give a plausible but wrong release pose.
+    const auto& moved = context->robot_model->getJointModelGroup(item.at("planning_group"))->getUpdatedLinkModelNames();
+    if (std::find(moved.begin(), moved.end(), frame) == moved.end())
+    {
+      return "Planning group does not move hand frame: " + frame;
+    }
+    return std::nullopt;
+  };
+  if (!cases.is_array())
+  {
+    std::cerr << "Cases file must hold a JSON array.\n";
+    return 3;
+  }
   for (const auto& item : cases)
   {
-    const std::string arm = item.at("arm");
-    const std::string group = arm + "_manipulator_without_spine";
+    const auto name = item.is_object() ? item.value("name", std::string("?")) : std::string("?");
+    try
+    {
+      if (const auto error = invalid_case(item))
+      {
+        std::cerr << name << ": " << *error << '\n';
+        return 3;
+      }
+    }
+    catch (const Json::exception& error)
+    {
+      std::cerr << name << ": malformed case: " << error.what() << '\n';
+      return 3;
+    }
+  }
+  for (const auto& item : cases)
+  {
+    const std::string group = item.at("planning_group");
+    const std::string place_waypoint = item.at("place_waypoint");
     auto& state = scene->getCurrentStateNonConst();
     state.setToDefaultValues();
     for (const auto& [name, value] : item.at("joints").items())
@@ -279,7 +354,7 @@ int main(int argc, char** argv)
     };
     if (item.value("initialize_sort", false))
     {
-      serve(item.at("home"), "Home", { "manipulator" });
+      serve(item.at("home"), "Home", item.at("home_groups").get<std::vector<std::string>>());
       auto initialization = factory.createTree("Sort Blocks");
       if (run(initialization) != BT::NodeStatus::SUCCESS)
       {
@@ -287,7 +362,7 @@ int main(int argc, char** argv)
         return 3;
       }
     }
-    serve(item.at("waypoint"), "fixture", item.value("waypoint_groups", std::vector<std::string>{ group }));
+    serve(item.at("waypoint"), place_waypoint, item.at("waypoint_groups").get<std::vector<std::string>>());
     auto board = BT::Blackboard::create();
     geometry_msgs::msg::PoseStamped pose;
     pose.header.frame_id = "odom";
@@ -302,9 +377,9 @@ int main(int argc, char** argv)
     pose.pose.orientation.z = quat[3];
     board->set("approach_pose", pose);
     board->set("planning_group", group);
-    board->set("hand_frame", arm + "_fr3v2_hand_tcp");
-    board->set("place_waypoint", "fixture");
-    board->set("corner_y", arm == "right" ? -.4 : .4);
+    board->set("hand_frame", item.at("hand_frame").get<std::string>());
+    board->set("place_waypoint", place_waypoint);
+    board->set("corner_y", item.at("corner_y").get<double>());
     board->set("carry_speed", .25);
     board->set("carry_acceleration", .0625);
     auto tree = factory.createTree("Plan Block Transfer", board);
@@ -322,13 +397,14 @@ int main(int argc, char** argv)
       {
         result["retrieved_joints"] = retrieved.joint_state.name;
       }
-      result["initial_spine"] = state.getVariablePosition("franka_spine_vertical_joint");
+      result["pre_transfer_spine"] = state.getVariablePosition("franka_spine_vertical_joint");
       result["missing_group_joints"] = Json::object();
       const auto lock = std::scoped_lock(waypoint_mutex);
       for (const auto& name : waypoint.joint_group_names)
       {
+        const auto* waypoint_group = context->robot_model->getJointModelGroup(name);
         auto missing = std::vector<std::string>{};
-        for (const auto& joint : context->robot_model->getJointModelGroup(name)->getActiveJointModelNames())
+        for (const auto& joint : waypoint_group->getActiveJointModelNames())
         {
           if (!item.at("waypoint").contains(joint))
           {

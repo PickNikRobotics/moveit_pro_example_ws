@@ -58,6 +58,20 @@ def robot_geoms(model):
     return np.asarray(result)
 
 
+def test_robot_visuals_are_in_default_visible_groups(model):
+    """Every non-colliding robot geom must sit in a group the default viewer options show."""
+    robot = robot_geoms(model)
+    visual = robot[(model.geom_contype[robot] | model.geom_conaffinity[robot]) == 0]
+    assert len(visual)
+    shown = mujoco.MjvOption().geomgroup
+    hidden = [
+        model.geom(int(geom)).name
+        for geom in visual
+        if model.geom_group[geom] >= len(shown) or not shown[model.geom_group[geom]]
+    ]
+    assert not hidden, hidden
+
+
 @pytest.mark.parametrize("keyframe", ["default", "nav_demo"])
 def test_regression_normal_views_render_visuals_not_robot_collisions(model, keyframe):
     """RGB must retain visible robot parts while segmentation proves no collision geom owns a pixel."""

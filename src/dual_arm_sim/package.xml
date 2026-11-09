@@ -20,6 +20,7 @@
   <exec_depend>franka_meshes</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
+  <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>mujoco_package_uri</exec_depend>
   <exec_depend>nav2_bringup</exec_depend>

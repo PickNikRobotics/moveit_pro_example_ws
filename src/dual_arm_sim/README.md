@@ -45,8 +45,9 @@ room to spare on the reach side. The drawing centre in `objectives/writing_demo.
 that reach room; shifting it toward the robot widens the window, shifting it away narrows it.
 
 Moving the pick table or changing `generate_map.py`'s `RESOLUTION` can cross either bound. The
-side tables bound neither edge. Both Nav2 footprints in `params/nav2_params.yaml` were drawn
-by hand from `Stow`; they do not follow changes to the waypoint.
+side tables bound neither edge. Both Nav2 footprints in `params/nav2_params.yaml` are stored
+polygons: the robot at `Stow`, from the robot model, padded and scaled up for margin. No script
+derives them, so they do not follow changes to the waypoint.
 
 After changing `Stow`, check that both the local and global costmap footprints contain the new
 pose. Redraw both if needed, then run `test/test_scene.py`. The test checks the stored footprints
@@ -79,7 +80,13 @@ clearance test pass:** the stowed-arm footprint and narrow front gap are deliber
 
 `body_jtc` runs whole-body trajectories. Its planar joints are chained through `base_pid`, a `pid_controller/PidController` that turns their position references into the planar velocity commands `base_jgvc` sends for Nav2. Both pairs claim the planar joints, so one runs at a time. The whole-body Objectives switch `base_pid` and `body_jtc` in, then restore `joint_trajectory_admittance_controller` and `base_jgvc` on success or failure. A failed restore fails the Objective.
 
-Stopping a whole-body Objective cancels its trajectory but does not run the trailing controller restore on the tested runtime. `body_jtc` and `base_pid` can remain active. This is not a completed handoff to Nav2 or arm teleoperation. Before resuming, restore the defaults from the ROS runtime environment:
+Stopping a whole-body Objective cancels its trajectory but does not run the trailing controller restore on the tested runtime. `body_jtc` and `base_pid` can remain active. This is not a completed handoff to Nav2 or arm teleoperation. First check the state from the ROS runtime environment:
+
+```bash
+ros2 control list_controllers
+```
+
+If `joint_trajectory_admittance_controller` and `base_jgvc` are already `active`, and `body_jtc` and `base_pid` are `inactive`, nothing needs restoring. This can happen when a stop precedes the whole-body switch. For the opposite state, with the whole-body pair active and the defaults inactive, run:
 
 ```bash
 ros2 control switch_controllers --strict --deactivate body_jtc base_pid \
@@ -87,7 +94,9 @@ ros2 control switch_controllers --strict --deactivate body_jtc base_pid \
 ros2 control list_controllers
 ```
 
-Confirm that the two default controllers are `active` and the whole-body pair is `inactive`. A switch error needs investigation; do not treat a later Objective as proof that the cancelled one restored its controllers.
+For a partial switch, include only currently active controllers in `--deactivate` and only inactive defaults in `--activate`; omit an empty option. An unconfigured or missing default controller needs investigation before recovery. Check the resulting states again before resuming. Do not treat a later Objective as proof that the cancelled one restored its controllers.
+
+Stopping "Reset MuJoCo Sim For Navigation" after its deactivate step can leave every previously active command controller inactive, including the grippers. Record `list_controllers` before a reset. After a stop, check it again and reactivate only those controllers that were active before and are now inactive, using `--strict --activate`. The usual startup set is `joint_trajectory_admittance_controller`, `base_jgvc`, `left_gripper_controller` and `right_gripper_controller`; other entry states need their own saved list. Do not use the whole-body deactivate command for this reset case.
 
 ## Objectives
 
@@ -100,11 +109,11 @@ Confirm that the two default controllers are `active` and the whole-body pair is
 | "Whole Body Reach Left" | back into open floor, then reach the left gripper sideways past the arm's reach, so the base and the spine move with it |
 | "Whole Body Move to Pose", "Whole Body Move to Joint State" | the shared subtrees: IK on a `*_manipulator_with_base` group, then plan, switch, execute and switch back |
 | "Move Base to Ready", "Navigate to Clicked Point" | stow the arms, then drive with Nav2 to the Base Ready pose or to a clicked point |
-| "Reset MuJoCo Sim For Navigation" | reset the scene to `nav_demo`, with the robot backed away and the arms stowed |
+| "Reset MuJoCo Sim For Navigation" | reset to `nav_demo`: robot backed away, arms at the `Home` joint values, spine at 0.6 m |
 
 ### Sort Blocks grasp assumptions
 
-`Sort Blocks` first moves the spine and both arms to `Home`, including after navigation or a `nav_demo` reset. This sets the spine height used by the saved Place waypoints before the first transfer. It also does this on an empty table.
+`Sort Blocks` first moves the spine and both arms to `Home`, including after navigation or a `nav_demo` reset. The spine-free Place retrieval omits the saved spine joint, so the release pose uses the current spine height. Home makes that height match the recorded placement. Initialization also runs on an empty table and does not move the base. After a `nav_demo` reset, run "Move Base to Ready" before sorting so the blocks are within reach.
 
 `Sort Blocks` uses the overhead scene camera to pick the 50 mm blocks from the pick table. `Find Red Block` and `Find Green Block` fit the dominant plane before computing its centroid, rejecting mask-edge points on the sides, table or floor. The top must account for at least 60% of the segmented cloud within 1 mm. This covers the default scene and the measured displaced block resting on another face; it does not infer a safe grasp for arbitrary tilted or touching blocks.
 

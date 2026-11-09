@@ -46,9 +46,57 @@ SPINE = "franka_spine_vertical_joint"
 
 
 @pytest.fixture(scope="module")
-def release_targets(tmp_path_factory):
-    """Run installed RetrieveWaypoint/FK and the shipped initialization, substituting motion only."""
+def run_probe(tmp_path_factory):
+    """Return a runner for the targets-only probe on the real robot model and shipped Objectives."""
     directory = tmp_path_factory.mktemp("placement_initialization")
+    config, _, _ = load_system_config(
+        "dual_arm_sim", tmp_path_factory.mktemp("user_ws")
+    )
+    description = config.hardware.robot_description
+    params = {
+        "robot_description": create_xml_from_xacro(
+            description.urdf, description.urdf_params
+        ),
+        "robot_description_semantic": create_xml_from_xacro(
+            description.srdf, description.urdf_params
+        ),
+        **config.moveit["robot_description_kinematics"],
+        **config.moveit["robot_description_planning"],
+    }
+    params_path = directory / "params.yaml"
+    params_path.write_text(yaml.safe_dump({"/**": {"ros__parameters": params}}))
+
+    def run(name, cases):
+        cases_path = directory / (name + "_cases.json")
+        cases_path.write_text(json.dumps(cases))
+        results_path = directory / (name + "_results.json")
+        process = subprocess.run(
+            [
+                os.environ["BLOCK_TRANSFER_PROBE"],
+                str(cases_path),
+                str(PACKAGE / "objectives/plan_block_transfer.xml"),
+                str(results_path),
+                "--targets-only",
+                str(PACKAGE / "objectives/sort_blocks.xml"),
+                "--ros-args",
+                "--params-file",
+                str(params_path),
+                "--log-level",
+                "error",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=25,
+            check=False,
+        )
+        return process, results_path
+
+    return run
+
+
+@pytest.fixture(scope="module")
+def release_targets(run_probe, shipped_transfers):
+    """Run installed RetrieveWaypoint/FK and the shipped initialization, substituting motion only."""
     mujoco.mj_loadAllPluginLibraries(
         str(Path(get_package_prefix("mujoco_package_uri")) / "bin/mujoco_plugin")
     )
@@ -72,12 +120,17 @@ def release_targets(tmp_path_factory):
         }
 
     fresh = key_joints("default")
-    stowed = key_joints("nav_demo")
-    stowed.update(joints(waypoints["Base Ready"]))
+    # Also the state after a nav_demo reset and "Move Base to Ready", which stows the arms first.
+    stowed = {
+        **key_joints("nav_demo"),
+        **joints(waypoints["Base Ready"]),
+        **joints(waypoints["Stow"]),
+    }
     home = joints(waypoints["Home"])
     cases = []
     for arm in ("right", "left"):
-        waypoint = waypoints["Place " + arm.title()]
+        transfer = shipped_transfers[arm]
+        waypoint = waypoints[transfer["place_waypoint"]]
         for name, state, initialize in (
             ("fresh_uninitialized", fresh, False),
             ("stow_uninitialized", stowed, False),
@@ -89,64 +142,39 @@ def release_targets(tmp_path_factory):
                 {
                     "name": arm + "_" + name,
                     "arm": arm,
+                    "planning_group": transfer["planning_group"],
+                    "hand_frame": transfer["hand_frame"],
+                    "place_waypoint": transfer["place_waypoint"],
+                    "corner_y": float(transfer["corner_y"]),
                     "joints": state,
                     "waypoint": joints(waypoint),
                     "waypoint_groups": waypoint["joint_group_names"],
                     "home": home,
+                    "home_groups": waypoints["Home"]["joint_group_names"],
                     "initialize_sort": initialize,
                     "approach": {"xyz": [0.7, 0.0, 0.88], "wxyz": [1, 0, 0, 0]},
                 }
             )
-        counterfactual = copy.deepcopy(cases[-4])
+        counterfactual = copy.deepcopy(
+            next(case for case in cases if case["name"] == arm + "_stow_uninitialized")
+        )
         counterfactual["name"] = arm + "_spine_only_counterfactual"
         counterfactual["waypoint"].pop(SPINE)
         counterfactual["joints"][SPINE] = home[SPINE]
         cases.append(counterfactual)
-    config, _, _ = load_system_config(
-        "dual_arm_sim", tmp_path_factory.mktemp("user_ws")
-    )
-    description = config.hardware.robot_description
-    params = {
-        "robot_description": create_xml_from_xacro(
-            description.urdf, description.urdf_params
-        ),
-        "robot_description_semantic": create_xml_from_xacro(
-            description.srdf, description.urdf_params
-        ),
-        **config.moveit["robot_description_kinematics"],
-        **config.moveit["robot_description_planning"],
-    }
-    params_path = directory / "params.yaml"
-    params_path.write_text(yaml.safe_dump({"/**": {"ros__parameters": params}}))
-    cases_path = directory / "cases.json"
-    cases_path.write_text(json.dumps(cases))
-    results_path = directory / "results.json"
-    process = subprocess.run(
-        [
-            os.environ["BLOCK_TRANSFER_PROBE"],
-            str(cases_path),
-            str(PACKAGE / "objectives/plan_block_transfer.xml"),
-            str(results_path),
-            "--targets-only",
-            str(PACKAGE / "objectives/sort_blocks.xml"),
-            "--ros-args",
-            "--params-file",
-            str(params_path),
-            "--log-level",
-            "error",
-        ],
-        capture_output=True,
-        text=True,
-        timeout=25,
-        check=False,
-    )
+    process, results_path = run_probe("release_targets", cases)
     assert process.returncode == 0, process.stdout + process.stderr
     results = {
         result["name"]: result for result in json.loads(results_path.read_text())
     }
     for result in results.values():
         assert result["status"] == "SUCCESS", result
-    return results, home[SPINE], stowed[SPINE]
+    return {
+        "results": results,
+        "home": home[SPINE],
+        "stow": stowed[SPINE],
+        "template": next(case for case in cases if case["name"] == "right_later_home"),
+    }
 
 
 @pytest.mark.parametrize("arm", ["right", "left"])
@@ -154,7 +182,9 @@ def test_regression_first_release_after_stow_matches_later_placement(
     release_targets, arm
 ):
     """Fresh state masks the bug; initialization must remove the measured post-Stow height error."""
-    results, home, stow = release_targets
+    results = release_targets["results"]
+    home = release_targets["home"]
+    stow = release_targets["stow"]
     first = results[arm + "_stow_initialized"]
     later = results[arm + "_later_home"]
     broken = results[arm + "_stow_uninitialized"]
@@ -172,14 +202,47 @@ def test_regression_first_release_after_stow_matches_later_placement(
     np.testing.assert_allclose(
         counterfactual["release_xyz"], later["release_xyz"], atol=1e-8
     )
-    assert first["initial_spine"] == pytest.approx(home)
-    assert results[arm + "_fresh_initialized"]["initial_spine"] == pytest.approx(home)
+    assert first["pre_transfer_spine"] == pytest.approx(home)
+    assert results[arm + "_fresh_initialized"]["pre_transfer_spine"] == pytest.approx(
+        home
+    )
 
 
 @pytest.mark.parametrize("arm", ["right", "left"])
 def test_place_waypoint_groups_have_all_their_active_joints(release_targets, arm):
     """The real SRDF group model must not offer a Place waypoint for missing joints."""
-    results, _, _ = release_targets
-    missing = results[arm + "_fresh_uninitialized"]["missing_group_joints"]
+    missing = release_targets["results"][arm + "_fresh_uninitialized"][
+        "missing_group_joints"
+    ]
     assert missing
     assert all(not joints for joints in missing.values()), missing
+
+
+@pytest.mark.parametrize(
+    "field, value, message",
+    [
+        ("planning_group", "no_such_group", "Unknown group: no_such_group"),
+        ("waypoint_groups", ["no_such_group"], "Unknown group: no_such_group"),
+        ("hand_frame", "no_such_frame", "Unknown hand frame: no_such_frame"),
+        (
+            "hand_frame",
+            "left_fr3v2_hand_tcp",
+            "Planning group does not move hand frame: left_fr3v2_hand_tcp",
+        ),
+        ("corner_y", None, "corner_y"),
+        ("approach", {"xyz": [0.7, 0.0]}, "approach"),
+    ],
+)
+def test_probe_rejects_malformed_cases(
+    release_targets, run_probe, field, value, message
+):
+    """A case naming an unknown group or frame, or missing a field, must fail the probe cleanly."""
+    case = copy.deepcopy(release_targets["template"])
+    case["name"] = "malformed_" + field
+    if value is None:
+        del case[field]
+    else:
+        case[field] = value
+    process, _ = run_probe(case["name"], [case])
+    assert process.returncode == 3, process.stdout + process.stderr
+    assert message in process.stderr
