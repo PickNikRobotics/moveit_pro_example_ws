@@ -795,7 +795,7 @@
               pos="0 0 0"
               xyaxes="0 1 0 0 0 -1"
               fovy="58"
-              resolution="640 480"
+              resolution="1280 721"
             />
             <site
               name="camera_front_optical_frame"
@@ -817,7 +817,7 @@
               pos="0 0 0"
               xyaxes="0 1 0 0 0 -1"
               fovy="58"
-              resolution="640 480"
+              resolution="1280 721"
             />
             <site
               name="camera_rear_optical_frame"
@@ -839,7 +839,7 @@
               pos="0 0 0"
               xyaxes="0 1 0 0 0 -1"
               fovy="58"
-              resolution="640 480"
+              resolution="1280 721"
             />
             <site
               name="camera_right_optical_frame"
@@ -861,7 +861,7 @@
               pos="0 0 0"
               xyaxes="0 1 0 0 0 -1"
               fovy="58"
-              resolution="640 480"
+              resolution="1280 721"
             />
             <site
               name="camera_left_optical_frame"
@@ -877,10 +877,7 @@
             quat="0 -0.92388 0.382683 0"
             gravcomp="1"
           >
-            <!-- SICK nanoScan3 as an image-based lidar: 275 deg sweep, 0.10-40 m, 1651 beams at 1/6 deg.
-                 Measured from the real scanner's recorded scans; do not "correct" them from Franka's or SICK's Gazebo models.
-                 fovy is the render tile height, not a scanner property: 6 tiles on the 640x480 offscreen buffer.
-                 The camera looks along mount -Y, so the 85 deg blind notch faces the chassis. -->
+            <!-- SICK nanoScan3: 275 deg sweep, 0.10-40 m and 1651 beams at 1/6 deg from recorded scans. fovy sizes render tiles, not the physical scan; the centre row samples its horizontal plane. The camera looks along mount -Y, with the blind notch toward the chassis. -->
             <camera
               name="lidar_front"
               mode="fixed"

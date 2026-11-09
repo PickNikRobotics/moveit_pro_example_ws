@@ -28,188 +28,177 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Publish the planar base joints and /odom from simulated odometry, with drift added.
+"""Bridge the Duo's planar actuator feedback to Fuse and its fused pose to MoveIt.
 
-    ros2 run market_sim odometry_joint_state_publisher.py
-
-The robot description is rooted at ``odom``, so these joint values ARE ``odom -> base_link``,
-which robot_state_publisher publishes; this node is their only publisher. The input is the
-simulator's ground-truth base pose. Drift grows with distance driven and angle turned, never
-with time, so AMCL has a real correction to make and a parked base stays still. The same
-drifted pose goes to Nav2 on /odom, with the twist expressed in ``base_link``.
-
+The synchro drive is simulated as three planar actuators, not driven wheels. Their private joint-state topic supplies encoder odometry; no ground-truth pose topic is read. Position differences use message time so a slow simulation does not inflate travel. Only /odom_filtered supplies the planar joints on /joint_states, where robot_state_publisher owns odom -> base_link.
 """
 
 import math
-import random
+
+import rclpy
+from nav_msgs.msg import Odometry
+from rclpy.executors import ExternalShutdownException
+from rclpy.node import Node
+from rclpy.qos import qos_profile_sensor_data
+from sensor_msgs.msg import JointState
 
 JOINT_NAMES = ("planar_x", "planar_y", "planar_theta")
-TURN = 2.0 * math.pi
-# Increments below these are applied exactly, so contact jitter never accumulates drift.
-MIN_NOISY_STEP_M = 1.0e-3
-MIN_NOISY_STEP_RAD = 1.0e-3
+# A reset step exceeds normal travel between the 50 Hz encoder samples.
+TELEPORT_DISTANCE = 0.5
+TELEPORT_ANGLE = 0.5
 
 
-def wrap(angle):
-    """Wrap an angle into [-pi, pi)."""
-    return (angle + math.pi) % TURN - math.pi
-
-
-class NoisyOdometry:
-    """Integrates true pose increments into a pose that drifts like wheel odometry.
-
-    Each increment is taken in the previous true body frame and applied in the current
-    drifted one, so a heading error bends every later translation, as on a real base.
-    Variances are linear in motion, so the error does not depend on the message rate.
-    """
-
-    def __init__(
-        self,
-        distance_error_at_10m,
-        heading_error_at_10m,
-        heading_error_per_turn,
-        teleport_distance,
-        teleport_angle,
-        noise_enabled=True,
-        seed=0,
-    ):
-        """@param distance_error_at_10m 1-sigma error along the path after 10 m, metres.
-        @param heading_error_at_10m 1-sigma heading error after 10 m of travel, radians.
-        @param heading_error_per_turn 1-sigma heading error per full turn, radians.
-        @param teleport_distance Step above which the input is treated as a jump.
-        @param teleport_angle Heading step above which the input is treated as a jump.
-        @param noise_enabled False passes the input through unchanged.
-        @param seed Seed of the noise stream, for repeatable runs.
-        """
-        self._var_distance_per_m = distance_error_at_10m**2 / 10.0
-        self._var_heading_per_m = heading_error_at_10m**2 / 10.0
-        self._var_heading_per_rad = heading_error_per_turn**2 / TURN
-        self._teleport_distance = teleport_distance
-        self._teleport_angle = teleport_angle
-        self._noise_enabled = noise_enabled
-        self._rng = random.Random(seed)
-        self._truth = None
-        self._pose = None
-
-    def update(self, x, y, yaw):
-        """Feed one true pose; return the drifted pose and whether the input jumped."""
-        if self._truth is None:
-            self._truth = self._pose = (x, y, wrap(yaw))
-            return self._pose, False
-
-        px, py, pyaw = self._truth
-        cos_p, sin_p = math.cos(pyaw), math.sin(pyaw)
-        step_x = cos_p * (x - px) + sin_p * (y - py)
-        step_y = -sin_p * (x - px) + cos_p * (y - py)
-        step_yaw = wrap(yaw - pyaw)
-        self._truth = (x, y, wrap(yaw))
-
-        distance = math.hypot(step_x, step_y)
-        # A keyframe reset moves the base faster than it can drive: restart at the new pose.
-        if distance > self._teleport_distance or abs(step_yaw) > self._teleport_angle:
-            self._pose = self._truth
-            return self._pose, True
-
-        moving = distance > MIN_NOISY_STEP_M or abs(step_yaw) > MIN_NOISY_STEP_RAD
-        if self._noise_enabled and moving:
-            along = self._rng.gauss(0.0, math.sqrt(self._var_distance_per_m * distance))
-            if distance > 0.0:
-                step_x += along * step_x / distance
-                step_y += along * step_y / distance
-            step_yaw += self._rng.gauss(
-                0.0,
-                math.sqrt(
-                    self._var_heading_per_m * distance
-                    + self._var_heading_per_rad * abs(step_yaw)
-                ),
-            )
-
-        nx, ny, nyaw = self._pose
-        cos_n, sin_n = math.cos(nyaw), math.sin(nyaw)
-        self._pose = (
-            nx + cos_n * step_x - sin_n * step_y,
-            ny + sin_n * step_x + cos_n * step_y,
-            wrap(nyaw + step_yaw),
-        )
-        return self._pose, False
-
-
-def yaw_from_quaternion(q):
-    """Yaw of a geometry_msgs Quaternion, in [-pi, pi]."""
-    return math.atan2(
-        2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+def is_jump(previous, current, max_step=TELEPORT_DISTANCE, max_turn=TELEPORT_ANGLE):
+    """Detect a planar reset while treating the heading wrap as a continuous turn."""
+    turn = math.atan2(
+        math.sin(current[2] - previous[2]), math.cos(current[2] - previous[2])
+    )
+    return (
+        math.hypot(current[0] - previous[0], current[1] - previous[1]) > max_step
+        or abs(turn) > max_turn
     )
 
 
+def yaw_from_quaternion(q):
+    """Yaw of a finite, nonzero geometry_msgs Quaternion, in [-pi, pi]."""
+    values = (q.x, q.y, q.z, q.w)
+    norm = math.hypot(*values)
+    if not math.isfinite(norm) or norm == 0:
+        raise ValueError("Odometry orientation requires a finite, nonzero quaternion.")
+    x, y, z, w = (value / norm for value in values)
+    return math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
+
+
 def twist_in_base(vx, vy, yaw):
-    """Rotate a world-axis planar velocity into the base frame at heading yaw."""
-    cos_yaw, sin_yaw = math.cos(yaw), math.sin(yaw)
-    return vx * cos_yaw + vy * sin_yaw, -vx * sin_yaw + vy * cos_yaw
+    """Rotate world-axis planar velocity into the body frame."""
+    c, s = math.cos(yaw), math.sin(yaw)
+    return c * vx + s * vy, -s * vx + c * vy
+
+
+def encoder_odometry(previous, current):
+    """Convert consecutive encoder joint states to odometry; reject invalid time or state."""
+    indices = [current.name.index(name) for name in JOINT_NAMES]
+    values = [current.position[i] for i in indices]
+    old_values = [previous.position[previous.name.index(name)] for name in JOINT_NAMES]
+    before, now = previous.header.stamp, current.header.stamp
+    dt = now.sec - before.sec + (now.nanosec - before.nanosec) * 1e-9
+    if dt <= 0 or not all(math.isfinite(v) for v in values + old_values):
+        raise ValueError(
+            "Planar encoder samples require finite positions and increasing timestamps."
+        )
+    if is_jump(old_values, values):
+        raise ValueError(
+            "Planar encoder teleport interval discarded; wait for reset localization synchronization."
+        )
+    x, y, yaw = values
+    px, py, pyaw = old_values
+    turn = math.atan2(math.sin(yaw - pyaw), math.cos(yaw - pyaw))
+    vx, vy = twist_in_base((x - px) / dt, (y - py) / dt, pyaw + turn / 2)
+    odom = Odometry()
+    odom.header.stamp = current.header.stamp
+    odom.header.frame_id = "odom"
+    odom.child_frame_id = "base_link"
+    odom.pose.pose.position.x = x
+    odom.pose.pose.position.y = y
+    odom.pose.pose.orientation.z = math.sin(yaw / 2)
+    odom.pose.pose.orientation.w = math.cos(yaw / 2)
+    odom.twist.twist.linear.x = vx
+    odom.twist.twist.linear.y = vy
+    odom.twist.twist.angular.z = turn / dt
+    for index in (0, 7, 35):
+        odom.pose.covariance[index] = 0.01
+        odom.twist.covariance[index] = 0.001
+    return odom
+
+
+def fused_joint_state(odom):
+    """Represent fused planar pose and world-axis velocity as MoveIt joint state."""
+    if odom.header.frame_id != "odom" or odom.child_frame_id != "base_link":
+        raise ValueError(
+            "Fused odometry must describe odom -> base_link; check Fuse publisher frame parameters."
+        )
+    yaw = yaw_from_quaternion(odom.pose.pose.orientation)
+    c, s = math.cos(yaw), math.sin(yaw)
+    twist = odom.twist.twist
+    if not all(
+        math.isfinite(value)
+        for value in (
+            odom.pose.pose.position.x,
+            odom.pose.pose.position.y,
+            twist.linear.x,
+            twist.linear.y,
+            twist.angular.z,
+        )
+    ):
+        raise ValueError(
+            "Fused odometry contains non-finite planar pose or velocity; check state_estimator inputs."
+        )
+    state = JointState()
+    state.header.stamp = odom.header.stamp
+    state.name = list(JOINT_NAMES)
+    state.position = [odom.pose.pose.position.x, odom.pose.pose.position.y, yaw]
+    state.velocity = [
+        c * twist.linear.x - s * twist.linear.y,
+        s * twist.linear.x + c * twist.linear.y,
+        twist.angular.z,
+    ]
+    return state
+
+
+class OdometryJointStatePublisher(Node):
+    """Keep raw actuator feedback separate from the fused planning-state stream."""
+
+    def __init__(self):
+        super().__init__("odometry_joint_state_publisher")
+        self._previous = None
+        self._period = float(self.declare_parameter("sample_period", 0.02).value)
+        self._odom = self.create_publisher(Odometry, "/odom", 10)
+        self._joints = self.create_publisher(JointState, "/joint_states", 10)
+        self.create_subscription(
+            JointState,
+            "/base_state_broadcaster/joint_states",
+            self._on_encoder,
+            qos_profile_sensor_data,
+        )
+        self.create_subscription(
+            Odometry,
+            "/odom_filtered",
+            self._on_filtered,
+            qos_profile_sensor_data,
+        )
+
+    def _on_encoder(self, msg):
+        if self._previous is None:
+            self._previous = msg
+            return
+        before = self._previous.header.stamp
+        now = msg.header.stamp
+        elapsed = now.sec - before.sec + (now.nanosec - before.nanosec) * 1e-9
+        if 0 <= elapsed < self._period:
+            return
+        try:
+            odom = encoder_odometry(self._previous, msg)
+        except (ValueError, IndexError) as error:
+            self.get_logger().error(
+                f"Cannot publish planar odometry: {error} Check base_state_broadcaster joints and clock."
+            )
+        else:
+            self._odom.publish(odom)
+        self._previous = msg
+
+    def _on_filtered(self, msg):
+        try:
+            state = fused_joint_state(msg)
+        except ValueError as error:
+            self.get_logger().error(
+                f"Cannot publish fused planar joint state: {error}",
+                throttle_duration_sec=5.0,
+            )
+            return
+        self._joints.publish(state)
 
 
 def main():
-    import rclpy
-    from rclpy.executors import ExternalShutdownException
-    from nav_msgs.msg import Odometry
-    from rclpy.node import Node
-    from rclpy.qos import qos_profile_sensor_data
-    from sensor_msgs.msg import JointState
-
-    class OdometryJointStatePublisher(Node):
-        def __init__(self):
-            super().__init__("odometry_joint_state_publisher")
-            p = self.declare_parameter
-            truth_topic = p("ground_truth_topic", "/ground_truth/odom").value
-            self._odom_frame = p("odom_frame", "odom").value
-            self._base_frame = p("base_frame", "base_link").value
-            self._model = NoisyOdometry(
-                distance_error_at_10m=p("distance_error_at_10m", 0.05).value,
-                heading_error_at_10m=p("heading_error_at_10m", 0.0175).value,
-                heading_error_per_turn=p("heading_error_per_turn", 0.0175).value,
-                teleport_distance=p("teleport_distance", 0.5).value,
-                teleport_angle=p("teleport_angle", 0.5).value,
-                noise_enabled=p("noise_enabled", True).value,
-                seed=p("seed", 0).value,
-            )
-            self._joints = self.create_publisher(JointState, "/joint_states", 10)
-            self._odom = self.create_publisher(
-                Odometry, p("odom_topic", "/odom").value, 10
-            )
-            self.create_subscription(
-                Odometry, truth_topic, self._on_truth, qos_profile_sensor_data
-            )
-
-        def _on_truth(self, truth):
-            pose = truth.pose.pose
-            true_yaw = yaw_from_quaternion(pose.orientation)
-            (x, y, yaw), jumped = self._model.update(
-                pose.position.x, pose.position.y, true_yaw
-            )
-            if jumped:
-                self.get_logger().info("Odometry jumped; drift reset to the new pose.")
-            # One message per input, moving or not: MoveIt judges state freshness by the stamp.
-            joints = JointState()
-            joints.header.stamp = truth.header.stamp
-            joints.name = list(JOINT_NAMES)
-            joints.position = [x, y, yaw]
-            self._joints.publish(joints)
-
-            odom = Odometry()
-            odom.header.stamp = truth.header.stamp
-            odom.header.frame_id = self._odom_frame
-            odom.child_frame_id = self._base_frame
-            odom.pose.pose.position.x = x
-            odom.pose.pose.position.y = y
-            odom.pose.pose.orientation.z = math.sin(yaw / 2.0)
-            odom.pose.pose.orientation.w = math.cos(yaw / 2.0)
-            # The simulator reports the twist along world axes; Nav2 reads it in base_link.
-            linear = truth.twist.twist.linear
-            vx, vy = twist_in_base(linear.x, linear.y, true_yaw)
-            odom.twist.twist.linear.x = vx
-            odom.twist.twist.linear.y = vy
-            odom.twist.twist.angular.z = truth.twist.twist.angular.z
-            self._odom.publish(odom)
-
     rclpy.init()
     node = OdometryJointStatePublisher()
     try:

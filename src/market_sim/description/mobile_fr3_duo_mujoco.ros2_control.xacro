@@ -1,11 +1,16 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <!-- MujocoSystem takes the joints and actuators from the MJCF, so none are listed here. -->
+  <xacro:include
+    filename="$(find picknik_accessories)/descriptions/sensors/camera_renderer.urdf.xacro"
+  />
   <xacro:macro
     name="mobile_fr3_duo_mujoco_ros2_control"
     params="mujoco_model mujoco_model_package mujoco_keyframe mujoco_viewer publish_object_tf
             ground_truth_odom_topic ground_truth_odom_frame base_link_name">
     <ros2_control name="mobile_fr3_duo" type="system">
+      <!-- The cameras MOVEIT_PRO_CAMERA_RENDERER applies to; runtime.launch.xml starts one Nyx node each. -->
+      <xacro:camera_renderer_sensors cameras="scene_camera camera_front" />
       <sensor name="lidar_front">
         <param name="points_topic">/lidar_front/points</param>
       </sensor>
@@ -18,16 +23,16 @@
         <param name="mujoco_model_package">${mujoco_model_package}</param>
         <param name="mujoco_viewer">${mujoco_viewer}</param>
         <param name="mujoco_keyframe">${mujoco_keyframe}</param>
-        <param name="render_publish_rate">10</param>
-        <param name="point_cloud_publish_rate">10</param>
+        <param name="render_publish_rate">20</param>
+        <param name="point_cloud_publish_rate">20</param>
         <param name="tf_publish_rate">60</param>
-        <param name="lidar_publish_rate">10</param>
+        <param name="lidar_publish_rate">20</param>
         <!-- The URDF root odom is not a MuJoCo body, so the base body is named explicitly. -->
         <param name="base_link_name">${base_link_name}</param>
-        <!-- world -> mj_world comes from launch/sim/robot_drivers_to_persist_sim.launch.py, so the plugin must not publish it. -->
+        <!-- The driver launch publishes world -> mj_world; no second TF authority. -->
         <param name="publish_mj_world_tf">false</param>
         <param name="publish_object_tf">${publish_object_tf}</param>
-        <!-- Ground truth as a message only: the odometry bridge adds drift and publishes the planar joints. -->
+        <!-- Measurement and reset only; navigation uses planar encoder/IMU fusion and lidar localization. -->
         <param name="publish_odom">true</param>
         <param name="odom_topic">${ground_truth_odom_topic}</param>
         <!-- The frame the true pose is in. MoveIt Pro requires it to differ from the URDF root. -->

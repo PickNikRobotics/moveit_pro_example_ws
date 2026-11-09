@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reset MuJoCo Sim">
+  <BehaviorTree
+    ID="Reset MuJoCo Sim"
+    _description="Reset the Duo and market to the default keyframe. Synchronize Fuse and localization at the reset pose before restoring controllers; a failure leaves command controllers inactive."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CallTriggerService"
+        service_name="/market_sim/prepare_reset_controllers"
+        response_timeout="12.0"
+        wait_for_server_available_timeout="3.0"
+      />
+      <Action
+        ID="ResetMujocoKeyframe"
+        response_timeout="10.000000"
+        wait_for_server_available_timeout="3.000000"
+        keyframe_name="default"
+      />
+      <Action ID="ClearSnapshot" />
+      <Control ID="Fallback" name="Verify reset localization">
+        <Action
+          ID="CallTriggerService"
+          service_name="/market_sim/synchronize_localization"
+          response_timeout="15.0"
+          wait_for_server_available_timeout="3.0"
+        />
+        <Control ID="Sequence">
+          <Action
+            ID="LogMessage"
+            message="Reset localization failed; command controllers remain inactive. Check reset_relocalizer, Fuse and AMCL logs, then retry Reset MuJoCo Sim."
+            log_level="error"
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+      <Action
+        ID="CallTriggerService"
+        service_name="/market_sim/restore_reset_controllers"
+        response_timeout="12.0"
+        wait_for_server_available_timeout="3.0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reset MuJoCo Sim">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="MuJoCo Simulation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

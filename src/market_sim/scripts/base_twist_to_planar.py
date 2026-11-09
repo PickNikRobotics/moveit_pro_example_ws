@@ -28,102 +28,248 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Turn Nav2's base-frame velocity command into world-axis planar joint velocities.
+"""Convert body-frame velocity to the Duo simulation's world-axis planar actuators.
 
-    ros2 run market_sim base_twist_to_planar.py
-
-The base moves through velocity commands on world-axis slides (planar_x, planar_y) and a
-hinge (planar_theta), while /cmd_vel is in base_link:
-
-    planar_x_vel = vx * cos(yaw) - vy * sin(yaw)
-    planar_y_vel = vx * sin(yaw) + vy * cos(yaw)
-    planar_theta_vel = wz
-
-The yaw is the base's TRUE heading: the simulator's ground-truth odometry,
-not the drifted planar joint values, and the exact /odom on mock hardware. A real base executes
-a body-frame command in its true body frame.
-The velocity controller holds its last command, so a quiet /cmd_vel sends zeros.
-
+The private planar encoder heading supplies the actuator coordinate conversion, not navigation localization. Nav2 sends Twist on /nav2_cmd_vel; external clients send TwistStamped in base_link on /cmd_vel. The undock Objective sends a velocity-only VelocityForceCommand on /market_sim/undock_velocity_command. An acquired undock exclusively owns the command through its zero-velocity cleanup and explicit release; competing inputs are discarded. All inputs share localization, reset-controller heartbeat, timestamp and encoder watchdogs. No ground-truth pose topic is consumed.
 """
 
 import math
 
-JOINTS = ("planar_x", "planar_y", "planar_theta")
+import rclpy
+from geometry_msgs.msg import Twist, TwistStamped
+from moveit_pro_controllers_msgs.msg import VelocityForceCommand
+from rclpy.executors import ExternalShutdownException
+from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile, qos_profile_sensor_data
+from sensor_msgs.msg import JointState
+from std_msgs.msg import Bool, Float64MultiArray
+from std_srvs.srv import Trigger
 
 
 def planar_velocities(vx, vy, wz, yaw):
-    """World-axis planar joint velocities for a base-frame twist at heading yaw."""
-    cos_yaw, sin_yaw = math.cos(yaw), math.sin(yaw)
-    return [vx * cos_yaw - vy * sin_yaw, vx * sin_yaw + vy * cos_yaw, wz]
+    """World-axis actuator velocities for a finite body-frame twist and heading."""
+    if not all(math.isfinite(value) for value in (vx, vy, wz, yaw)):
+        raise ValueError(
+            "Cannot convert a non-finite base velocity or encoder heading."
+        )
+    c, s = math.cos(yaw), math.sin(yaw)
+    return [vx * c - vy * s, vx * s + vy * c, wz]
+
+
+def safe_command(
+    twist, yaw, command_age, feedback_age, timeout, max_linear, max_angular
+):
+    """Stop on missing/stale data; bound planar speed before rotating into actuator axes."""
+    if (
+        twist is None
+        or yaw is None
+        or not 0 <= command_age <= timeout
+        or not 0 <= feedback_age <= timeout
+    ):
+        return [0.0, 0.0, 0.0]
+    vx, vy, wz = twist.linear.x, twist.linear.y, twist.angular.z
+    if not all(math.isfinite(v) for v in (vx, vy, wz, yaw)) or any(
+        value != 0.0 for value in (twist.linear.z, twist.angular.x, twist.angular.y)
+    ):
+        return [0.0, 0.0, 0.0]
+    scale = max(1.0, math.hypot(vx, vy) / max_linear)
+    return planar_velocities(
+        vx / scale, vy / scale, max(-max_angular, min(max_angular, wz)), yaw
+    )
+
+
+class BaseTwistToPlanar(Node):
+    """Fail closed when a velocity command cannot be placed in the actuator frame."""
+
+    def __init__(self, **kwargs):
+        super().__init__("base_twist_to_planar", **kwargs)
+        self._timeout = float(self.declare_parameter("twist_timeout_sec", 0.5).value)
+        # Launch supplies the limits from the robot's base_jvc controller configuration.
+        self._max_linear = float(
+            self.declare_parameter("max_linear_velocity", 0.0).value
+        )
+        self._max_angular = float(
+            self.declare_parameter("max_angular_velocity", 0.0).value
+        )
+        if not all(
+            math.isfinite(v) and v > 0
+            for v in (self._timeout, self._max_linear, self._max_angular)
+        ):
+            raise ValueError(
+                "Base command limits and twist_timeout_sec must be finite and positive; check the market_sim driver launch parameters."
+            )
+        self._twist = None
+        self._yaw = None
+        self._command_at = self._feedback_at = self._ready_at = 0
+        self._localization_ready = False
+        self._reset_hold = True
+        self._reset_hold_at = 0
+        self._undock_active = False
+        self.create_subscription(
+            Bool,
+            "/market_sim/reset_controller_hold",
+            self._on_reset_hold,
+            QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL),
+        )
+        self.create_service(Trigger, "/market_sim/acquire_undock", self._acquire_undock)
+        self.create_service(Trigger, "/market_sim/release_undock", self._release_undock)
+        self.create_subscription(
+            Bool, "/market_sim/localization_ready", self._on_ready, 10
+        )
+        self.create_subscription(Twist, "/nav2_cmd_vel", self._on_twist, 10)
+        self.create_subscription(TwistStamped, "/cmd_vel", self._on_stamped_twist, 10)
+        self.create_subscription(
+            VelocityForceCommand,
+            "/market_sim/undock_velocity_command",
+            self._on_undock_command,
+            10,
+        )
+        self.create_subscription(
+            JointState,
+            "/base_state_broadcaster/joint_states",
+            self._on_encoder,
+            qos_profile_sensor_data,
+        )
+        self._pub = self.create_publisher(Float64MultiArray, "/base_jgvc/commands", 10)
+        self.create_timer(0.02, self._tick)
+
+    def _on_ready(self, msg):
+        self._localization_ready = msg.data
+        self._ready_at = self.get_clock().now().nanoseconds
+        if not msg.data:
+            self._twist = None
+
+    def _on_reset_hold(self, msg):
+        self._reset_hold = msg.data
+        self._reset_hold_at = self.get_clock().now().nanoseconds
+        if msg.data:
+            self._twist = None
+
+    def _acquire_undock(self, _request, response):
+        if self._undock_active:
+            response.message = "Undock already owns the base command; wait for Undock From D4 to finish."
+            return response
+        self._undock_active = True
+        self._twist = None
+        self._pub.publish(Float64MultiArray(data=[0.0, 0.0, 0.0]))
+        response.success = True
+        response.message = "Undock owns the base command."
+        return response
+
+    def _release_undock(self, _request, response):
+        self._twist = None
+        self._pub.publish(Float64MultiArray(data=[0.0, 0.0, 0.0]))
+        self._undock_active = False
+        response.success = True
+        response.message = "Undock released the base command at zero; only new external commands can resume motion."
+        return response
+
+    def _on_twist(self, msg):
+        if self._undock_active:
+            return
+        self._twist = msg
+        self._command_at = self.get_clock().now().nanoseconds
+
+    def _on_stamped_twist(self, msg):
+        if self._undock_active:
+            return
+        if msg.header.frame_id != "base_link":
+            self._twist = None
+            self.get_logger().error(
+                f"Rejected /cmd_vel frame '{msg.header.frame_id}'; publish the Duo twist in base_link."
+            )
+            return
+        self._twist = msg.twist
+        self._command_at = msg.header.stamp.sec * 10**9 + msg.header.stamp.nanosec
+
+    def _on_undock_command(self, msg):
+        if not self._undock_active:
+            return
+        axes = ("x", "y", "z", "rx", "ry", "rz")
+        selected = tuple(getattr(msg.velocity_controlled_axes, axis) for axis in axes)
+        rotation = msg.control_frame_offset.rotation
+        legacy_rotation = msg.control_frame.rotation
+        wrench = (
+            msg.wrench.force.x,
+            msg.wrench.force.y,
+            msg.wrench.force.z,
+            msg.wrench.torque.x,
+            msg.wrench.torque.y,
+            msg.wrench.torque.z,
+        )
+        if (
+            msg.control_frame_id != "base_link"
+            or selected != (True, True, False, False, False, True)
+            or any(getattr(msg.force_controlled_axes, axis) for axis in axes)
+            or any(value != 0.0 for value in wrench)
+            or msg.wrench_gain != 0.0
+            or msg.nullspace_component
+            or any(value != 0.0 for value in (rotation.x, rotation.y, rotation.z))
+            or rotation.w not in (0.0, 1.0)
+            or any(
+                value != 0.0
+                for value in (
+                    legacy_rotation.x,
+                    legacy_rotation.y,
+                    legacy_rotation.z,
+                    msg.control_frame_offset.translation.x,
+                    msg.control_frame_offset.translation.y,
+                    msg.control_frame_offset.translation.z,
+                    msg.control_frame.translation.x,
+                    msg.control_frame.translation.y,
+                    msg.control_frame.translation.z,
+                )
+            )
+            or legacy_rotation.w not in (0.0, 1.0)
+        ):
+            self._twist = None
+            self.get_logger().error(
+                "Rejected /market_sim/undock_velocity_command: requires base_link, unrotated planar velocity axes and no force/nullspace control; check Undock From D4 ports."
+            )
+            return
+        self._twist = msg.twist
+        self._command_at = msg.header.stamp.sec * 10**9 + msg.header.stamp.nanosec
+
+    def _on_encoder(self, msg):
+        try:
+            self._yaw = msg.position[msg.name.index("planar_theta")]
+        except (ValueError, IndexError):
+            self._yaw = None
+            self.get_logger().error(
+                "Missing planar_theta position on /base_state_broadcaster/joint_states; check its joints and interfaces."
+            )
+            return
+        self._feedback_at = msg.header.stamp.sec * 10**9 + msg.header.stamp.nanosec
+
+    def _tick(self):
+        now = self.get_clock().now().nanoseconds
+        ready = (
+            self._localization_ready
+            and not self._reset_hold
+            and 0 <= (now - self._reset_hold_at) / 1e9 <= self._timeout
+            and 0 <= (now - self._ready_at) / 1e9 <= self._timeout
+        )
+        command = safe_command(
+            self._twist if ready else None,
+            self._yaw,
+            (now - self._command_at) / 1e9,
+            (now - self._feedback_at) / 1e9,
+            self._timeout,
+            self._max_linear,
+            self._max_angular,
+        )
+        self._pub.publish(Float64MultiArray(data=command))
 
 
 def main():
-    import rclpy
-    from rclpy.executors import ExternalShutdownException
-    from geometry_msgs.msg import Twist
-    from nav_msgs.msg import Odometry
-    from rclpy.node import Node
-    from rclpy.qos import qos_profile_sensor_data
-    from std_msgs.msg import Float64MultiArray
-
-    class BaseTwistToPlanar(Node):
-        def __init__(self):
-            super().__init__("base_twist_to_planar")
-            p = self.declare_parameter
-            self._timeout = float(p("twist_timeout_sec", 0.5).value)
-            self._twist = None
-            self._twist_at = None
-            self._yaw = None
-            self.create_subscription(
-                Twist, p("twist_topic", "/cmd_vel").value, self._on_twist, 10
-            )
-            self.create_subscription(
-                Odometry,
-                p("ground_truth_topic", "/ground_truth/odom").value,
-                self._on_truth,
-                qos_profile_sensor_data,
-            )
-            self._pub = self.create_publisher(
-                Float64MultiArray,
-                p("command_topic", "/base_jgvc/commands").value,
-                10,
-            )
-            self.create_timer(1.0 / float(p("command_rate_hz", 50.0).value), self._tick)
-
-        def _on_twist(self, msg):
-            self._twist = msg
-            self._twist_at = self.get_clock().now().nanoseconds
-
-        def _on_truth(self, msg):
-            q = msg.pose.pose.orientation
-            self._yaw = math.atan2(
-                2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
-            )
-
-        def _tick(self):
-            stale = (
-                self._twist is None
-                or (self.get_clock().now().nanoseconds - self._twist_at) / 1e9
-                > self._timeout
-            )
-            command = Float64MultiArray()
-            if stale or self._yaw is None:
-                command.data = [0.0, 0.0, 0.0]
-            else:
-                command.data = planar_velocities(
-                    self._twist.linear.x,
-                    self._twist.linear.y,
-                    self._twist.angular.z,
-                    self._yaw,
-                )
-            self._pub.publish(command)
-
     rclpy.init()
     node = BaseTwistToPlanar()
     try:
         rclpy.spin(node)
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
+    if rclpy.ok():
+        node._pub.publish(Float64MultiArray(data=[0.0, 0.0, 0.0]))
     node.destroy_node()
     rclpy.try_shutdown()
 

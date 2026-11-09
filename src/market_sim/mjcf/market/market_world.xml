@@ -4533,6 +4533,14 @@
     group="2"
   />
   <geom
+    name="demo_dock_d4"
+    type="box"
+    pos="26.32 0 0.45"
+    size="0.25 1 0.45"
+    material="market_steel"
+    group="2"
+  />
+  <geom
     name="wall_north"
     type="box"
     pos="0 63.816 1.25"

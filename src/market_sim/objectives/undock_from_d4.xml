@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Undock From D4">
+  <BehaviorTree
+    ID="Undock From D4"
+    _description="Back straight away from the simulated dock before navigation. Requires stowed arms and active base_jgvc. Undock owns the base command through cleanup; competing sources are ignored. Commands pass through localization and encoder watchdogs, with zero velocity on every exit."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="Scripted straight undock">
+      <Action
+        ID="CreateWrenchStamped"
+        reference_frame="base_link"
+        force_xyz="0;0;0"
+        torque_xyz="0;0;0"
+        wrench_stamped="{zero_wrench_stamped}"
+      />
+      <Action
+        ID="UnpackWrenchStampedMessage"
+        wrench_stamped="{zero_wrench_stamped}"
+        wrench="{zero_wrench}"
+      />
+      <Control ID="Finally" name="Release command ownership on every exit">
+        <Control ID="Sequence" name="Own the base command and undock">
+          <Action
+            ID="CallTriggerService"
+            service_name="/market_sim/acquire_undock"
+          />
+          <Control ID="Finally" name="Stop the base on every exit">
+            <Control ID="Sequence" name="Reverse from the dock">
+              <Action
+                ID="CreateTwistStamped"
+                reference_frame="base_link"
+                twist_stamped="{undock_twist_stamped}"
+                linear_velocity_xyz="-0.25;0;0"
+                angular_velocity_xyz="0;0;0"
+              />
+              <Action
+                ID="UnpackTwistStampedMessage"
+                twist_stamped="{undock_twist_stamped}"
+                twist="{undock_twist}"
+              />
+              <Control
+                ID="Parallel"
+                success_count="1"
+                failure_count="1"
+                name="Bound the reverse command"
+              >
+                <Action ID="WaitForDuration" delay_duration="8.0" />
+                <Action
+                  ID="PublishVelocityForceCommand"
+                  velocity_force_controller_command_topic="/market_sim/undock_velocity_command"
+                  control_frame_id="base_link"
+                  velocity_controlled_axes="1;1;0;0;0;1"
+                  force_controlled_axes="0;0;0;0;0;0"
+                  twist="{undock_twist}"
+                  wrench="{zero_wrench}"
+                  publish_rate="50"
+                />
+              </Control>
+            </Control>
+            <Control
+              ID="Sequence"
+              name="Publish zero velocity before finishing"
+            >
+              <Action
+                ID="CreateTwistStamped"
+                reference_frame="base_link"
+                twist_stamped="{stop_twist_stamped}"
+                linear_velocity_xyz="0;0;0"
+                angular_velocity_xyz="0;0;0"
+              />
+              <Action
+                ID="UnpackTwistStampedMessage"
+                twist_stamped="{stop_twist_stamped}"
+                twist="{stop_twist}"
+              />
+              <Control
+                ID="Parallel"
+                success_count="1"
+                failure_count="1"
+                name="Hold zero velocity"
+              >
+                <Action ID="WaitForDuration" delay_duration="0.5" />
+                <Action
+                  ID="PublishVelocityForceCommand"
+                  velocity_force_controller_command_topic="/market_sim/undock_velocity_command"
+                  control_frame_id="base_link"
+                  velocity_controlled_axes="1;1;0;0;0;1"
+                  force_controlled_axes="0;0;0;0;0;0"
+                  twist="{stop_twist}"
+                  wrench="{zero_wrench}"
+                  publish_rate="50"
+                />
+              </Control>
+            </Control>
+          </Control>
+        </Control>
+        <Action
+          ID="CallTriggerService"
+          service_name="/market_sim/release_undock"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Undock From D4">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
