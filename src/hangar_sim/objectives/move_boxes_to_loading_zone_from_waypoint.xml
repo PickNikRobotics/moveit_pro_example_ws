@@ -605,7 +605,10 @@
               means a real box did reach the pipeline and failed, so the FAILURE
               stands.
             -->
-            <Action ID="ScriptCondition" code="graspable_candidate_count == 0" />
+            <Action
+              ID="ScriptCondition"
+              code="graspable_candidate_count == 0"
+            />
           </Control>
         </Control>
       </Control>
