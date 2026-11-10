@@ -96,26 +96,22 @@ physics trials and the original rejected wall approach remain in
 
 ## Build and execution
 
-MoveIt Pro PR 22998 was built at
-`329427726d3bbb408311bef3298c75bd43482e50`, with one local-only patch removing
-the Direct Motion server's hardcoded 10 mm padding floor so it honors the
-configured scene padding. That issue and suggested patch were posted on
-`PickNikRobotics/moveit_pro` PR 22998 (private repository).
-All seven Direct Motion tools were exercised through host-user stdio MCP.
-The final runs use the ordinary `run_objective` tool only.
+These historical runs used a development runtime with a local Direct Motion
+padding correction. The final runs invoked the ordinary `run_objective` client;
+the current package does not require Direct Motion or a modified runtime.
 
 For each scatter placement: edit the cube poses in `config/bench_layout.yaml`,
 rebuild `rebot_bench_sim`, restart the twin, wait for the recorder's `READY`,
 then invoke **Stack Blue on Red**. Do not regenerate the Objective per run.
-The shared packages are `rebot_bench_behaviors` and `rebot_bench_base_config`;
-a user-workspace colcon build and backend restart deploy them on an existing
-MAIN-based MoveIt Pro runtime. Direct Motion is not required there. See the
-[hardware-independent run recipe](../../../rebot_bench_base_config/README.md#sam3-blue-on-red-stack).
+The packages are `rebot_bench_sim` and `rebot_bench_behaviors`; a user-workspace
+colcon build and backend restart deploy them on an existing MoveIt Pro runtime.
+See the [simulation run recipe](../../README.md#build-and-run).
 
 ## Automated checks
 
 Alongside the level-base run, model, configuration and grasp-proxy checks pass,
-with the physical 50 mm lift regression retained as one strict expected failure.
+with the physical 50 mm lift regression retained as a strict expected failure
+before MuJoCo 3.13.0; on 3.13.0 and later it must lift the cube.
 The grasp-proxy regression drives the node through its topics: a closed gripper
 command without finger contact never welds, and a simulation reset releases a
 held cube. The behavior library's C++ tests pass, including holding a measured
@@ -128,7 +124,7 @@ kind's factors from the settings file. The
 integration suite skips the stateful stack entry points.
 
 ```sh
-colcon build --packages-up-to rebot_bench_behaviors rebot_bench_base_config rebot_bench_sim
-MOVEIT_CONFIG_PACKAGE=rebot_bench_sim colcon test --packages-select rebot_bench_behaviors rebot_bench_base_config rebot_bench_sim --ctest-args -E objectives_integration_test
+colcon build --packages-up-to rebot_bench_sim
+MOVEIT_CONFIG_PACKAGE=rebot_bench_sim colcon test --packages-select rebot_bench_behaviors rebot_bench_sim --ctest-args -E objectives_integration_test
 colcon test-result --all --verbose
 ```

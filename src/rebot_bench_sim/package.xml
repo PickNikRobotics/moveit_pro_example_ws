@@ -4,13 +4,15 @@
   <version>10.3.0</version>
 
   <description>
-    MuJoCo twin of the reBot bench: the reBot arm, both cameras, the mat, the
-    wall and two cubes, placed from one bench layout file.
+    Standalone MuJoCo twin of the reBot bench: driver-free arm and camera
+    descriptions, planning and control configuration, and pick/stack Objectives.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
 
   <license>BSD-3-Clause</license>
+  <license file="description/LICENSE">CERN-OHL-W-2.0</license>
+  <license file="description/assets/realsense/LICENSE">Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <!-- Generate description/scene.xml, rebot_arm.xml and the layout snapshot
@@ -18,13 +20,18 @@
   <buildtool_depend>xacro</buildtool_depend>
   <build_depend>python3-yaml</build_depend>
 
-  <depend>rebot_bench_base_config</depend>
+  <depend>rebot_bench_behaviors</depend>
   <exec_depend>picknik_accessories</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>mujoco_package_uri</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
   <exec_depend>picknik_nyx_renderer</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>joint_trajectory_admittance_controller</exec_depend>
+  <exec_depend>joint_velocity_controller</exec_depend>
+  <exec_depend>velocity_force_controller</exec_depend>
+  <exec_depend>pose_ik</exec_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>rclpy</exec_depend>
@@ -32,7 +39,10 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>forward_command_controller</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
+  <exec_depend>moveit_studio_utils_py</exec_depend>
   <exec_depend>python3-yaml</exec_depend>
   <exec_depend>rosidl_runtime_py</exec_depend>
   <exec_depend>moveit_studio_internal_msgs</exec_depend>
@@ -42,16 +52,22 @@
 
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>python3-catkin-pkg</test_depend>
   <test_depend>ament_flake8</test_depend>
-  <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>behaviortree_cpp_picknik</test_depend>
+  <test_depend>tinyxml2_vendor</test_depend>
+  <test_depend>yaml-cpp</test_depend>
+  <test_depend>moveit_pro_base</test_depend>
+  <test_depend>moveit_pro_base_py</test_depend>
+  <test_depend>urdf</test_depend>
+  <test_depend>srdfdom</test_depend>
   <test_depend>moveit_pro_test_utils</test_depend>
-  <test_depend>moveit_studio_utils_py</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
-  <test_depend>python3-numpy</test_depend>
-  <test_depend>python3-yaml</test_depend>
-  <test_depend>rclpy</test_depend>
+  <test_depend>controller_manager_msgs</test_depend>
+  <test_depend>rclcpp</test_depend>
   <test_depend>std_srvs</test_depend>
   <test_depend>moveit_msgs</test_depend>
 

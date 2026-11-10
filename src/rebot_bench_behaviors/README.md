@@ -1,7 +1,7 @@
 # reBot bench behaviors
 
-The base configuration loads `RebotBenchBehaviorsLoader`. The same behaviors and
-Objectives are inherited by the MuJoCo and hardware configurations.
+`rebot_bench_sim` loads `RebotBenchBehaviorsLoader` for its reusable pick/stack
+Objectives. This plugin package has no motor or camera-driver dependencies.
 
 `FitCubeToMask` fits an upright 50 mm cube resting on a horizontal surface at
 `support_height` (default 0, the world mat plane; 0.05 for a cube stacked on
@@ -59,8 +59,7 @@ past it, and refuses the start once the sag reaches self-collision (joint3 at
 about −0.08 rad). `PlanToJointGoalFromBoundedStart` is `PlanToJointGoal` with
 the planning scene's current state clamped the same way, so it plans from the
 bound with every port, collision check and detour unchanged. **reBot Move to Arm
-Waypoint** plans with it, and **Return reBot Leader Home** plans both of its legs
-with it and anchors them to the clamped measured arm.
+Waypoint** plans with it and anchors the result to the preceding commanded state.
 
 `RecordRebotTrajectory` appends each trajectory, with its dispatch time, to an
 audit file (`/tmp/rebot-trajectory-audit.yaml` by default) before execution,
@@ -69,7 +68,7 @@ canceled or interrupted leg's held command be reconstructed afterwards.
 
 `LoadMotionScales` reads one leg kind's `velocity_scale_factor` and
 `acceleration_scale_factor` from a YAML file in a ROS package's share directory
-(`rebot_bench_base_config/objectives/rebot_stack_motion.yaml` for the stack
+(`rebot_bench_sim/objectives/rebot_stack_motion.yaml` for the stack
 Objectives). It fails on a missing file, entry or factor, or a factor outside
 (0, 1], so a bad settings file stops a run before any motion.
 

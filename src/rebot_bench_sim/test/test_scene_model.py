@@ -142,12 +142,9 @@ CONFIGURATIONS = [
 
 def test_compiled_joint_limits_match_expanded_urdf_and_planning(model):
     robot = sim_urdf()
-    limits = yaml.safe_load(
-        (
-            Path(get_package_share_directory("rebot_bench_base_config"))
-            / "config/moveit/joint_limits.yaml"
-        ).read_text()
-    )["joint_limits"]
+    limits = yaml.safe_load((SHARE / "config/moveit/joint_limits.yaml").read_text())[
+        "joint_limits"
+    ]
     for name in ARM + ["joint7", "gripper_joint1", "gripper_joint2"]:
         joint = robot.find(f"joint[@name='{name}']")
         bound = joint.find("limit")
@@ -193,9 +190,10 @@ def test_every_mujoco_body_and_camera_site_sits_on_its_urdf_link(model, configur
     )
 
     # The simulated description, and the camera optical frames it leaves to
-    # MuJoCo, taken from the base description with the same placements.
+    # MuJoCo, taken from the driver-free geometry with the same placements.
     sim = urdf_link_poses(sim_urdf(), positions)
     args = {
+        "include_camera_optical_frames": "true",
         "world_to_base_xyz": " ".join(map(str, LAYOUT["robot_base"]["xyz"])),
         "world_to_base_rpy": " ".join(map(str, LAYOUT["robot_base"]["rpy"])),
         "scene_camera_xyz": " ".join(map(str, LAYOUT["scene_camera"]["xyz"])),
@@ -209,8 +207,7 @@ def test_every_mujoco_body_and_camera_site_sits_on_its_urdf_link(model, configur
     }
     base = urdf_link_poses(
         expand(
-            Path(get_package_share_directory("rebot_bench_base_config"))
-            / "description/rebot.urdf.xacro",
+            SHARE / "description/rebot.urdf.xacro",
             **args,
         ),
         positions,
@@ -243,7 +240,7 @@ def test_every_mujoco_body_and_camera_site_sits_on_its_urdf_link(model, configur
 @pytest.mark.parametrize(
     ("camera", "vertical_focal_px", "topic"),
     [
-        # docs/camera-acceptance.json in the base config: D435 colour fy at 640x480.
+        # Measured D435 colour fy at 640x480, documented in the package README.
         ("d435_color", 607.8, "/wrist_mounted_camera/color/image_raw"),
         # 97.1 deg across 640 px: fx = 282.5 px for the OAK-D Pro W at 640 wide.
         (
@@ -380,6 +377,12 @@ def test_wrist_camera_sits_at_the_layouts_measured_mount(data):
 def test_sim_description_refuses_any_other_hardware():
     with pytest.raises(xacro.XacroException):
         sim_urdf(hardware_interface="mock")
+    with pytest.raises(xacro.XacroException):
+        sim_urdf(hardware_interface="real")
+    with pytest.raises(xacro.XacroException):
+        sim_urdf(include_camera_optical_frames="true")
+    geometry = expand(SHARE / "description/rebot.urdf.xacro")
+    assert not geometry.findall("ros2_control")
     plugins = [p.text for p in sim_urdf().findall("ros2_control/hardware/plugin")]
     assert plugins == ["picknik_mujoco_ros/MujocoSystem"]
 
@@ -443,9 +446,10 @@ def _top_down_grasp_ik(model, target, seed):
 
 
 @pytest.mark.xfail(
+    tuple(int(part) for part in mujoco.__version__.split(".")[:2]) < (3, 13),
     strict=True,
     raises=AssertionError,
-    reason="Physical mimic-jaw contact slips; sim grasp proxy does not validate grip fidelity.",
+    reason="Mimic-jaw contact slips before MuJoCo 3.13; sim grasp proxy does not validate grip fidelity.",
 )
 def test_45_mm_grip_physically_lifts_a_cube_50_mm(model, data):
     """The real aperture command must transmit force through the mimic jaws."""
@@ -527,12 +531,11 @@ def test_jaw_closes_from_open_inside_the_path_tolerance_below_real_time(model, d
     advances sim time, so at a real-time factor of 0.7 (a loaded host) the jaw has
     to follow the planned profile 1/0.7 times faster.
     """
-    base = Path(get_package_share_directory("rebot_bench_base_config"))
-    jaw = yaml.safe_load((base / "config/moveit/joint_limits.yaml").read_text())[
+    jaw = yaml.safe_load((SHARE / "config/moveit/joint_limits.yaml").read_text())[
         "joint_limits"
     ]["joint7"]
     tolerance = yaml.safe_load(
-        (base / "config/control/rebot.ros2_control.yaml").read_text()
+        (SHARE / "config/control/rebot.ros2_control.yaml").read_text()
     )["joint_trajectory_admittance_controller"]["ros__parameters"][
         "default_path_tolerance"
     ]

@@ -88,7 +88,7 @@ TEST_F(LeaderServiceTest, RefusalReachesObjectiveFailureBufferVerbatim)
 {
   create();
   fake->response.message = "Following refused to avoid a jump: wrist roll (joint6): -6.9 deg (-0.120 rad). Move the "
-                           "Star Arm, then run Mirror reBot Leader again.";
+                           "Star Arm, then retry.";
   EXPECT_EQ(run(), BT::NodeStatus::FAILURE);
   const auto errors = context->logger->consumeErrorLogBuffer();
   EXPECT_NE(errors.find(fake->response.message), std::string::npos);
@@ -117,7 +117,7 @@ TEST_F(LeaderServiceTest, MissingServicePortFailsBeforeCallingClient)
   EXPECT_TRUE(fake->service.empty());
   EXPECT_NE(context->logger->consumeErrorLogBuffer().find("Configure service_name"), std::string::npos);
 }
-TEST_F(LeaderServiceTest, MissingBridgeExplainsHowToEnableTheLeader)
+TEST_F(LeaderServiceTest, MissingBridgeReportsNoServiceAvailable)
 {
   config.input_ports["service_name"] = "/rebot_leader_bridge/prepare";
   create();
@@ -125,9 +125,7 @@ TEST_F(LeaderServiceTest, MissingBridgeExplainsHowToEnableTheLeader)
   EXPECT_EQ(run(), BT::NodeStatus::FAILURE);
   EXPECT_FALSE(fake->started);
   const auto errors = context->logger->consumeErrorLogBuffer();
-  EXPECT_NE(errors.find("leader bridge is not running"), std::string::npos);
-  EXPECT_NE(errors.find("ros_global_params.rebot_leader_enabled is true"), std::string::npos);
-  EXPECT_NE(errors.find("restart the backend"), std::string::npos);
+  EXPECT_NE(errors.find("No reBot leader bridge service is available."), std::string::npos);
 }
 TEST_F(LeaderServiceTest, ResponseTimeoutLogsFailure)
 {
@@ -161,11 +159,8 @@ TEST_F(LeaderServiceTest, ConfiguredPluginLoaderInstantiatesLeaderService)
   auto plugin = loader.createSharedInstance("rebot_bench_behaviors::RebotBenchBehaviorsLoader");
   BT::BehaviorTreeFactory factory;
   plugin->registerBehaviors(factory, context);
-  factory.registerSimpleAction("SwitchController", [](BT::TreeNode&) { return BT::NodeStatus::SUCCESS; },
-                               { BT::InputPort<std::string>("activate_controllers"),
-                                 BT::InputPort<bool>("automatic_deactivation"), BT::InputPort<int>("strictness") });
-  factory.registerSimpleAction("WaitForDuration", [](BT::TreeNode&) { return BT::NodeStatus::SUCCESS; },
-                               { BT::InputPort<double>("delay_duration") });
-  auto tree = factory.createTreeFromFile(MIRROR_OBJECTIVE);
+  auto tree = factory.createTreeFromText(
+      R"(<root BTCPP_format="4"><BehaviorTree ID="Test"><Action ID="CallRebotLeaderService" )"
+      R"(service_name="/rebot_leader_bridge/mirror" /></BehaviorTree></root>)");
   EXPECT_NE(tree.rootNode(), nullptr);
 }
