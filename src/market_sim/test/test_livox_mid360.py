@@ -175,7 +175,7 @@ def test_mount_and_optical_frame_agree_with_expanded_urdf(model, urdf):
         np.testing.assert_allclose(body.quat, expected, atol=1e-6)
     camera = model.camera("livox_mid360").id
     site = model.site("livox_mid360_optical_frame").id
-    np.testing.assert_allclose(data.cam_xpos[camera], [0.138289, 0, 1.700], atol=1e-6)
+    np.testing.assert_allclose(data.cam_xpos[camera], [0.209750, 0, 1.700], atol=1e-6)
     np.testing.assert_allclose(
         data.xmat[model.body("livox_frame").id].reshape(3, 3)[:, 2],
         [0, 0, -1],
@@ -234,7 +234,7 @@ def test_horizontal_slice_retains_shelves_and_walls_with_small_bracket_sector(
             continue  # Store doorways are genuinely open, not missing robot occlusion.
         hit = int(geom[0])
         if hit in robot:
-            # I02 accepts the support post's narrow shadow, not a hidden arm/body return.
+            # C170 accepts the support post's narrow shadow, not a hidden arm/body return.
             assert model.geom_bodyid[hit] == bracket, (
                 pose,
                 base_pose,
@@ -250,6 +250,30 @@ def test_horizontal_slice_retains_shelves_and_walls_with_small_bracket_sector(
     assert 0 < bracket_hits <= 20  # At most 10 deg of the 720-bearing horizontal slice.
     assert shelf_hits > 200
     assert wall_hits > 10
+
+
+def test_centered_sensor_clears_the_measured_cap_over_its_downward_fov(model):
+    data = stowed_data(model)
+    base = model.body("base_link").id
+    rotation = data.xmat[base].reshape(3, 3)
+    spine = model.body("franka_spine").id
+    points = np.vstack(
+        [
+            (geom_points(model, data, geom) - data.xpos[base]) @ rotation
+            for geom in range(model.ngeom)
+            if model.geom_bodyid[geom] == spine
+            and (model.geom_contype[geom] or model.geom_conaffinity[geom])
+        ]
+    )
+    top = points[points[:, 2] >= points[:, 2].max() - 1e-5]
+    center = (top.min(axis=0) + top.max(axis=0)) / 2
+    origin = (
+        data.cam_xpos[model.camera("livox_mid360").id] - data.xpos[base]
+    ) @ rotation
+    np.testing.assert_allclose(origin[:2], center[:2], atol=1e-6)
+    radial_extent = np.linalg.norm(top[:, :2] - origin[:2], axis=1).max()
+    needed_height = top[:, 2].max() + radial_extent * np.tan(np.radians(52))
+    assert origin[2] - needed_height > 0.03  # C170 has ~35 mm full-cap FOV clearance.
 
 
 def test_added_sensor_has_no_dof_and_stays_inside_existing_navigation_footprint(model):

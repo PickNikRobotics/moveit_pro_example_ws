@@ -49,15 +49,17 @@ linear-speed bound is 0.35 m/s, including diagonal motion, and yaw-rate bound is
 
 ## Livox Mid-360
 
-A Mid-360 model is mounted **inverted above the fixed spine cap (I02)**, with scan
-origin `(0.138289, 0, 1.700)` m in `base_link`. It does not move with the spine carriage.
+A Mid-360 model is mounted **inverted above the fixed spine cap (C170)**, with scan
+origin `(0.209750, 0, 1.700)` m in `base_link`. Its XY position is the measured cap
+footprint center, not the fixed spine link's origin. It does not move with the spine carriage.
 The fixed joint rolls the native sensor frame 180° about X: its X remains forward,
 Y points right and Z points down in `base_link`. The local accessory is declared in
 `description/livox_mid360.urdf.xacro` and `mjcf/livox_mid360.xml`; the vendored
 `franka_description/robots/mobile_fr3_duo_v0_2` macros remain unchanged. Its 65 × 65 × 60 mm,
 265 g envelope adds no joints or keyframe values and fits the stowed navigation footprint.
-The **provisional** 0.41 kg support is isolated in `livox_mid360_mount.urdf.xacro` /
-`livox_mid360_mount.xml` so the fabricable CAD bracket can replace it. The support
+The **provisional** 0.432 kg analytic support is isolated in
+`livox_mid360_mount.urdf.xacro` / `livox_mid360_mount.xml` so the printed CAD bracket
+can replace it. Its interim aluminum-solid inertia is not a printed-part material model. The support
 and housing are not fabrication or thermal certifications.
 
 | Contract | Simulated value |
@@ -92,24 +94,32 @@ packets reduce the whole-bag mean to 16,972). Robust plane-fit range residuals w
 and approximately 64% valid-point budget match that evidence without pretending the
 capture's room-specific occluded wedge is intrinsic to the sensor.
 
-**Mount comparison.** The initial three upright candidates were followed by 28 inverted
-proposals spanning spine heights/faces, head, deck edges and mast overhangs. The I02
-inverted cap was selected to gain floor/low-obstacle coverage while mostly retaining
-its horizontal shelf/wall slice. The rendered study at B2/stowed reported:
+**Mount comparison.** The initial upright/inverted studies were followed by a cap-only
+fore/aft and height sweep. The actual top-cap footprint spans X = 0.132000–0.287500 m,
+Y = ±0.1505 m at Z = 1.461 m; its center is X = 0.209750 m. Each of the back/current,
+center and front positions was tested at 1.50–1.90 m, with and without an illustrative
+support. The selected **C170** stays mechanically centered and clears the full downward
+cap cone: the measured farthest cap radius is 0.159356 m, so scan Z must exceed
+`1.461 + 0.159356 * tan(52°) = 1.664966 m`. The 1.70 m sample gives about 35 mm margin.
+The B2/stowed study, with its common illustrative support, reported:
 
-| Candidate scan origin in `base_link` (m) | Horizontal / full-FOV self blockage | Open near-floor visibility (0.5–3 m) |
-|---|---|---|
-| U00 upright cap `(0.138289, 0, 1.515)` | 0% / 0% | 0% (floor starts at 12.34 m) |
-| I02 inverted cap `(0.138289, 0, 1.700)` | 2.4% / 3.4% | 75.8% (floor starts at 1.33 m) |
-| I08 inverted rear spine `(-0.100, 0, 0.750)` | 18.8% / 23.9% | 93.2%, but a broad forward sector is blocked |
+| Candidate scan origin in `base_link` (m) | Horizontal / full-FOV self blockage | Open near-floor visibility (0.5–3 m) | Open-start forward floor |
+|---|---|---|---|
+| Centered default `(0.209750, 0, 1.500)` | 1.5% / 55.2% | 1.5% (actual first floor 3.08 m) | 0% |
+| Centered `(0.209750, 0, 1.600)` | 1.5% / 9.7% | 71.5% (first floor 1.25 m) | 78.5% |
+| **C170** `(0.209750, 0, 1.700)` | 1.5% / 1.8% | 77.8% (first floor 1.33 m) | 80.2% |
 
-Those are deterministic geometric visibility metrics with the study's illustrative
-brackets, not detection probabilities; the final CAD bracket may change them. I02's
-horizontal slice is below the 1.836 m shelves. The support post loses a narrow sector,
-not a broad arm/body wedge at the default/stowed poses. Its inverted −52° edge reaches
-nearby floor instead of looking mostly at the ceiling. Livox's Mid-360 User Manual
-explicitly supports upside-down mounting with mounting surface at least 0.5 m above
-the ground; the existing low safety scanners remain necessary.
+Those are deterministic geometric LOS metrics, not detection probabilities; the final
+printed bracket may change support shadows. The extra 100 mm above 1.60 m adds
+6.4 percentage points of B2 floor visibility and removes 7.9 points of full-FOV blockage.
+Fore/aft shifts at 1.70 m do not give a material forward-coverage advantage over center.
+At 1.90 m the horizontal ring is above the 1.836 m shelves and loses all shelf-face hits.
+The support post loses a narrow sector, not a broad arm/body wedge at default/Stow.
+Its inverted −52° edge reaches nearby floor instead of looking mostly at the ceiling.
+The low 1.50 m default's cap can be clipped by the image renderer's near plane; native
+floor points leaked behind that cap were not counted as geometric visibility.
+Livox's Mid-360 User Manual explicitly supports upside-down mounting with mounting
+surface at least 0.5 m above the ground; the existing low safety scanners remain necessary.
 The provisional mount is checked for default/stowed navigation poses, **not** arbitrary
 extended arms or the full carriage motion envelope. Native rendered occlusions remain
 in the cloud; no robot self-return is hidden. SRDF excludes only the two fixed

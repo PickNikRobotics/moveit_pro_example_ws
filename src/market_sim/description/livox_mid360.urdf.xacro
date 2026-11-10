@@ -3,15 +3,16 @@
   <!-- Local accessory on the vendored Mobile FR3 Duo's fixed spine. Do not change
        franka_description's byte-identical robot macros to add a simulation sensor. -->
   <xacro:macro name="market_livox_mid360" params="parent">
-    <!-- Provisional I02 bracket kept separate so the fabricable CAD result can
+    <!-- Provisional C170 support kept separate so the printed CAD result can
          replace its geometry/inertia without changing the sensor contract. -->
     <xacro:include filename="$(find market_sim)/description/livox_mid360_mount.urdf.xacro"/>
     <xacro:market_livox_mid360_mount/>
     <joint name="livox_mid360_mount_joint" type="fixed">
       <parent link="${parent}"/>
       <child link="livox_mid360_mount"/>
-      <!-- Scan O: base_link (0.138289, 0, 1.700); fixed spine is at z=0.350 m. -->
-      <origin xyz="0 0 1.350"/>
+      <!-- Scan O: base_link (0.209750, 0, 1.700), centered on the measured cap.
+           Subtract fixed spine origin (0.138289, 0, 0.350). -->
+      <origin xyz="0.071461 0 1.350"/>
     </joint>
     <link name="livox_frame">
       <!-- Mid-360 envelope: 65 x 65 x 60 mm, 265 g. Inertia is a box approximation.

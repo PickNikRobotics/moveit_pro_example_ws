@@ -1,7 +1,8 @@
 <mujocoinclude>
   <!-- Included inside the fixed franka_spine body, not the moving spine carriage.
-       I02 scan O in base_link: (0.138289, 0, 1.700) m. CAD support pending. -->
-  <body name="livox_mid360_mount" pos="0 0 1.350" gravcomp="1">
+       C170 scan O in base_link: (0.209750, 0, 1.700) m, measured cap center.
+       Printed CAD support pending. -->
+  <body name="livox_mid360_mount" pos="0.071461 0 1.350" gravcomp="1">
     <include file="livox_mid360_mount.xml" />
     <body name="livox_frame" pos="0 0 0" quat="0 1 0 0" gravcomp="1">
       <inertial

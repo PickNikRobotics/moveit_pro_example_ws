@@ -1,10 +1,10 @@
 <mujocoinclude>
-  <!-- Interim replaceable I02 bracket, matching the URDF's analytic solids.
-       No joints: the existing keyframe still has nq=31. CAD result pending. -->
+  <!-- Interim replaceable C170 support, matching the URDF's analytic solids.
+       Aluminum primitive fixture, not printed CAD dynamics. No extra joints. -->
   <inertial
-    pos="-0.054233 0 0.001349"
-    mass="0.41"
-    fullinertia="0.003668 0.004836 0.001615 0 -0.001448 0"
+    pos="0 0.075877177 0.004914938"
+    mass="0.431769164"
+    fullinertia="0.006101791 0.003756598 0.002793063 0 0 0.002024248"
   />
   <geom
     name="livox_mount_plate"
@@ -17,15 +17,15 @@
     name="livox_mount_post"
     type="cylinder"
     size="0.008 0.15075"
-    pos="-0.113289 0 -0.08825"
+    pos="0 0.1585 -0.08825"
     rgba="0.18 0.20 0.22 1"
   />
   <geom
     name="livox_mount_boom"
     type="cylinder"
-    size="0.008 0.0566445"
-    pos="-0.0566445 0 0.0625"
-    quat="0.707106781187 0 0.707106781187 0"
+    size="0.008 0.07925"
+    pos="0 0.07925 0.0625"
+    quat="0.707106781187 -0.707106781187 0 0"
     rgba="0.18 0.20 0.22 1"
   />
   <geom

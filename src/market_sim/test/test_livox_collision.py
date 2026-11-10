@@ -151,7 +151,8 @@ def test_fixed_attachment_exclusions_reach_fcl(
             "collision",
             name="test_only_fixed_contact",
         )
-        ET.SubElement(contact, "origin", xyz="0.070 0 -0.240")
+        # C170 mount is at the cap's measured XY center, 239 mm above its top.
+        ET.SubElement(contact, "origin", xyz="0 0 -0.240")
         ET.SubElement(ET.SubElement(contact, "geometry"), "sphere", radius="0.005")
         contact_urdf = tmp_path / "with_contact_witness.urdf"
         robot.write(contact_urdf)
