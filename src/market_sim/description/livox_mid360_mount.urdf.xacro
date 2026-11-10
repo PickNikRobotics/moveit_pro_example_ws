@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Interim I02 support; replace this macro with the final CAD geometry.
+       Aluminum solid approximation, 0.41 kg; not a fabrication specification. -->
+  <xacro:macro name="market_livox_mid360_mount">
+    <xacro:macro name="livox_support_box" params="xyz size">
+      <visual>
+        <origin xyz="${xyz}"/>
+        <geometry><box size="${size}"/></geometry>
+        <material name="livox_bracket"><color rgba="0.18 0.20 0.22 1"/></material>
+      </visual>
+      <collision>
+        <origin xyz="${xyz}"/>
+        <geometry><box size="${size}"/></geometry>
+      </collision>
+    </xacro:macro>
+    <xacro:macro name="livox_support_rod" params="xyz rpy length">
+      <visual>
+        <origin xyz="${xyz}" rpy="${rpy}"/>
+        <geometry><cylinder radius="0.008" length="${length}"/></geometry>
+        <material name="livox_bracket"/>
+      </visual>
+      <collision>
+        <origin xyz="${xyz}" rpy="${rpy}"/>
+        <geometry><cylinder radius="0.008" length="${length}"/></geometry>
+      </collision>
+    </xacro:macro>
+    <link name="livox_mid360_mount">
+      <inertial>
+        <origin xyz="-0.054233 0 0.001349"/>
+        <mass value="0.41"/>
+        <inertia ixx="0.003668" ixy="0" ixz="-0.001448" iyy="0.004836" iyz="0" izz="0.001615"/>
+      </inertial>
+      <!-- Mount frame is at scan O; sensor hangs below the overhead plate. -->
+      <xacro:livox_support_box xyz="0 0 0.0625" size="0.125 0.125 0.004"/>
+      <xacro:livox_support_rod xyz="-0.113289 0 -0.08825" rpy="0 0 0" length="0.3015"/>
+      <xacro:livox_support_rod xyz="-0.0566445 0 0.0625" rpy="0 ${pi/2} 0" length="0.113289"/>
+      <!-- Extend to the housing's mounting face for a connected solid support. -->
+      <xacro:livox_support_rod xyz="0 0 0.04825" rpy="0 0 0" length="0.0245"/>
+    </link>
+  </xacro:macro>
+</robot>

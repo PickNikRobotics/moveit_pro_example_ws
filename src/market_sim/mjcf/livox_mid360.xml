@@ -1,27 +1,9 @@
 <mujocoinclude>
   <!-- Included inside the fixed franka_spine body, not the moving spine carriage.
-       Camera origin in base_link: (0.138289, 0, 1.515) m. -->
-  <body name="livox_mid360_mount" pos="0 0 1.112" gravcomp="1">
-    <inertial
-      pos="0 0 0.012"
-      mass="0.03"
-      diaginertia="0.00002 0.00002 0.00004"
-    />
-    <geom
-      name="livox_mount_plate"
-      type="box"
-      size="0.0425 0.0425 0.003"
-      pos="0 0 0.003"
-      rgba="0.18 0.20 0.22 1"
-    />
-    <geom
-      name="livox_mount_spacer"
-      type="cylinder"
-      size="0.012 0.016"
-      pos="0 0 0.019"
-      rgba="0.18 0.20 0.22 1"
-    />
-    <body name="livox_frame" pos="0 0 0.053" gravcomp="1">
+       I02 scan O in base_link: (0.138289, 0, 1.700) m. CAD support pending. -->
+  <body name="livox_mid360_mount" pos="0 0 1.350" gravcomp="1">
+    <include file="livox_mid360_mount.xml" />
+    <body name="livox_frame" pos="0 0 0" quat="0 1 0 0" gravcomp="1">
       <inertial
         pos="0 0 -0.006"
         mass="0.265"
@@ -75,6 +57,7 @@
            Render symmetric -70..+70 at 1-deg pitch, then livox_mid360_cloud.py keeps
            rows 63..122 (-7..+52). Overscan keeps even +52-deg rays inside the offscreen
            tiles on MoveIt Pro 10.2 (whose tile edges clip the outermost rings).
+           The sensor body's 180-deg roll maps native -7..+52 to base -52..+7.
            333 columns x 60 kept rows = 19,980 points/sweep. -->
       <camera
         name="livox_mid360"

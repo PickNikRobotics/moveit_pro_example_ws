@@ -70,6 +70,8 @@
   <test_depend>hardware_interface</test_depend>
   <test_depend>behaviortree_cpp_picknik</test_depend>
   <test_depend>controller_manager_msgs</test_depend>
+  <test_depend>moveit_msgs</test_depend>
+  <test_depend>moveit_pro_base</test_depend>
   <test_depend>moveit_pro_behavior_interface</test_depend>
   <test_depend>moveit_studio_internal_msgs</test_depend>
   <test_depend>rclcpp</test_depend>
@@ -81,6 +83,7 @@
   <test_depend>python3-pil</test_depend>
   <test_depend>python3-yaml</test_depend>
   <test_depend>rclpy</test_depend>
+  <test_depend>shape_msgs</test_depend>
   <test_depend>xacro</test_depend>
 
   <export>

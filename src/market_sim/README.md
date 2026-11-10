@@ -49,19 +49,22 @@ linear-speed bound is 0.35 m/s, including diagonal motion, and yaw-rate bound is
 
 ## Livox Mid-360
 
-A Mid-360 model is mounted on a short bracket above the **fixed spine cap**, at
-`(0.138289, 0, 1.515)` m in `base_link`, with X forward, Y left and Z up. It does not
-move with the spine carriage. The local accessory is declared in
+A Mid-360 model is mounted **inverted above the fixed spine cap (I02)**, with scan
+origin `(0.138289, 0, 1.700)` m in `base_link`. It does not move with the spine carriage.
+The fixed joint rolls the native sensor frame 180° about X: its X remains forward,
+Y points right and Z points down in `base_link`. The local accessory is declared in
 `description/livox_mid360.urdf.xacro` and `mjcf/livox_mid360.xml`; the vendored
 `franka_description/robots/mobile_fr3_duo_v0_2` macros remain unchanged. Its 65 × 65 × 60 mm,
-265 g envelope and the 30 g bracket add no joints or keyframe values, and fit inside the
-existing stowed navigation footprint.
+265 g envelope adds no joints or keyframe values and fits the stowed navigation footprint.
+The **provisional** 0.41 kg support is isolated in `livox_mid360_mount.urdf.xacro` /
+`livox_mid360_mount.xml` so the fabricable CAD bracket can replace it. The support
+and housing are not fabrication or thermal certifications.
 
 | Contract | Simulated value |
 |---|---|
 | Cloud | `/livox/lidar`, `sensor_msgs/msg/PointCloud2`, XYZ float32 |
 | Message frame | `livox_frame` (robot_state_publisher); optical site TF from MuJoCo only |
-| Horizontal / vertical FOV | 360° / −7° to +52° |
+| Horizontal / vertical FOV | 360°; native −7° to +52°, mounted base/world −52° to +7° |
 | Rate | 10 Hz; original wall-clock acquisition stamp, best-effort sensor QoS |
 | Sampling | 333 azimuths × 60 elevations, 19,980 rays per message; row 7 is horizontal |
 | Range | 0.1–40 m; conservative 10%-reflectivity range, not the 70 m bright-target maximum |
@@ -69,9 +72,10 @@ existing stowed navigation footprint.
 | Missing returns | 35% independent dropouts plus actual scene occlusion and range limits |
 
 This reuses `picknik_mujoco_ros`'s image-based lidar, like the two existing SICK scanners.
-The camera stays level and renders −70° to +70°; `scripts/livox_mid360_cloud.py` retains
-only −7° to +52°, changes optical XYZ to the co-located `livox_frame`, and publishes the
-latest fresh sweep on a 10 Hz timer. Overscan avoids clipping high-elevation rays at tile
+The scan axis stays vertical and renders native −70° to +70°;
+`scripts/livox_mid360_cloud.py` retains native −7° to +52°, changes optical XYZ to the
+co-located `livox_frame`, and publishes on arrival in its subscription callback when
+acquisitions are at least 95 ms apart (100 ms target with 5 ms jitter tolerance). Overscan avoids clipping high-elevation rays at tile
 edges on MoveIt Pro 10.2. Simply pitching a 360° camera would tilt its entire scan cone,
 not produce the Mid-360's uneven vertical FOV. The intermediate `/livox/mujoco/points`
 cloud is not the sensor output. Shared MuJoCo render/cloud rates stay at 20 Hz, leaving
@@ -88,29 +92,37 @@ packets reduce the whole-bag mean to 16,972). Robust plane-fit range residuals w
 and approximately 64% valid-point budget match that evidence without pretending the
 capture's room-specific occluded wedge is intrinsic to the sensor.
 
-**Mount comparison.** At the start, B2 and D4, 720 horizontal first-hit rays were cast
-against the rendered robot, shelves and walls, with default and navigation-stowed arms:
+**Mount comparison.** The initial three upright candidates were followed by 28 inverted
+proposals spanning spine heights/faces, head, deck edges and mast overhangs. The I02
+inverted cap was selected to gain floor/low-obstacle coverage while mostly retaining
+its horizontal shelf/wall slice. The rendered study at B2/stowed reported:
 
-| Candidate origin in `base_link` (m) | Default / stowed self-occluded rays | Choice |
+| Candidate scan origin in `base_link` (m) | Horizontal / full-FOV self blockage | Open near-floor visibility (0.5–3 m) |
 |---|---|---|
-| Front deck `(0.350, 0, 0.410)` | 35.4% / 45.4% | Chassis/spine and arms hide a broad sector |
-| Head roof `(0.405, 0, 0.965)` | 46.9% / 50.8% | The fixed spine rises above the head; arms also occlude |
-| Fixed spine cap `(0.138289, 0, 1.515)` | 0% / 0% | Horizontal ring sees shelf faces and aisle walls |
+| U00 upright cap `(0.138289, 0, 1.515)` | 0% / 0% | 0% (floor starts at 12.34 m) |
+| I02 inverted cap `(0.138289, 0, 1.700)` | 2.4% / 3.4% | 75.8% (floor starts at 1.33 m) |
+| I08 inverted rear spine `(-0.100, 0, 0.750)` | 18.8% / 23.9% | 93.2%, but a broad forward sector is blocked |
 
-The selected slice is below the 1.836 m shelf tops; at B2 it hits shelves in 691 of 720
-bearings and walls in 26. The remaining bearings see other scene geometry or doorways.
-The −7° edge cannot see the floor until roughly 12.3 m on level ground: this is a real
-consequence of a high Mid-360 mount, not a replacement for the low safety scanners.
-The mount is verified for default and stowed navigation poses, **not** arbitrary extended
-arms or a raised carriage, which can occlude it. Native rendered occlusions remain in
-the cloud; no robot self-return is hidden to make the mount appear better.
+Those are deterministic geometric visibility metrics with the study's illustrative
+brackets, not detection probabilities; the final CAD bracket may change them. I02's
+horizontal slice is below the 1.836 m shelves. The support post loses a narrow sector,
+not a broad arm/body wedge at the default/stowed poses. Its inverted −52° edge reaches
+nearby floor instead of looking mostly at the ceiling. Livox's Mid-360 User Manual
+explicitly supports upside-down mounting with mounting surface at least 0.5 m above
+the ground; the existing low safety scanners remain necessary.
+The provisional mount is checked for default/stowed navigation poses, **not** arbitrary
+extended arms or the full carriage motion envelope. Native rendered occlusions remain
+in the cloud; no robot self-return is hidden. SRDF excludes only the two fixed
+attachment contacts (spine/bracket and bracket/sensor), not sensor contacts with arms
+or world obstacles.
 
 **Limitations.** Sampling is an organized angular approximation, not the real
 non-repeating rosette/time-per-point pattern. Dropouts approximate one capture's valid
 budget, not a reflectivity-dependent return model. No intensity, tag, line or per-point
 timestamp fields are synthesized, and no additional Livox IMU is emulated. The Duo's
-existing IMU is unchanged. This sensor is not connected to AMCL or a new 2D scan; that
-integration is separate work.
+existing IMU is unchanged; a lidar-inertial consumer expecting `/livox/imu` therefore
+has no simulated Livox IMU input. This sensor is not connected to AMCL or a new 2D scan;
+that integration is separate work.
 
 Run normally with `moveit_pro run -w "$PWD" -c market_sim` (use the repository's
 worktree-specific config/image/instance procedure when validating from a worktree).

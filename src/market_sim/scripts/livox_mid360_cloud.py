@@ -37,8 +37,9 @@ render tiles even on MoveIt Pro 10.2. Pitching the camera instead would rotate
 the whole 360-degree cone, not create the sensor's asymmetric FOV.
 
 The source adds range noise and dropouts in picknik_mujoco_ros, before this node.
-A 10 Hz timer consumes only the latest fresh sweep of that 20 Hz source. Original
-acquisition stamps are retained; old or repeated sweeps are never replayed.
+The subscription callback decimates that 20 Hz source to approximately 10 Hz and
+publishes on arrival. Original acquisition stamps are retained; stopped sources
+cannot replay sweeps.
 The output is XYZ only, not a livox_ros_driver2 packet/intensity/IMU emulator.
 """
 
@@ -56,7 +57,8 @@ LAST_ROW = 123
 SOURCE_FRAME = "livox_mid360_optical_frame"
 OUTPUT_FRAME = "livox_frame"
 PUBLISH_PERIOD_SEC = 0.1
-MAX_SOURCE_AGE_SEC = 0.25
+# Allow 5 ms acquisition jitter around two native 50 ms render periods.
+MIN_STAMP_GAP_NS = 95_000_000
 
 
 def stamp_ns(msg):
@@ -111,34 +113,21 @@ def shape_livox_cloud(msg):
 
 
 class LivoxMid360Cloud(Node):
-    """One cloud publisher, bounded to 10 Hz and never a source of stale/duplicate scans."""
+    """Publish on arrival, selecting acquisitions about 100 ms apart."""
 
     def __init__(self):
         super().__init__("livox_mid360_cloud")
-        self._latest = None
-        self._published_stamp = None
+        self._last_stamp = None
         self._publisher = self.create_publisher(
             PointCloud2, "/livox/lidar", qos_profile_sensor_data
         )
         self.create_subscription(
             PointCloud2, "/livox/mujoco/points", self._receive, qos_profile_sensor_data
         )
-        self.create_timer(PUBLISH_PERIOD_SEC, self._publish_latest)
 
     def _receive(self, msg):
-        # A late DDS sample cannot replace a newer acquisition.
-        if self._latest is None or stamp_ns(msg) > stamp_ns(self._latest):
-            self._latest = msg
-
-    def _publish_latest(self):
-        msg = self._latest
-        if msg is None:
-            return
         stamp = stamp_ns(msg)
-        if self._published_stamp is not None and stamp <= self._published_stamp:
-            return
-        age = (self.get_clock().now().nanoseconds - stamp) * 1e-9
-        if age < 0.0 or age > MAX_SOURCE_AGE_SEC:
+        if self._last_stamp is not None and stamp - self._last_stamp < MIN_STAMP_GAP_NS:
             return
         try:
             cloud = shape_livox_cloud(msg)
@@ -146,7 +135,7 @@ class LivoxMid360Cloud(Node):
             self.get_logger().warning(str(error), throttle_duration_sec=5.0)
             return
         self._publisher.publish(cloud)
-        self._published_stamp = stamp
+        self._last_stamp = stamp
 
 
 def main(args=None):

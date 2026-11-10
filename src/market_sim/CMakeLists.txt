@@ -135,6 +135,9 @@ if(BUILD_TESTING)
           livox_mid360_test test/test_livox_mid360.py
           TIMEOUT 60)
   ament_add_pytest_test(
+          livox_collision_test test/test_livox_collision.py
+          TIMEOUT 60)
+  ament_add_pytest_test(
           packaging_test test/test_packaging.py
           TIMEOUT 30)
   # The Objectives the integration test runs, against its budgets and the start pose.

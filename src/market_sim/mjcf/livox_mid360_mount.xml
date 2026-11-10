@@ -1,0 +1,38 @@
+<mujocoinclude>
+  <!-- Interim replaceable I02 bracket, matching the URDF's analytic solids.
+       No joints: the existing keyframe still has nq=31. CAD result pending. -->
+  <inertial
+    pos="-0.054233 0 0.001349"
+    mass="0.41"
+    fullinertia="0.003668 0.004836 0.001615 0 -0.001448 0"
+  />
+  <geom
+    name="livox_mount_plate"
+    type="box"
+    size="0.0625 0.0625 0.002"
+    pos="0 0 0.0625"
+    rgba="0.18 0.20 0.22 1"
+  />
+  <geom
+    name="livox_mount_post"
+    type="cylinder"
+    size="0.008 0.15075"
+    pos="-0.113289 0 -0.08825"
+    rgba="0.18 0.20 0.22 1"
+  />
+  <geom
+    name="livox_mount_boom"
+    type="cylinder"
+    size="0.008 0.0566445"
+    pos="-0.0566445 0 0.0625"
+    quat="0.707106781187 0 0.707106781187 0"
+    rgba="0.18 0.20 0.22 1"
+  />
+  <geom
+    name="livox_mount_standoff"
+    type="cylinder"
+    size="0.008 0.01225"
+    pos="0 0 0.04825"
+    rgba="0.18 0.20 0.22 1"
+  />
+</mujocoinclude>

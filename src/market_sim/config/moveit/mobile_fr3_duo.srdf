@@ -124,6 +124,9 @@
     <end_effector name="base" parent_link="base_link" group="base" parent_group="mobile_base"/>
     <passive_joint name="left_fr3v2_finger_joint2"/>
     <passive_joint name="right_fr3v2_finger_joint2"/>
+    <!-- Fixed Livox attachment contacts only; keep collision checks with arms and world. -->
+    <disable_collisions link1="franka_spine" link2="livox_mid360_mount" reason="Adjacent" />
+    <disable_collisions link1="livox_mid360_mount" link2="livox_frame" reason="Adjacent" />
     <disable_collisions link1="argo_drive_front_fixed_link" link2="argo_drive_front_link" reason="Adjacent" />
     <disable_collisions link1="argo_drive_front_fixed_link" link2="argo_drive_rear_fixed_link" reason="Never" />
     <disable_collisions link1="argo_drive_front_fixed_link" link2="argo_drive_rear_link" reason="Never" />

@@ -168,10 +168,28 @@ def test_mount_and_optical_frame_agree_with_expanded_urdf(model, urdf):
             [float(v) for v in joint.find("origin").get("xyz").split()],
             atol=1e-6,
         )
-        np.testing.assert_allclose(body.quat, [1, 0, 0, 0], atol=1e-6)
+        rpy = joint.find("origin").get("rpy", "0 0 0")
+        roll, pitch, yaw = [float(v) for v in rpy.split()]
+        assert pitch == yaw == 0
+        expected = [np.cos(roll / 2), np.sin(roll / 2), 0, 0]
+        np.testing.assert_allclose(body.quat, expected, atol=1e-6)
     camera = model.camera("livox_mid360").id
     site = model.site("livox_mid360_optical_frame").id
-    np.testing.assert_allclose(data.cam_xpos[camera], [0.138289, 0, 1.515], atol=1e-6)
+    np.testing.assert_allclose(data.cam_xpos[camera], [0.138289, 0, 1.700], atol=1e-6)
+    np.testing.assert_allclose(
+        data.xmat[model.body("livox_frame").id].reshape(3, 3)[:, 2],
+        [0, 0, -1],
+        atol=1e-6,
+    )
+    # Native rows stay -7..+52; actual mount turns them into base/world -52..+7.
+    cloud = livox.shape_livox_cloud(source_cloud())
+    xyz = np.frombuffer(cloud.data, dtype="<f4").reshape(-1, 3)
+    world = xyz @ data.xmat[model.body("livox_frame").id].reshape(3, 3).T
+    elevation = np.degrees(
+        np.arctan2(world[:, 2], np.linalg.norm(world[:, :2], axis=1))
+    )
+    assert elevation.min() == pytest.approx(-52, abs=1e-4)
+    assert elevation.max() == pytest.approx(7, abs=1e-4)
     np.testing.assert_allclose(data.site_xpos[site], data.cam_xpos[camera], atol=1e-6)
     np.testing.assert_allclose(
         data.site_xmat[site].reshape(3, 3),
@@ -186,7 +204,7 @@ def test_mount_and_optical_frame_agree_with_expanded_urdf(model, urdf):
     "base_pose",
     [(0, 0, 0), (-8.476, 10.557953, np.pi / 2), (34.556, 22.557953, np.pi / 2)],
 )
-def test_horizontal_slice_sees_shelves_and_walls_without_self_hits(
+def test_horizontal_slice_retains_shelves_and_walls_with_small_bracket_sector(
     model, pose, base_pose
 ):
     data = stowed_data(model) if pose == "stow" else mujoco.MjData(model)
@@ -198,7 +216,8 @@ def test_horizontal_slice_sees_shelves_and_walls_without_self_hits(
     start = data.cam_xpos[model.camera("livox_mid360").id].copy()
     robot = set(robot_geoms(model))
     groups = np.array([1, 1, 1, 0, 0, 0], np.uint8)
-    shelf_hits, wall_hits = 0, 0
+    shelf_hits, wall_hits, bracket_hits = 0, 0, 0
+    bracket = model.body("livox_mid360_mount").id
     for angle in np.radians(np.arange(0, 360, 0.5)):
         geom = np.array([-1], np.int32)
         distance = mujoco.mj_ray(
@@ -214,12 +233,21 @@ def test_horizontal_slice_sees_shelves_and_walls_without_self_hits(
         if distance < 0:
             continue  # Store doorways are genuinely open, not missing robot occlusion.
         hit = int(geom[0])
-        assert hit not in robot, (pose, base_pose, model.geom(hit).name)
+        if hit in robot:
+            # I02 accepts the support post's narrow shadow, not a hidden arm/body return.
+            assert model.geom_bodyid[hit] == bracket, (
+                pose,
+                base_pose,
+                model.geom(hit).name,
+            )
+            bracket_hits += 1
+            continue
         body_name = model.body(int(model.geom_bodyid[hit])).name
         shelf_hits += bool(
             body_name and body_name[0] in "ABCDEFGHI" and "_" in body_name
         )
         wall_hits += "wall" in (model.geom(hit).name or "")
+    assert 0 < bracket_hits <= 20  # At most 10 deg of the 720-bearing horizontal slice.
     assert shelf_hits > 200
     assert wall_hits > 10
 
@@ -236,7 +264,7 @@ def test_added_sensor_has_no_dof_and_stays_inside_existing_navigation_footprint(
             points = geom_points(model, data, geom)
             assert points[:, 0].min() > -0.4 and points[:, 0].max() < 0.8
             assert np.max(np.abs(points[:, 1])) < 0.36
-    # Physics still holds the original commissioned state with the added 295 g accessory.
+    # Physics remains finite with the inverted sensor and provisional support.
     for _ in range(100):
         mujoco.mj_step(model, data)
         assert np.isfinite(data.qpos).all()
@@ -283,11 +311,17 @@ def test_node_publishes_fresh_clouds_at_10hz_and_never_replays_a_stopped_source(
     rclpy.init()
     node = livox.LivoxMid360Cloud()
     received = []
+    ages = []
+
+    def receive(msg):
+        received.append((time.monotonic(), msg))
+        ages.append((node.get_clock().now().nanoseconds - livox.stamp_ns(msg)) * 1e-9)
+
     try:
         node.create_subscription(
             PointCloud2,
             "/livox/lidar",
-            lambda msg: received.append((time.monotonic(), msg)),
+            receive,
             qos_profile_sensor_data,
         )
         source = node.create_publisher(
@@ -313,7 +347,8 @@ def test_node_publishes_fresh_clouds_at_10hz_and_never_replays_a_stopped_source(
             m.header.frame_id == "livox_frame" and m.width * m.height == 19980
             for _, m in received
         )
-        # Allow the final fresh sweep, then no repeats while the source is stopped.
+        assert np.median(ages) < 0.05  # Publish on arrival, not a timer phase.
+        # Allow in-flight DDS delivery, then no repeats while the source is stopped.
         until = time.monotonic() + 0.3
         while time.monotonic() < until:
             rclpy.spin_once(node, timeout_sec=0.02)
