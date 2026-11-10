@@ -42,6 +42,8 @@
   </visual>
 
   <worldbody>
+    <!-- The hangar has no other light source: OpenGL relies on the headlight, which Nyx does not reproduce. castshadow is off so the light reaches the floor through the hangar roof. -->
+    <light pos="0 0 10" dir="0 0 -1" directional="true" castshadow="false" />
     <!-- Flat ground plane for stable wheel contact (mesh floor is unreliable with small rollers) -->
     <geom
       name="ground_plane"

@@ -144,6 +144,13 @@
     <disable_collisions link1="shoulder_link" link2="spherical_wrist_1_link" reason="Never"/>
     <disable_collisions link1="spherical_wrist_1_link" link2="spherical_wrist_2_link" reason="Adjacent"/>
     <disable_collisions link1="base_link" link2="interface" reason="Adjacent"/>
+    <!-- These links are all fixed to world. The calibrated servicer camera body overlaps the
+         platform collision model, so checking any of these pairs leaves every state in collision. -->
+    <disable_collisions link1="servicer_camera_link" link2="servicer_platform" reason="Never"/>
+    <disable_collisions link1="servicer_camera_link" link2="epastar" reason="Never"/>
+    <disable_collisions link1="servicer_camera_link" link2="interface" reason="Never"/>
+    <disable_collisions link1="servicer_camera_link" link2="rpo_suite" reason="Never"/>
+    <disable_collisions link1="servicer_camera_link" link2="pole" reason="Never"/>
     <disable_collisions link1="epastar" link2="interface" reason="Adjacent"/>
     <disable_collisions link1="epastar" link2="pole" reason="Adjacent"/>
     <disable_collisions link1="epastar" link2="rpo_suite" reason="Adjacent"/>

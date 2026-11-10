@@ -8,43 +8,153 @@
 
   <asset>
     <!-- Define textures and materials -->
-    <texture name="wood" type="cube" file="assets/wood.png" />
-    <material name="wood" texture="wood" texrepeat="1 1" />
-    <mesh name="bowl" file="assets/bowl.stl" />
+    <material name="wood" texrepeat="1 1">
+      <layer role="rgb" texture="wood_alb" />
+      <layer role="normal" texture="wood_nrm" />
+      <layer role="orm" texture="wood_orm" />
+    </material>
+    <!-- bowl_uv.obj carries box-projected texture coordinates, which STL cannot store; geometry is unchanged. -->
+    <mesh name="bowl" file="assets/bowl_uv.obj" />
 
-    <texture name="sheet_metal" type="2d" file="assets/sheet_metal.png" />
-    <material name="sheet_metal" texture="sheet_metal" texrepeat="1 1" />
+    <material name="sheet_metal" metallic="1" roughness="1.0" texrepeat="1 1">
+      <layer role="rgb" texture="sheet_metal_alb" />
+      <layer role="normal" texture="sheet_metal_nrm" />
+      <layer role="orm" texture="sheet_metal_orm" />
+    </material>
+    <!-- Box-projected UVs, as for the bowl above. Tile chosen in mesh units (50) so that
+         after scale="0.001 ..." one tile spans 0.05 m of the real part. -->
     <mesh
       name="bracket"
-      file="assets/bracket_sample1.stl"
+      file="assets/bracket_sample1_uv.obj"
       scale="0.001 0.001 0.002"
     />
 
-    <!-- Blue checker floor: rgb1/rgb2 are the light/dark alternating squares. -->
+    <texture type="2d" name="wood_alb" file="assets/wood_albedo.png" />
+    <texture type="2d" name="wood_nrm" file="assets/wood_normal.png" />
+    <texture type="2d" name="wood_orm" file="assets/wood_orm.png" />
     <texture
       type="2d"
-      name="groundplane"
-      builtin="checker"
-      mark="edge"
-      rgb1="0.2 0.3 0.4"
-      rgb2="0.1 0.2 0.3"
-      markrgb="0.8 0.8 0.8"
-      width="300"
-      height="300"
+      name="groundplane_alb"
+      file="assets/groundplane_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="groundplane_nrm"
+      file="assets/groundplane_normal.png"
+    />
+    <texture
+      type="2d"
+      name="groundplane_orm"
+      file="assets/groundplane_orm.png"
+    />
+    <texture
+      type="2d"
+      name="sheet_metal_alb"
+      file="assets/sheet_metal_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="sheet_metal_nrm"
+      file="assets/sheet_metal_normal.png"
+    />
+    <texture
+      type="2d"
+      name="sheet_metal_orm"
+      file="assets/sheet_metal_orm.png"
+    />
+    <texture
+      type="2d"
+      name="pedestal_metal_alb"
+      file="assets/pedestal_metal_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="pedestal_metal_nrm"
+      file="assets/pedestal_metal_normal.png"
+    />
+    <texture
+      type="2d"
+      name="pedestal_metal_orm"
+      file="assets/pedestal_metal_orm.png"
+    />
+    <texture
+      type="2d"
+      name="bin_plastic_alb"
+      file="assets/bin_plastic_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="bin_plastic_nrm"
+      file="assets/bin_plastic_normal.png"
+    />
+    <texture
+      type="2d"
+      name="bin_plastic_orm"
+      file="assets/bin_plastic_orm.png"
+    />
+    <texture
+      type="2d"
+      name="table_steel_alb"
+      file="assets/table_steel_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="table_steel_nrm"
+      file="assets/table_steel_normal.png"
+    />
+    <texture
+      type="2d"
+      name="table_steel_orm"
+      file="assets/table_steel_orm.png"
     />
     <material
       name="groundplane"
-      texture="groundplane"
       texuniform="true"
       texrepeat="5 5"
       reflectance="0.2"
-    />
+    >
+      <layer role="rgb" texture="groundplane_alb" />
+      <layer role="normal" texture="groundplane_nrm" />
+      <layer role="orm" texture="groundplane_orm" />
+    </material>
     <material
       name="pedestal_metal"
+      metallic="1"
+      roughness="1.0"
       rgba="0.30 0.32 0.35 1"
       specular="0.4"
       shininess="0.5"
-    />
+    >
+      <layer role="rgb" texture="pedestal_metal_alb" />
+      <layer role="normal" texture="pedestal_metal_nrm" />
+      <layer role="orm" texture="pedestal_metal_orm" />
+    </material>
+    <!-- Moulded polypropylene picking bins; rgba keeps the original blue. metallic and roughness are 1 so the ORM map's channels set them, since Nyx multiplies the two, and the map makes this dielectric. -->
+    <material
+      name="bin_plastic"
+      rgba=".11 .51 .86 1"
+      metallic="1"
+      roughness="1.0"
+      specular="0.35"
+      shininess="0.4"
+    >
+      <layer role="rgb" texture="bin_plastic_alb" />
+      <layer role="normal" texture="bin_plastic_nrm" />
+      <layer role="orm" texture="bin_plastic_orm" />
+    </material>
+    <!-- Stainless tops for both work tables. -->
+    <material
+      name="table_steel"
+      metallic="1"
+      roughness="1.0"
+      rgba="0.80 0.81 0.83 1"
+      specular="0.9"
+      shininess="0.8"
+    >
+      <layer role="rgb" texture="table_steel_alb" />
+      <layer role="normal" texture="table_steel_nrm" />
+      <layer role="orm" texture="table_steel_orm" />
+    </material>
   </asset>
 
   <statistic center="0.3 0 0.4" extent="0.8" />
@@ -149,7 +259,7 @@
     <!--  -->
     <!-- Define the table for bin picking scenario -->
     <body name="bin_table" pos="0 0.6 0.2">
-      <geom type="box" size="0.6 0.4 0.025" rgba="0.1 0.1 0.1 1" />
+      <geom type="box" size="0.6 0.4 0.025" material="table_steel" />
 
       <body name="left_bin" pos="-0.25 0 0.025" quat="0.707 0 0 0.707">
         <!-- <geom type="box" size="1 1 .01" pos="0.5 0.5 0" rgba=".5 .5 .5 1"/>
@@ -157,14 +267,14 @@
         <!-- Bottom -->
         <!-- <box size="${x_length} ${y_length} ${bottom_thickness}"/> -->
         <!-- <origin xyz="${x_length/2} ${y_length/2} ${bottom_thickness/2}"/> -->
-        <!-- <geom type="box" size="0.3048 0.1905 0.0025" pos="0 0 0.0025" rgba=".11 .51 .86 1"/> -->
+        <!-- <geom type="box" size="0.3048 0.1905 0.0025" pos="0 0 0.0025" material="bin_plastic"/> -->
         <geom
           margin="0.005"
           friction="2 0.1 0.1"
           type="box"
           size="0.3048 0.1905 0.025"
           pos="0 0 0.0025"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <!-- Back -->
         <!-- <box size="${side_wall_thickness} ${y_length-side_wall_thickness} ${z_length}"/> -->
@@ -176,7 +286,7 @@
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="0.2923 0 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <!-- Front -->
         <!-- <box size="${side_wall_thickness} ${y_length} ${z_length}"/> -->
@@ -188,7 +298,7 @@
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="-0.2923 0 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <!-- Right -->
         <!-- <box size="${x_length} ${side_wall_thickness} ${z_length}"/> -->
@@ -200,7 +310,7 @@
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 0.178 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <!-- Left -->
         <!-- <box size="${x_length} ${side_wall_thickness} ${z_length}"/> -->
@@ -211,7 +321,7 @@
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 -0.178 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
       </body>
 
@@ -222,7 +332,7 @@
           type="box"
           size="0.3048 0.1905 0.025"
           pos="0 0 0.0025"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <geom
           margin="0.005"
@@ -230,7 +340,7 @@
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="0.2923 0 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <geom
           margin="0.005"
@@ -238,7 +348,7 @@
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="-0.2923 0 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <geom
           margin="0.005"
@@ -246,7 +356,7 @@
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 0.178 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <geom
           margin="0.005"
@@ -254,7 +364,7 @@
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 -0.178 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
       </body>
     </body>
@@ -276,7 +386,7 @@
     <!-- Define the table for assembly scenario -->
     <!-- y -0.2-0.2 -->
     <body name="assembly_table" pos="0 -0.4 0.2">
-      <geom type="box" size="0.6 0.2 0.025" rgba="0.1 0.1 0.1 1" />
+      <geom type="box" size="0.6 0.2 0.025" material="table_steel" />
     </body>
     <!-- z 0.225+.005+.0001 -->
     <body name="shelf" pos="0.25 -0.4 0.2301">

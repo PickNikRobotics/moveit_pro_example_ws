@@ -15,10 +15,13 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess
 from launch.substitutions import PathJoinSubstitution
-from launch_ros.actions import Node, SetParameter
 from launch_ros.substitutions import FindPackageShare
+from moveit_studio_utils_py.launch_common import NodeWithAnsiLogging
+
+
+TAG_OFFSETS = (("0", "-0.2"), ("0.2", "0.2"), ("-0.2", "0.2"))
+TAG_SUFFIXES = ("", "_wrist")
 
 
 def generate_launch_description():
@@ -26,57 +29,61 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
-            # create a fixed transform between odom and world
-            Node(
+            # Create a fixed transform between odom and world.
+            NodeWithAnsiLogging(
                 package="tf2_ros",
                 executable="static_transform_publisher",
-                arguments=["0", "0", "0", "0", "0", "0", "world", "odom"],
-            ),
-            # Set the rigid transforms between the AR tags and the target frame to be tracked.
-            Node(
-                package="tf2_ros",
-                executable="static_transform_publisher",
+                output="log",
                 arguments=[
+                    "--x",
                     "0",
-                    "-0.2",
+                    "--y",
                     "0",
+                    "--z",
                     "0",
+                    "--roll",
                     "0",
+                    "--pitch",
                     "0",
-                    "satellite_tag_0",
-                    "target_frame_satellite_tag_0",
+                    "--yaw",
+                    "0",
+                    "--frame-id",
+                    "world",
+                    "--child-frame-id",
+                    "odom",
                 ],
             ),
-            Node(
-                package="tf2_ros",
-                executable="static_transform_publisher",
-                arguments=[
-                    "0.2",
-                    "0.2",
-                    "0",
-                    "0",
-                    "0",
-                    "0",
-                    "satellite_tag_1",
-                    "target_frame_satellite_tag_1",
-                ],
-            ),
-            Node(
-                package="tf2_ros",
-                executable="static_transform_publisher",
-                arguments=[
-                    "-0.2",
-                    "0.2",
-                    "0",
-                    "0",
-                    "0",
-                    "0",
-                    "satellite_tag_2",
-                    "target_frame_satellite_tag_2",
-                ],
+            # Set the rigid transforms between the AR tags and the target frame to be tracked. Each
+            # camera's detector names its tags differently, so each gets its own copy of the offsets.
+            *(
+                NodeWithAnsiLogging(
+                    package="tf2_ros",
+                    executable="static_transform_publisher",
+                    output="log",
+                    arguments=[
+                        "--x",
+                        x,
+                        "--y",
+                        y,
+                        "--z",
+                        "0",
+                        "--roll",
+                        "0",
+                        "--pitch",
+                        "0",
+                        "--yaw",
+                        "0",
+                        "--frame-id",
+                        f"satellite_tag_{tag}{suffix}",
+                        "--child-frame-id",
+                        f"target_frame_satellite_tag_{tag}{suffix}",
+                    ],
+                )
+                for suffix in TAG_SUFFIXES
+                for tag, (x, y) in enumerate(TAG_OFFSETS)
             ),
             # run our estimator
-            Node(
+            NodeWithAnsiLogging(
                 package="fuse_optimizers",
                 executable="fixed_lag_smoother_node",
                 name="state_estimator",

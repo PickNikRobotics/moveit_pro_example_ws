@@ -101,15 +101,9 @@ which can reveal rendering artifacts (e.g. directional-light shadow-map aliasing
 frustum's edge, see `src/lunar_sim/description/husky_scene.xml`) that were not visible from the
 starting pose. Verify renders at more than one point along the objective, not just at rest.
 
-### `texrepeat` with `texuniform="true"` is repeats-per-metre, not repeats-over-the-whole-geom
+### `texrepeat` with `texuniform="true"` tiles every `2 / texrepeat` metres, not over the whole geom
 
-With `texuniform="true"` on a `<material>`, `texrepeat="R R"` means the texture repeats R times
-per metre of world space, not R times across the whole geom - the opposite of the more intuitive
-"total tiles across this surface" reading. A 20x20 m ground plane with `texrepeat="8 8"` therefore
-tiles every `1/8 = 0.125 m`, not every `20/8 = 2.5 m`; the smaller tile shows as an obvious
-repeating grid at any zoom that puts more than a couple tiles in frame. To get a target tile size
-of `S` metres, use `texrepeat="${1/S} ${1/S}"` (e.g. `0.3 0.3` for a ~3.3 m tile), independent of
-the geom's own size.
+With `texuniform="true"` on a `<material>`, a plane or hfield shows one texture tile every `2 / R` metres of world space for `texrepeat="R R"`, independent of the geom's size (measured by rendering a checker from above: `texrepeat="2 2"` gives 1 m tiles on 4 m and 8 m planes alike). A 20x20 m ground plane with `texrepeat="8 8"` therefore tiles every 0.25 m, not every 2.5 m, and shows as an obvious repeating grid at any zoom that puts more than a couple of tiles in frame. For a target tile size of `S` metres, use `texrepeat="${2/S} ${2/S}"`.
 
 ### `<texture file="...">` doesn't load JPEG
 
