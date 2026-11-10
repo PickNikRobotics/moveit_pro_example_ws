@@ -7,10 +7,12 @@ The five placements and the final repeat are historical: they ran on an earlier
 twin whose robot base carried the calibration's full 6-DoF solve (z +4.7 mm,
 roll -4.0 deg, pitch 1.8 deg) with the nominal wrist-camera mount, and with an
 earlier grasp proxy that armed the weld from the gripper command alone. Each
-directory's `bench_layout.yaml` records the configuration it actually ran. The
-shipped twin uses the level base and measured wrist mount of the ChArUco
-calibration and a proxy that verifies contact itself; see the
-[level-base far sanity run](#level-base-far-sanity-run).
+directory's `bench_layout.yaml` records the configuration it actually ran. All
+of these runs used the retired wrist D435. The shipped twin uses the level base
+of the ChArUco calibration, the nominal Gemini 305 wrist mount and a proxy that
+verifies contact itself; see the
+[level-base far sanity run](#level-base-far-sanity-run) and the package
+README's Gemini 305 execution check.
 
 All poses are MuJoCo ground truth in the printed `world` frame, in metres.
 The Objective uses SAM3 RGB masks and calibrated TF; it never reads this truth.

@@ -67,10 +67,10 @@ BSD-3-Clause license. There is no Seeed driver or SDK code in this package.
 
 ## Printed-part visual replacements (2026-10-10)
 
-The nine `assets/printed/*.dae` files are the supplied redesigned print meshes,
-retained byte-for-byte with metre units and embedded purple/white materials.
-The six arm trim parts replace Seeed's corresponding side fillers and covers;
-D435_mount is the supplied wrist camera bracket. These hardware derivatives,
+The eight retained `assets/printed/*.dae` files are the supplied redesigned
+print meshes, byte-for-byte with metre units and embedded purple/white materials.
+The six arm trim parts replace Seeed's corresponding side fillers and covers.
+These hardware derivatives,
 the STOPPER and RAIL-BASE meshes, and retained internal-plastic subsets are
 licensed under CERN-OHL-W-2.0; the full license above applies. The modified
 source location is this package in the public MoveIt Pro example workspace.
@@ -84,37 +84,24 @@ coordinates are scaled from millimetres to metres. Original STEP sources are
 available at that public upstream revision. DAE hashes and visual transforms
 are recorded in `assets/printed/manifest.json`.
 
-The bracket's mounting-interface reference is Seeed revision
-`58f9e433deec2ba118c5c22d60c07b9897e92acc`,
-`Rebot_Arm_description/Camera/urdf/d435i.urdf` and its bracket mesh. Only the
-mounting transform was initially reused; the D435 body and nominal optical
-frame are now included as described below.
-
 PickNik Inc. modified the visual integration on 2026-10-10: replaced matching
 trim visuals, retained internal black-plastic triangles as `pla2_internal.STL`
-and `pla3_internal.STL`, and added a visual-only bracket. Collision meshes,
-inertia and arm joint frames remain unchanged. The D435 frame-only placeholder
-is replaced by the nominal camera assembly described below.
+and `pla3_internal.STL`, and added a visual-only D435 bracket. Collision meshes,
+inertia and arm joint frames remain unchanged. The bracket and Intel D435
+visuals and fixed assembly frames were removed on 2026-11-10; no RealSense
+mesh or driver code remains in the package.
 
-## D435 body and nominal frames (2026-10-10)
+## Gemini 305 nominal optical frame (2026-11-10)
 
-`assets/realsense/d435.dae` is a decimated (15.8 MB to 1.7 MB, quadric edge collapse; same origin, scale and material) copy of Intel's D435 mesh from
-[realsenseai/realsense-ros](https://github.com/realsenseai/realsense-ros/tree/9215f26e8348ad5922a608b77882a9bfe05940f0/realsense2_description),
-commit `9215f26e8348ad5922a608b77882a9bfe05940f0`, path
-`realsense2_description/meshes/d435.dae`, licensed **Apache-2.0**.
-The upstream license is retained in `assets/realsense/LICENSE` with trailing
-blank-line normalization. Upstream notices are retained in
-`assets/realsense/UPSTREAM_NOTICE.txt` with UTF-8/LF and trailing whitespace
-normalization; `source.json` records the upstream and modified
-mesh SHA-256 and Git blob hashes. The assembly offsets are from Seeed's camera URDF referenced
-above; the body's mesh and nominal RGB optical offsets follow
-`realsense2_description/urdf/_d435.urdf.xacro` at the same RealSense revision
-(Copyright 2023 RealSense, Inc.). No driver code is copied.
-
-The wrist mount link now uses the bracket's CAD frame. Its bottom-screw frame,
-body frame and nominal color optical frame form one fixed chain. This is a
-visual assembly, not a measured hand-eye calibration; no collision or inertia
-is added for the camera. The scene camera remains frame-only.
+Replaced the D435 assembly with the frame-only stock Orbbec Gemini 305
+attachment from `moveit_pro_rebot_ws`'s
+[`rebot_description/urdf/gemini305_wrist_camera.xacro`](https://github.com/PickNikRobotics/moveit_pro_rebot_ws/blob/main/src/rebot_description/urdf/gemini305_wrist_camera.xacro)
+and hardware description defaults (Copyright 2026 PickNik Inc., BSD-3-Clause).
+The nominal `gripper_end` to colour optical transform composes reBot mount CAD
+with the camera's optical convention. No camera mesh, collision, inertia or
+serial-specific calibration is copied. MuJoCo renders RGB at 1280x800 with
+Orbbec's nominal public 68-degree vertical FOV; physical factory intrinsics
+are device-specific. The scene camera's mounting transform is unchanged.
 
 The link3 side-panel visual origins and lower-cover pose are recorded in
 `assets/printed/manifest.json` and `rebot.urdf.xacro`. Mesh bytes are unchanged.

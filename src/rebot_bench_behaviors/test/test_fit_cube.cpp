@@ -311,7 +311,7 @@ TEST_F(CubeFitTest, ChoosesEquivalentGraspYawNearRobotBaseHeading)
   EXPECT_NEAR(yaw, std::numbers::pi, 0.035);
 }
 
-// The bench scene camera as shipped: config/config.yaml's scene_camera pose and the OAK's 640x400 stream.
+// The retained OAK scene pose and horizontal view, at its native 1280x800 colour resolution.
 class BenchCubeFitTest : public CubeFitTest
 {
 public:
@@ -329,9 +329,9 @@ public:
     tf.header.frame_id = "world";
     tf.child_frame_id = "camera";
     context->transform_buffer_ptr->setTransform(tf, "test", true);
-    info.width = 640;
-    info.height = 400;
-    info.k = { 282.5, 0, 320, 0, 282.5, 200, 0, 0, 1 };
+    info.width = 1280;
+    info.height = 800;
+    info.k = { 565.2292680222189, 0, 640, 0, 565.2292680222189, 400, 0, 0, 1 };
   }
   // Blue on the mat with red resting beside it; red hides whatever part of blue it stands in front of.
   void observeBeside(const Eigen::Vector2d& blue, const Eigen::Vector2d& red)
@@ -419,8 +419,35 @@ public:
   const std::vector<Eigen::Vector2d> spots{ { 0.40, 0.15 }, { 0.30, 0.05 }, { 0.45, 0.25 }, { 0.35, 0.20 } };
 };
 
-TEST_F(BenchCubeFitTest, RgbAlonePassesALoneCubeJustBehindRedForStacked)
+TEST_F(BenchCubeFitTest, LocatesDocumentedMidReachCubesAtBothSceneResolutions)
 {
+  for (const int scale : { 1, 2 })
+  {
+    info.width = 640 * scale;
+    info.height = 400 * scale;
+    const double focal = 282.61463401110945 * scale;
+    info.k = { focal, 0, 320.0 * scale, 0, focal, 200.0 * scale, 0, 0, 1 };
+    for (const Eigen::Vector2d& cube : { Eigen::Vector2d(0.360, 0.060), Eigen::Vector2d(0.400, 0.200) })
+    {
+      observe(cube.x(), cube.y(), 0.0);
+      ASSERT_EQ(run(), BT::NodeStatus::SUCCESS);
+      const auto top = config.blackboard->get<geometry_msgs::msg::PoseStamped>("cube_top");
+      EXPECT_NEAR(top.pose.position.x, cube.x(), 0.002);
+      EXPECT_NEAR(top.pose.position.y, cube.y(), 0.002);
+      EXPECT_DOUBLE_EQ(top.pose.position.z, 0.05);
+    }
+    observe(0.400, 0.200, 0.0, 0.05);
+    EXPECT_TRUE(stackConfirmed({ 0.400, 0.200 }, maskedPoints({ 0.400, 0.200 }, 0.05)));
+  }
+}
+
+TEST_F(BenchCubeFitTest, LowResolutionRgbPassesALoneCubeJustBehindRedForStacked)
+{
+  // Preserve the original 640x400 false-positive regression: the depth guard
+  // must protect lower-resolution consumers even when native RGB rejects it.
+  info.width = 640;
+  info.height = 400;
+  info.k = { 282.5, 0, 320, 0, 282.5, 200, 0, 0, 1 };
   // Red hides blue's lower front; blue's top face alone fits a stacked top face over red.
   const Eigen::Vector2d blue(0.40, 0.15), red(0.343, 0.145);
   observeBeside(blue, red);
@@ -432,6 +459,13 @@ TEST_F(BenchCubeFitTest, RgbAlonePassesALoneCubeJustBehindRedForStacked)
   // Unstack infers red directly underneath this RGB fit: depth must still refuse it.
   EXPECT_FALSE(stackConfirmed({ top.pose.position.x, top.pose.position.y }, maskedPoints(blue, 0.0)));
 }
+TEST_F(BenchCubeFitTest, NativeResolutionRgbRejectsALoneCubeJustBehindRedForStacked)
+{
+  observeBeside({ 0.40, 0.15 }, { 0.343, 0.145 });
+  EXPECT_EQ(run({}, 0.05, true), BT::NodeStatus::FAILURE);
+  EXPECT_FALSE(stackConfirmed({ 0.343, 0.145 }, maskedPoints({ 0.40, 0.15 }, 0.0)));
+}
+
 TEST_F(BenchCubeFitTest, StackConfirmationRejectsALoneCubeOnTheMatJustBehindRed)
 {
   for (const auto& blue : spots)

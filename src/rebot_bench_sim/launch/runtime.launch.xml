@@ -32,11 +32,11 @@
   </group>
   <group if="$(eval '&quot;$(var camera_renderer)&quot; == &quot;nyx&quot;')">
     <set_remap
-      from="d435_color/color"
+      from="wrist_mounted_camera_color/color"
       to="/wrist_mounted_camera/color/image_raw"
     />
     <set_remap
-      from="d435_color/camera_info"
+      from="wrist_mounted_camera_color/camera_info"
       to="/wrist_mounted_camera/color/camera_info"
     />
     <include
@@ -50,7 +50,7 @@
         name="scene_dir"
         value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/rebot_bench_sim"
       />
-      <arg name="camera" value="d435_color" />
+      <arg name="camera" value="wrist_mounted_camera_color" />
       <arg name="topic_namespace" value="" />
     </include>
   </group>
@@ -80,11 +80,11 @@
   </group>
   <group if="$(eval '&quot;$(var camera_renderer)&quot; == &quot;both&quot;')">
     <set_remap
-      from="d435_color/nyx/color"
+      from="wrist_mounted_camera_color/nyx/color"
       to="/wrist_mounted_camera/nyx/color/image_raw"
     />
     <set_remap
-      from="d435_color/nyx/camera_info"
+      from="wrist_mounted_camera_color/nyx/camera_info"
       to="/wrist_mounted_camera/nyx/color/camera_info"
     />
     <include
@@ -98,7 +98,7 @@
         name="scene_dir"
         value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/rebot_bench_sim"
       />
-      <arg name="camera" value="d435_color" />
+      <arg name="camera" value="wrist_mounted_camera_color" />
       <arg name="topic_namespace" value="nyx" />
     </include>
   </group>

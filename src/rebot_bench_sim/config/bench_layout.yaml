@@ -11,13 +11,15 @@
 # rebot_bench_sim` (or `moveit_pro build`) before `moveit_pro run` - see
 # README.md.
 #
-# CALIBRATED: robot_base, scene_camera and wrist_camera, from a ChArUco board
+# CALIBRATED: robot_base and scene_camera, from a ChArUco board
 # (DICT_4X4_50, 7x5 squares of 35 mm, 26 mm markers) lying on the mat at world
 # (0.235, 0.212, 0), its +X along world -Y, +Y along world -X and +Z into the
 # mat, seen by the scene camera and by the wrist camera from six arm poses;
 # noted per entry.
 # APPROXIMATE: everything else is a first guess from bench facts, noted per
 # entry; a later calibration replaces it here.
+# NOMINAL: wrist_camera uses the stock Gemini 305 optical mount, not the
+# retired D435's provisional hand-eye solve.
 
 # How the guesses were placed. The mat's printed grid has its origin at the
 # robot-end corner beside the white foam, grid +X across the mat toward the
@@ -32,8 +34,9 @@
 # points the arm's reach (base_link +X) along the mat, away from the robot
 # (world -X).
 # CALIBRATED: x, y and yaw from the wrist D435's board pose at rest, through
-# the arm's forward kinematics and the measured wrist_camera mount below, so
-# they share that mount's provisional accuracy. Roll/pitch are held at 0 and z
+# the arm's forward kinematics and its former provisional hand-eye mount.
+# This world placement is retained; the new nominal Gemini mount is not a
+# recalibration of the robot base. Roll/pitch are held at 0 and z
 # at the bench plane: the base plate is bolted level to the bench, and the
 # solve's tilt is within its error.
 robot_base:
@@ -48,17 +51,14 @@ scene_camera:
   xyz: [-0.0750, 0.0694, 0.5645]
   rpy: [0.1686, 0.9750, 0.2459]
 
-# d435_link (the wrist D435's body frame, REP-103) in link6, the arm's last
-# link. The build turns it into the base description's d435_mount_joint origin
-# (gripper_end -> d435_mount_link), so the printed bracket and the camera move
-# together and both the robot description and the MuJoCo scene use it.
-# CALIBRATED, PROVISIONAL: a hand-eye solve over six arm poses with small
-# relative rotations (3-18 deg); leave-one-out spread up to 17 mm and 2.5 deg,
-# so treat it as good to about 2 cm until a wider-pose calibration replaces it.
-# Simulation calibration only; this package does not configure a physical arm.
+# wrist_mounted_camera_color_optical_frame in gripper_end (ROS optical axes:
+# x right, y down, z along the view). URDF and MJCF use this pose directly.
+# NOMINAL: stock Gemini 305 transform from reBot's gripper/mount CAD and
+# optical convention, not a hand-eye calibration or a unit-specific result.
+# This simulation does not configure physical hardware.
 wrist_camera:
-  xyz: [0.086316, -0.001875, 0.065734]
-  rpy: [0.063587, -1.015548, -3.132472]
+  xyz: [-0.111, 0.009, 0.109]
+  rpy: [-2.109, 0.003, -1.579]
 
 # Blue mat, a box. `xyz` is the centre of its top surface, `rpy` its
 # orientation, `size` the full [x, y, thickness] before rotation. The bench top

@@ -1,7 +1,8 @@
 <!--
   reBot B601-RS assets, defaults, actuators and gripper coupling; the body tree
   is rebot_arm.xml. Meshes are this package's own STL files, resolved
-  through package:// URIs. MuJoCo cannot load the source COLLADA visuals (printed trim, wrist bracket, D435), so assets/ holds them
+  through package:// URIs. MuJoCo cannot load the printed trim's COLLADA
+  visuals, so assets/ holds them
   converted to STL in the same frame and units, one file per embedded
   material; see assets/NOTICE.md.
 
@@ -23,7 +24,6 @@
       rgba="0.720 0.760 0.730 1"
       specular="0.5"
     />
-    <material name="d435_grey" rgba="0.15 0.15 0.16 1" />
     <!-- The printed parts' embedded COLLADA colours, sRGB (91, 44, 143) and
          (242, 242, 242). -->
     <material name="print_purple" rgba="0.357 0.173 0.561 1" />
@@ -188,14 +188,6 @@
     <mesh
       name="1-RAIL-BASE-2_purple"
       file="package://rebot_bench_sim/description/assets/printed/1-RAIL-BASE-2_purple.stl"
-    />
-    <mesh
-      name="D435_mount_purple"
-      file="package://rebot_bench_sim/description/assets/printed/D435_mount_purple.stl"
-    />
-    <mesh
-      name="d435"
-      file="package://rebot_bench_sim/description/assets/realsense/d435.stl"
     />
   </asset>
 

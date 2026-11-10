@@ -21,22 +21,22 @@ install(FILES README.md LICENSE thumbnail.png DESTINATION share/${PROJECT_NAME})
 # The MuJoCo scene and arm are generated from a build-time snapshot of
 # config/bench_layout.yaml, installed beside them for the robot description to
 # read, so a layout edit reaches both together on rebuild and never just one.
-# The snapshot adds entries derived from the layout (the wrist-camera mount
-# joint, scripts/layout_snapshot.py).
+# The wrist entry is the direct Gemini 305 optical pose in gripper_end;
+# no camera-assembly inverse transform is needed.
 set(ROBOT_XACRO ${CMAKE_CURRENT_SOURCE_DIR}/description/rebot.urdf.xacro)
 set(SCENE_XML ${CMAKE_CURRENT_BINARY_DIR}/scene.xml)
 set(ARM_XML ${CMAKE_CURRENT_BINARY_DIR}/rebot_arm.xml)
 set(LAYOUT_SNAPSHOT ${CMAKE_CURRENT_BINARY_DIR}/bench_layout.yaml)
 add_custom_command(
   OUTPUT ${SCENE_XML} ${ARM_XML} ${LAYOUT_SNAPSHOT}
-  COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/layout_snapshot.py
-          ${CMAKE_CURRENT_SOURCE_DIR}/config/bench_layout.yaml ${ROBOT_XACRO} ${LAYOUT_SNAPSHOT}
+  COMMAND ${CMAKE_COMMAND} -E copy
+          ${CMAKE_CURRENT_SOURCE_DIR}/config/bench_layout.yaml ${LAYOUT_SNAPSHOT}
   COMMAND xacro ${CMAKE_CURRENT_SOURCE_DIR}/description/scene.xml.xacro
           layout:=${LAYOUT_SNAPSHOT} -o ${SCENE_XML}
   COMMAND xacro ${CMAKE_CURRENT_SOURCE_DIR}/description/rebot_arm.xml.xacro
           layout:=${LAYOUT_SNAPSHOT} -o ${ARM_XML}
   DEPENDS description/scene.xml.xacro description/rebot_arm.xml.xacro
-          config/bench_layout.yaml scripts/layout_snapshot.py ${ROBOT_XACRO}
+          config/bench_layout.yaml
   VERBATIM
 )
 add_custom_target(${PROJECT_NAME}_scene ALL DEPENDS ${SCENE_XML} ${ARM_XML} ${LAYOUT_SNAPSHOT})
