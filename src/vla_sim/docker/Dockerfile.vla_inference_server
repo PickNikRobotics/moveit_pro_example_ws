@@ -36,6 +36,13 @@ ARG TORCHAO_VERSION=0.17.0
 # above costs only the wheels that changed. It is not part of any layer, so the
 # image is the same size either way, and `docker build --no-cache` still starts
 # from an empty one.
+#
+# LeRobot 0.6.0 caps diffusers below 0.36, and diffusers 0.35.2's torchao quantizer
+# uses `logger` before defining it whenever torchao 0.14 or later is installed,
+# which breaks every policy's import. The sed defines it first; the import check
+# fails the build if the patch stops applying, and covers GR00T's modules, which
+# the policy factory imports only on demand. The server never decodes video, so
+# the build uninstalls the GR00T extra's decord and the FFmpeg it bundles.
 RUN --mount=type=cache,target=/root/.cache/pip \
     export PIP_DEFAULT_TIMEOUT=120 PIP_RETRIES=10 \
     && if [ -n "$TORCH_INDEX" ]; then \
@@ -43,19 +50,28 @@ RUN --mount=type=cache,target=/root/.cache/pip \
         --extra-index-url https://pypi.org/simple \
         "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION"; \
     fi \
-    && pip install "lerobot[pi,smolvla]==0.6.0" \
+    && pip install "lerobot[pi,smolvla,groot]==0.6.0" \
       "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION" \
-      "torchao==$TORCHAO_VERSION"
+      "torchao==$TORCHAO_VERSION" \
+    && pip uninstall -y decord \
+    && sed -i '0,/^if is_torchao_available():/s//logger = logging.get_logger(__name__)\n&/' \
+      /usr/local/lib/python3.12/site-packages/diffusers/quantizers/torchao/torchao_quantizer.py \
+    && python -c 'import lerobot.policies.factory, torchao.quantization, lerobot.policies.groot.modeling_groot, lerobot.policies.groot.processor_groot'
 
 # ROCm is a separate binary distribution behind the same server and policy interface. This stage owns its ROCm version, which need not match the Runtime image's; only the host driver is shared.
 FROM rocm/pytorch:rocm7.2.2_ubuntu24.04_py3.12_pytorch_release_2.10.0@sha256:73136312e61ea15af04e89a9df3830bd3fa91c14aad755cde0e426e707f493ff AS runtime-rocm
 # Pin the installed AMD builds while resolving LeRobot: a plain torch version
 # would let pip replace them with CUDA wheels. Triton is part of that pairing.
+# decord and diffusers are handled as in the runtime stage above.
 RUN --mount=type=cache,target=/root/.cache/pip \
     python -c 'import importlib.metadata as m; print("\n".join(p + "==" + m.version(p) for p in ("torch", "torchvision", "triton")))' > /tmp/rocm-constraints.txt \
     && PIP_DEFAULT_TIMEOUT=120 PIP_RETRIES=10 pip install \
-      -c /tmp/rocm-constraints.txt "lerobot[pi,smolvla]==0.6.0" "torchao==0.16.0" \
+      -c /tmp/rocm-constraints.txt "lerobot[pi,smolvla,groot]==0.6.0" "torchao==0.16.0" \
     && python -c 'import torch, torchvision; assert torch.version.hip, "ROCm torch was replaced"' \
+    && pip uninstall -y decord \
+    && sed -i '0,/^if is_torchao_available():/s//logger = logging.get_logger(__name__)\n&/' \
+      /opt/venv/lib/python3.12/site-packages/diffusers/quantizers/torchao/torchao_quantizer.py \
+    && python -c 'import lerobot.policies.factory, torchao.quantization, lerobot.policies.groot.modeling_groot, lerobot.policies.groot.processor_groot' \
     && rm /tmp/rocm-constraints.txt
 # Selecting the ROCm image promises GPU execution; an unavailable device is an
 # actionable startup error. An explicit device: cpu remains an opt-out.
