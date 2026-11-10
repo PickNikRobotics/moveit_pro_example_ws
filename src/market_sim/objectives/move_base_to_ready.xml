@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Base to Ready">
+  <!-- Nav2 drives the base, so the same Objective serves mock and sim. -->
+  <BehaviorTree
+    ID="Move Base to Ready"
+    _description="Drive the mobile base to the map origin, the Base Ready pose, with Nav2 and the arms stowed"
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="0;0;0"
+        orientation_xyzw="0;0;0;1"
+        pose_stamped="{base_ready}"
+      />
+      <SubTree
+        ID="Drive Base using Nav2"
+        _collapsed="true"
+        goal_pose="{base_ready}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Base to Ready">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

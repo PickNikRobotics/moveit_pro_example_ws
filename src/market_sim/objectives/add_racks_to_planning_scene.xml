@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Add Racks to Planning Scene">
+  <BehaviorTree
+    ID="Add Racks to Planning Scene"
+    _description="Add the store's shelf racks to the planning scene, so arm motions plan around them. Collision checking uses one box per gondola; the shelf meshes are visual only and load just when show_visual_geometry is set."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!-- The racks are placed in world, which the generated URDF's poses are already in. -->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        position_xyz="0;0;0"
+        orientation_xyzw="0;0;0;1"
+        pose_stamped="{racks_pose}"
+      />
+      <Action
+        ID="AddURDF"
+        urdf_name="market_racks"
+        package_name="market_sim"
+        urdf_file_path="description/market_racks.urdf"
+        urdf_pose="{racks_pose}"
+        show_visual_geometry="{show_visual_geometry}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Add Racks to Planning Scene">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Planning Scene" />
+      </MetadataFields>
+      <input_port name="show_visual_geometry" default="false" type="bool">
+        Also load the shelf meshes for display. Off by default: the aisles where
+        products are graspable carry several hundred mesh instances between
+        them.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -172,6 +172,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     done && \
     rm -f "${ldd_out}"
 
+# Install the optional Nyx color-camera renderer (opt in with INSTALL_NYX=true).
+ARG INSTALL_NYX=false
+RUN --mount=type=bind,source=src/market_sim/docker/install_nyx.sh,target=/tmp/install_nyx.sh \
+    --mount=type=cache,target=/root/.cache/pip \
+    sh /tmp/install_nyx.sh
+
 # Install additional dependencies
 # You can also add any necessary apt-get install, pip install, etc. commands at this point.
 # NOTE: The /opt/overlay_ws folder contains MoveIt Pro binary packages and the source file.

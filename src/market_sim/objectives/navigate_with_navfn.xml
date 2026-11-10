@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Navigate with NavFn">
+  <BehaviorTree
+    ID="Navigate with NavFn"
+    _description="Prompt for a point on the map and drive there under Nav2, with the arms stowed, planned with NavFn. NavFn plans for the robot's centre point only, so a goal next to an obstacle can be accepted and then fail after Nav2's recoveries."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!-- is_normal false: a navigation goal wants an upright pose, not one tipped onto a surface normal. -->
+      <Action
+        ID="GetPoseFromUser"
+        view_name="Visualization"
+        pose_prompt="Click a point on the map to drive to"
+        is_normal="false"
+        user_pose="{goal_pose}"
+      />
+      <!-- NavFn is Nav2's GridBased planner. -->
+      <SubTree
+        ID="Drive Base using Nav2"
+        _collapsed="true"
+        goal_pose="{goal_pose}"
+        planner_id="GridBased"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Navigate with NavFn">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
