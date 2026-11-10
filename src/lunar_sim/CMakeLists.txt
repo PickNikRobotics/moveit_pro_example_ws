@@ -48,6 +48,10 @@ if(BUILD_TESTING)
           keepout_mask_test test/test_keepout_mask.py
           TIMEOUT 30
           ENV ${LUNAR_SIM_UNIT_TEST_ENV})
+  ament_add_pytest_test(
+          planar_pose_objectives_test test/test_planar_pose_objectives.py
+          TIMEOUT 30
+          ENV ${LUNAR_SIM_UNIT_TEST_ENV})
   # Redirect ROS node logs into the test_results tree so the test-results CI artifact ships them back too.
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py

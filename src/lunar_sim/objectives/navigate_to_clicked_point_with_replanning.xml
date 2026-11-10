@@ -6,14 +6,14 @@
   <!--//////////-->
   <BehaviorTree
     ID="Navigate to Clicked Point with Replanning"
-    _description="Navigate to a point clicked by the user in the UI. Nav2 replans the path as the lidars add obstacles to the costmaps."
+    _description="Navigate to a position and heading selected with the planar pose picker. Nav2 replans the path as the lidars add obstacles to the costmaps. The rover starts driving as soon as the pose is confirmed; there is no path approval step."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="GetPoseFromUser"
-        is_normal="true"
-        pose_prompt="Click a goal on the ground. The rover will arrive facing the map X axis (red)."
+        ID="GetPlanarPoseFromUser"
+        reference_frame="map"
+        pose_prompt="Click and drag on the map to set the goal and forward direction, then confirm the pose."
         user_pose="{goal}"
         view_name="Visualization"
       />

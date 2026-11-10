@@ -58,8 +58,8 @@ cancel_objectives: set[str] = set()
 # Non-runnable objectives are filtered out by the fixture and need not be listed here.
 skip_objectives = {
     # User input required: no primary UI is attached in headless CI.
-    "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
-    "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
+    "Navigate to Clicked Point",  # GetPlanarPoseFromUser + WaitForUserPathApproval.
+    "Navigate to Clicked Point with Replanning",  # GetPlanarPoseFromUser.
     "Request Teleoperation",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     # Core-library objectives require operator input unavailable in headless CI.
     "Collect Planar Waypoints",  # Confirmed planar selection needs an operator.

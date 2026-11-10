@@ -3,14 +3,14 @@
   <!--//////////-->
   <BehaviorTree
     ID="Navigate to Clicked Point"
-    _description="Navigate to a point clicked by the user in the UI."
+    _description="Navigate to a position and heading selected with the planar pose picker."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="GetPoseFromUser"
-        is_normal="true"
-        pose_prompt="Click a goal on the ground. The rover will arrive facing the map X axis (red)."
+        ID="GetPlanarPoseFromUser"
+        reference_frame="map"
+        pose_prompt="Click and drag on the map to set the goal and forward direction, then confirm the pose."
         user_pose="{goal}"
         view_name="Visualization"
       />
