@@ -6,14 +6,14 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="root">
-      <!-- 1. Show the wrist camera view, and activate the admittance controller ExecuteTrajectory uses. -->
+      <!-- 1. Show the wrist camera view, and activate the trajectory controller for the sweep. -->
       <Action
         ID="SwitchUIPrimaryView"
         primary_view_name="/wrist_camera/color"
       />
       <Action
         ID="SwitchController"
-        activate_controllers="joint_trajectory_admittance_controller"
+        activate_controllers="joint_trajectory_controller"
       />
 
       <!-- Close the gripper so a pointed tool, not open fingers, sweeps the surface. -->
@@ -151,15 +151,32 @@
             _collapsed="true"
             joint_trajectory_msg="{coverage_trajectory}"
           />
+          <!-- This sweep needs no admittance. Keep the 0.5 rad path and 0.05 rad goal limits,
+               and cancel execution if the controller has not returned a result within 120 s. -->
           <Action
             ID="ExecuteTrajectory"
+            execution_pipeline="jtc"
+            controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
             joint_trajectory_msg="{coverage_trajectory}"
+            path_position_tolerance="0.5"
+            goal_position_tolerance="0.05"
+            goal_duration_tolerance="120.0"
           />
         </Control>
       </Decorator>
 
-      <!-- Return the arm to Home so the operator can immediately re-run the demo. -->
-      <SubTree ID="Move to Waypoint" waypoint_name="Home" />
+      <!-- Return the arm to Home so the operator can immediately re-run the demo.
+           Home needs no separate approval; the timeout bounds planning and motion. -->
+      <Decorator ID="Timeout" msec="60000">
+        <SubTree
+          ID="Move to Waypoint"
+          waypoint_name="Home"
+          controller_names="joint_trajectory_controller"
+          controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+          execution_pipeline="jtc"
+          require_user_approval="false"
+        />
+      </Decorator>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
