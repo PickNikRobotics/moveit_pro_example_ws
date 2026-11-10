@@ -29,6 +29,10 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           map_mode_config_test test/test_map_mode_config.py
           TIMEOUT 30)
+  ament_add_pytest_test(
+          build_map_config_test test/test_build_map_config.py
+          TIMEOUT 30
+          ENV PYTEST_DISABLE_PLUGIN_AUTOLOAD=1)
   # Redirect ROS node logs into the test_results tree so the test-results CI artifact ships them back too.
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py

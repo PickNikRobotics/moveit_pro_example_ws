@@ -58,6 +58,7 @@ cancel_objectives: set[str] = set()
 # Non-runnable objectives are filtered out by the fixture and need not be listed here.
 skip_objectives = {
     # User input required: no primary UI is attached in headless CI.
+    "Build Map",  # Mapping is off by default; Start/Continue requires the Desktop App.
     "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
     "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
     "Request Teleoperation",  # DoTeleoperateAction rejects the goal with no UI subscribed.
