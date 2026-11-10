@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Build Map">
+  <!--Mapping is started by the slam switch, not by this Objective.-->
+  <BehaviorTree
+    ID="Build Map"
+    _description="Drive the lunar rover with the Base tab while slam_toolbox builds a map, then confirm to save it."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="BuildMap">
+      <Control ID="Fallback" name="CheckMapping">
+        <Action
+          ID="WaitForServiceAvailable"
+          service_name="/slam_toolbox/save_map"
+          timeout="3.000000"
+        />
+        <Control ID="Sequence" name="ExplainMappingSetup">
+          <Action
+            ID="LogMessage"
+            log_level="ERROR"
+            message="slam_toolbox is not running. Set slam to true under hardware.robot_description.urdf_params in config.yaml, rebuild lunar_sim, and restart the Runtime."
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+      <Action
+        ID="WaitForUserDecision"
+        prompt="Build Map uses the front lidar. Drive carefully: Base teleoperation does not check for collisions. Select Start, switch to Teleoperation, and use the Base tab. Stop moving before returning to Objectives and pressing Continue to save. Abort discards this save; slam_toolbox keeps mapping until the Runtime is restarted with slam off."
+        approve_label="Start"
+        reject_label="Cancel"
+        timeout_sec="3600.000000"
+      />
+      <!--Start in the same idle mode as other callers. Base mode needs controllers from the Desktop App's first feedback.-->
+      <SubTree
+        ID="Request Teleoperation"
+        _collapsed="true"
+        enable_user_interaction="true"
+        initial_teleop_mode="3"
+        user_interaction_prompt="Drive with the Base tab to explore the lunar surface. Stop moving, return to Objectives, and press Continue to save the map, or Abort to skip saving. Mapping stays on after this Objective ends."
+      />
+      <!--Relative paths are resolved by slam_toolbox, not the Desktop App.-->
+      <Action
+        ID="CallSaveMapService"
+        map_name="{map_name}"
+        service_name="/slam_toolbox/save_map"
+        response_timeout="30.000000"
+        wait_for_server_available_timeout="3.000000"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Build Map">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+      <input_port name="map_name" default="lunar_map" type="std::string">
+        Map filename prefix, without an extension. Relative paths use
+        slam_toolbox's working directory. Existing files with this prefix may be
+        overwritten.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
