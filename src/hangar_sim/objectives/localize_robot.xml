@@ -3,14 +3,14 @@
   <!--//////////-->
   <BehaviorTree
     ID="Localize Robot"
-    _description="Place a marker on the robot to localize it. Run after startup and whenever the robot is moved by hand."
+    _description="Set the robot's position and heading with the planar pose picker, then confirm to localize it. Run after startup and whenever the robot is moved by hand."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <!--The marker sets heading as well as position. It starts 1.2 m above the robot so it is visible; height is ignored.-->
+      <!--Seed the planar picker at the robot; its forward arrow stays visible over the scene.-->
       <Action
         ID="GetLatestTransform"
-        name="Start the marker at the robot"
+        name="Seed the picker at the robot"
         target_frame_id="world"
         source_frame_id="ridgeback_base_link"
         transform="{robot_in_world}"
@@ -21,33 +21,13 @@
         pose_stamped="{robot_pose}"
       />
       <Action
-        ID="TransformPose"
-        name="Lift the marker above the robot"
-        input_pose="{robot_pose}"
-        translation_xyz="0;0;1.2"
-        output_pose="{marker_seed_pose}"
-      />
-      <Action ID="ResetVector" name="ResetVector" vector="{marker_poses}" />
-      <Action
-        ID="PushBackVector"
-        name="Wrap it in the one-element list the marker takes"
-        input_vector="{marker_poses}"
-        element="{marker_seed_pose}"
-        output_vector="{marker_poses}"
-      />
-      <Action
-        ID="AdjustPoseWithIMarker"
+        ID="GetPlanarPoseFromUser"
         name="Ask the operator to place the robot"
-        prompts="Move the marker over where the robot really is, X axis forward. Height is ignored."
-        initial_poses="{marker_poses}"
-        adjusted_poses="{adjusted_poses}"
-      />
-      <Action
-        ID="GetElementOfVector"
-        name="Read the placed pose back out"
-        vector_in="{adjusted_poses}"
-        index="0"
-        element="{clicked_pose}"
+        reference_frame="world"
+        initial_pose="{robot_pose}"
+        pose_prompt="Click and drag to place the robot and set its forward direction, then confirm the pose."
+        view_name="Visualization"
+        user_pose="{clicked_pose}"
       />
       <!--Sim only: world coincides with map, so the placed pose is read as map coordinates. On hardware, place the marker against the map instead.-->
       <Action

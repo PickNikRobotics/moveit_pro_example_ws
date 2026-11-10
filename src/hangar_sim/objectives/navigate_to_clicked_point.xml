@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Navigate to Clicked Point"
-    _description="Navigate to a point clicked by the user in the UI. Asks you to localize the robot first if needed."
+    _description="Navigate to a position and heading selected with the planar pose picker. Asks you to localize the robot first if needed."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -20,9 +20,9 @@
         deactivate_controllers="velocity_force_controller;joint_trajectory_controller;platform_velocity_controller"
       />
       <Action
-        ID="GetPoseFromUser"
-        is_normal="true"
-        pose_prompt="Click a goal on the floor. The robot will arrive facing the world X axis (red)."
+        ID="GetPlanarPoseFromUser"
+        reference_frame="map"
+        pose_prompt="Click and drag on the map to set the goal and forward direction, then confirm the pose."
         user_pose="{goal}"
         view_name="Visualization"
       />

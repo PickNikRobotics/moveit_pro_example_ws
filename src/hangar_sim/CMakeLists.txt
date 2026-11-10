@@ -67,6 +67,11 @@ if(BUILD_TESTING)
           forward_stereo_calibration_test test/test_forward_stereo_calibration.py
           TIMEOUT 30)
   ament_add_pytest_test(
+          planar_pose_objectives_test test/test_planar_pose_objectives.py
+          TIMEOUT 30
+          ENV MOVEIT_CONFIG_PACKAGE=hangar_sim
+              ROS_LOG_DIR=${CMAKE_CURRENT_BINARY_DIR}/test_results/${PROJECT_NAME}/ros_logs)
+  ament_add_pytest_test(
           lidar_flattener_test test/test_lidar_flattener.py
           TIMEOUT 60)
   # Redirect ROS node logs into the test_results tree so the test-results CI
