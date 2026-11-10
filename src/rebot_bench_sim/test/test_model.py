@@ -71,7 +71,7 @@ def test_measured_motor_limits(model):
     assert high[-1] >= radians(310)
     assert low[-1] == 0
     # The optical frames are MuJoCo sites, not duplicate URDF links.
-    assert model.get_link_model("d435_link") is not None
+    assert model.get_link_model("gripper_end") is not None
     assert model.get_link_model("scene_camera_link") is not None
 
 

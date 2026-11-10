@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Derived from Seeed reBot-DevArm; CERN-OHL-W-2.0. Modified by PickNik Inc., 2026-10-09 to 2026-11-09: visual replacements, world placement, wrist-camera mount arguments, conservative home margins and driver-free description. See NOTICE.md. Original SolidWorks exporter: Stephen Brawner (brawner@gmail.com), 1.6.0-4-g7f85cfe, build 1.6.7995.38578; http://wiki.ros.org/sw_urdf_exporter. -->
+<!-- Derived from Seeed reBot-DevArm; CERN-OHL-W-2.0. Modified by PickNik Inc., 2026-10-09 to 2026-11-10: visual replacements, world placement, nominal Gemini 305 optical mount, conservative home margins and driver-free description. See NOTICE.md. Original SolidWorks exporter: Stephen Brawner (brawner@gmail.com), 1.6.0-4-g7f85cfe, build 1.6.7995.38578; http://wiki.ros.org/sw_urdf_exporter. -->
 <robot name="rebot_b601_rs" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <!-- Geometry and frames only. The simulation wrapper supplies ros2_control
        and placements from its installed bench layout. Unset placements put
@@ -12,10 +12,11 @@
   <xacro:property name="world_to_base_rpy" default="$(arg world_to_base_rpy)" />
   <xacro:property name="scene_camera_xyz" default="$(arg scene_camera_xyz)" />
   <xacro:property name="scene_camera_rpy" default="$(arg scene_camera_rpy)" />
-  <!-- d435_mount_joint origin (gripper_end -> d435_mount_link). The default is
-       the nominal, eye-measured mount; a hand-eye calibration overrides it. -->
-  <xacro:arg name="wrist_camera_mount_xyz" default="-0.1201 0.0003 0.045" />
-  <xacro:arg name="wrist_camera_mount_rpy" default="1.5827 0.0024 1.5515" />
+  <!-- Stock Gemini 305 colour optical pose in gripper_end. This rounded CAD
+       composition is nominal, not the retired D435's hand-eye calibration.
+       Frame-only, as in the stock reBot description: no housing or inertia. -->
+  <xacro:arg name="wrist_camera_color_optical_xyz" default="-0.111 0.009 0.109" />
+  <xacro:arg name="wrist_camera_color_optical_rpy" default="-2.109 0.003 -1.579" />
   <!-- MuJoCo publishes the optical frames from its sites. Geometry-only
        consumers can include them to verify the nominal camera convention. -->
   <xacro:arg name="include_camera_optical_frames" default="false" />
@@ -425,45 +426,12 @@
     <child link="base_link" />
     <origin xyz="${world_to_base_xyz}" rpy="${world_to_base_rpy}" />
   </joint>
-  <link name="d435_mount_link">
-    <visual name="D435_mount">
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <geometry>
-        <mesh filename="package://rebot_bench_sim/description/assets/printed/D435_mount.dae" scale="1 1 1" />
-      </geometry>
-    </visual>
-  </link>
-  <!-- See description/NOTICE.md for the upstream assembly and nominal RGB offsets. -->
-  <joint name="d435_mount_joint" type="fixed">
-    <parent link="gripper_end" />
-    <child link="d435_mount_link" />
-    <origin xyz="$(arg wrist_camera_mount_xyz)" rpy="$(arg wrist_camera_mount_rpy)" />
-  </joint>
-  <link name="d435_bottom_screw_frame" />
-  <joint name="d435_screw_joint" type="fixed">
-    <parent link="d435_mount_link" />
-    <child link="d435_bottom_screw_frame" />
-    <origin xyz="-0.0003 0.0445 -0.0095" rpy="0.0126 -1.0489 -1.5981" />
-  </joint>
-  <link name="d435_link">
-    <visual name="D435_body">
-      <origin xyz="0.0043 -0.0175 0" rpy="1.5707963267948966 0 1.5707963267948966" />
-      <geometry>
-        <mesh filename="package://rebot_bench_sim/description/assets/realsense/d435.dae" />
-      </geometry>
-    </visual>
-  </link>
-  <joint name="d435_link_joint" type="fixed">
-    <parent link="d435_bottom_screw_frame" />
-    <child link="d435_link" />
-    <origin xyz="0.0106 0.0175 0.0125" rpy="0 0 0" />
-  </joint>
   <xacro:if value="$(arg include_camera_optical_frames)">
-    <link name="d435_color_optical_frame" />
-    <joint name="d435_optical_joint" type="fixed">
-      <parent link="d435_link" />
-      <child link="d435_color_optical_frame" />
-      <origin xyz="0 0.015 0" rpy="-1.5707963267948966 0 -1.5707963267948966" />
+    <link name="wrist_mounted_camera_color_optical_frame" />
+    <joint name="wrist_mounted_camera_color_optical_joint" type="fixed">
+      <parent link="gripper_end" />
+      <child link="wrist_mounted_camera_color_optical_frame" />
+      <origin xyz="$(arg wrist_camera_color_optical_xyz)" rpy="$(arg wrist_camera_color_optical_rpy)" />
     </joint>
   </xacro:if>
   <link name="scene_camera_link" />

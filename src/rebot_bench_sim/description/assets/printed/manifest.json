@@ -47,14 +47,6 @@
     "xyz": "0.216 0.145 -0.02625",
     "rpy": "0 0 3.141592653589793"
   },
-  "D435_mount.dae": {
-    "sha256": "3ab043f12750c1bbcc0460b65aa31b67722cb0a94aeab0f2efad1167847801d5",
-    "link": "d435_mount_link",
-    "xyz": "0 0 0",
-    "rpy": "0 0 0",
-    "mount_joint_xyz": "-0.1201 0.0003 0.045",
-    "mount_joint_rpy": "1.5827 0.0024 1.5515"
-  },
   "pla2_internal.STL": {
     "source": "https://github.com/Seeed-Projects/reBot-DevArm/blob/58f9e433deec2ba118c5c22d60c07b9897e92acc/Rebot_Arm_description/RS/meshes/visual/pla2_black.STL",
     "retained_triangles": 2276,
