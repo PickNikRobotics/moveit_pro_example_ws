@@ -33,6 +33,7 @@ install(
   PROGRAMS
     scripts/base_twist_to_planar.py
     scripts/lidar_flattener.py
+    scripts/livox_mid360_cloud.py
     scripts/navigation_scan_relay.py
     scripts/odometry_joint_state_publisher.py
     scripts/reset_controller_guard.py
@@ -50,6 +51,19 @@ if(BUILD_TESTING)
   find_package(moveit_pro_behavior_interface REQUIRED)
   find_package(pluginlib REQUIRED)
   find_package(rclcpp REQUIRED)
+  find_package(ament_index_cpp REQUIRED)
+  find_package(hardware_interface REQUIRED)
+  find_package(picknik_mujoco_ros REQUIRED)
+  add_executable(market_sim_test_livox_sensor_probe test/livox_sensor_probe.cpp)
+  target_compile_features(market_sim_test_livox_sensor_probe PRIVATE cxx_std_20)
+  ament_target_dependencies(
+    market_sim_test_livox_sensor_probe
+    ament_index_cpp
+    hardware_interface
+    picknik_mujoco_ros
+    rclcpp
+  )
+  install(TARGETS market_sim_test_livox_sensor_probe DESTINATION lib/${PROJECT_NAME})
   add_executable(market_sim_test_run_objective_tree test/run_objective_tree.cpp)
   target_compile_features(market_sim_test_run_objective_tree PRIVATE cxx_std_20)
   ament_target_dependencies(
@@ -116,6 +130,9 @@ if(BUILD_TESTING)
           TIMEOUT 30)
   ament_add_pytest_test(
           duo_model_test test/test_duo_model.py
+          TIMEOUT 60)
+  ament_add_pytest_test(
+          livox_mid360_test test/test_livox_mid360.py
           TIMEOUT 60)
   ament_add_pytest_test(
           packaging_test test/test_packaging.py

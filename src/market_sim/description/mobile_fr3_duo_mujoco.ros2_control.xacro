@@ -17,6 +17,16 @@
       <sensor name="lidar_rear">
         <param name="points_topic">/lidar_rear/points</param>
       </sensor>
+      <sensor name="livox_mid360">
+        <!-- Native image-based lidar and Gaussian range noise, not a new plugin.
+             The adapter crops the asymmetric FOV, changes optical XYZ to livox_frame
+             and retains one fresh cloud per 0.1 s without changing the SICK rate. -->
+        <param name="points_topic">/livox/mujoco/points</param>
+        <param name="range_noise_stddev">0.007</param>
+        <!-- Real steady scans have ~64% nonzero returns. This approximates that
+             valid-point budget; scene occlusion/range limits still apply separately. -->
+        <param name="dropout_probability">0.35</param>
+      </sensor>
       <hardware>
         <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
         <param name="mujoco_model">${mujoco_model}</param>

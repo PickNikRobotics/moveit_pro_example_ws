@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Local accessory on the vendored Mobile FR3 Duo's fixed spine. Do not change
+       franka_description's byte-identical robot macros to add a simulation sensor. -->
+  <xacro:macro name="market_livox_mid360" params="parent">
+    <link name="livox_mid360_mount">
+      <inertial>
+        <origin xyz="0 0 0.012"/>
+        <mass value="0.03"/>
+        <inertia ixx="0.00002" ixy="0" ixz="0" iyy="0.00002" iyz="0" izz="0.00004"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0.003"/>
+        <geometry><box size="0.085 0.085 0.006"/></geometry>
+        <material name="livox_bracket"><color rgba="0.18 0.20 0.22 1"/></material>
+      </visual>
+      <visual>
+        <origin xyz="0 0 0.019"/>
+        <geometry><cylinder radius="0.012" length="0.032"/></geometry>
+        <material name="livox_bracket"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0.003"/>
+        <geometry><box size="0.085 0.085 0.006"/></geometry>
+      </collision>
+      <collision>
+        <origin xyz="0 0 0.019"/>
+        <geometry><cylinder radius="0.012" length="0.032"/></geometry>
+      </collision>
+    </link>
+    <joint name="livox_mid360_mount_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="livox_mid360_mount"/>
+      <!-- franka_spine is at z=0.35 m; its fixed column reaches z=1.461 m. -->
+      <origin xyz="0 0 1.112"/>
+    </joint>
+    <link name="livox_frame">
+      <!-- Mid-360 envelope: 65 x 65 x 60 mm, 265 g. Inertia is a box approximation.
+           The frame is the scan origin: X forward, Y left, Z up, like livox_ros_driver2. -->
+      <inertial>
+        <origin xyz="0 0 -0.006"/>
+        <mass value="0.265"/>
+        <inertia ixx="0.000173" ixy="0" ixz="0" iyy="0.000173" iyz="0" izz="0.000187"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 -0.026"/>
+        <geometry><box size="0.065 0.065 0.020"/></geometry>
+        <material name="livox_housing"><color rgba="0.28 0.30 0.32 1"/></material>
+      </visual>
+      <visual>
+        <origin xyz="0 0 -0.014"/>
+        <geometry><cylinder radius="0.027" length="0.004"/></geometry>
+        <material name="livox_window"><color rgba="0.035 0.045 0.055 1"/></material>
+      </visual>
+      <visual>
+        <origin xyz="0 0 0.022"/>
+        <geometry><cylinder radius="0.012" length="0.004"/></geometry>
+        <material name="livox_housing"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 -0.006"/>
+        <geometry><box size="0.065 0.065 0.060"/></geometry>
+      </collision>
+    </link>
+    <joint name="livox_frame_joint" type="fixed">
+      <parent link="livox_mid360_mount"/>
+      <child link="livox_frame"/>
+      <origin xyz="0 0 0.053"/>
+    </joint>
+    <!-- The plugin alone broadcasts livox_mid360_optical_frame from its MJCF site.
+         It is deliberately not a URDF link, avoiding two TF authorities. -->
+  </xacro:macro>
+</robot>

@@ -936,6 +936,7 @@
               mesh="franka_spine_visual"
             />
             <geom name="franka_spine2" type="mesh" mesh="franka_spine" />
+            <include file="livox_mid360.xml" />
             <body
               name="franka_spine_mounting_point"
               pos="0.266711 0 0.1"

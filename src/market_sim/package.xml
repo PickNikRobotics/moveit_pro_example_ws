@@ -65,7 +65,9 @@
   <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_index_cpp</test_depend>
   <test_depend>ament_index_python</test_depend>
+  <test_depend>hardware_interface</test_depend>
   <test_depend>behaviortree_cpp_picknik</test_depend>
   <test_depend>controller_manager_msgs</test_depend>
   <test_depend>moveit_pro_behavior_interface</test_depend>

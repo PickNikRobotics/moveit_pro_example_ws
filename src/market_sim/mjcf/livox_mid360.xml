@@ -1,0 +1,97 @@
+<mujocoinclude>
+  <!-- Included inside the fixed franka_spine body, not the moving spine carriage.
+       Camera origin in base_link: (0.138289, 0, 1.515) m. -->
+  <body name="livox_mid360_mount" pos="0 0 1.112" gravcomp="1">
+    <inertial
+      pos="0 0 0.012"
+      mass="0.03"
+      diaginertia="0.00002 0.00002 0.00004"
+    />
+    <geom
+      name="livox_mount_plate"
+      type="box"
+      size="0.0425 0.0425 0.003"
+      pos="0 0 0.003"
+      rgba="0.18 0.20 0.22 1"
+    />
+    <geom
+      name="livox_mount_spacer"
+      type="cylinder"
+      size="0.012 0.016"
+      pos="0 0 0.019"
+      rgba="0.18 0.20 0.22 1"
+    />
+    <body name="livox_frame" pos="0 0 0.053" gravcomp="1">
+      <inertial
+        pos="0 0 -0.006"
+        mass="0.265"
+        diaginertia="0.000173 0.000173 0.000187"
+      />
+      <!-- Only the opaque caps are rendered. A closed visual shell would blind the
+           image-based lidar. Below: top -0.016 m at radius <=0.046 m stays below -7 deg;
+           above: bottom +0.020 m at radius 0.012 m stays above +52 deg. -->
+      <geom
+        name="livox_housing_base"
+        type="box"
+        size="0.0325 0.0325 0.010"
+        pos="0 0 -0.026"
+        contype="0"
+        conaffinity="0"
+        group="1"
+        density="0"
+        rgba="0.28 0.30 0.32 1"
+      />
+      <geom
+        name="livox_window_lower_rim"
+        type="cylinder"
+        size="0.027 0.002"
+        pos="0 0 -0.014"
+        contype="0"
+        conaffinity="0"
+        group="1"
+        density="0"
+        rgba="0.035 0.045 0.055 1"
+      />
+      <geom
+        name="livox_housing_top"
+        type="cylinder"
+        size="0.012 0.002"
+        pos="0 0 0.022"
+        contype="0"
+        conaffinity="0"
+        group="1"
+        density="0"
+        rgba="0.28 0.30 0.32 1"
+      />
+      <geom
+        name="livox_collision"
+        type="box"
+        size="0.0325 0.0325 0.030"
+        pos="0 0 -0.006"
+        group="3"
+      />
+      <!-- Native MuJoCo image-based lidar. Keep its sweep axis vertical: pitching a
+           360-deg camera tilts the whole scan cone, not every azimuth up by 22.5 deg.
+           Render symmetric -70..+70 at 1-deg pitch, then livox_mid360_cloud.py keeps
+           rows 63..122 (-7..+52). Overscan keeps even +52-deg rays inside the offscreen
+           tiles on MoveIt Pro 10.2 (whose tile edges clip the outermost rings).
+           333 columns x 60 kept rows = 19,980 points/sweep. -->
+      <camera
+        name="livox_mid360"
+        mode="fixed"
+        pos="0 0 0"
+        xyaxes="0 -1 0 0 0 1"
+        fovy="140"
+        resolution="333 141"
+        user="2 360 0.1 40"
+      />
+      <site
+        name="livox_mid360_optical_frame"
+        pos="0 0 0"
+        xyaxes="0 -1 0 0 0 -1"
+        size="0.001"
+        group="3"
+      />
+    </body>
+  </body>
+</mujocoinclude>

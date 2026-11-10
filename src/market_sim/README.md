@@ -47,6 +47,84 @@ localization and live costmaps. `base_twist_to_planar.py` converts body-frame co
 axes using private encoder heading; missing, invalid or stale commands/feedback produce zero. The
 linear-speed bound is 0.35 m/s, including diagonal motion, and yaw-rate bound is 0.5 rad/s.
 
+## Livox Mid-360
+
+A Mid-360 model is mounted on a short bracket above the **fixed spine cap**, at
+`(0.138289, 0, 1.515)` m in `base_link`, with X forward, Y left and Z up. It does not
+move with the spine carriage. The local accessory is declared in
+`description/livox_mid360.urdf.xacro` and `mjcf/livox_mid360.xml`; the vendored
+`franka_description/robots/mobile_fr3_duo_v0_2` macros remain unchanged. Its 65 × 65 × 60 mm,
+265 g envelope and the 30 g bracket add no joints or keyframe values, and fit inside the
+existing stowed navigation footprint.
+
+| Contract | Simulated value |
+|---|---|
+| Cloud | `/livox/lidar`, `sensor_msgs/msg/PointCloud2`, XYZ float32 |
+| Message frame | `livox_frame` (robot_state_publisher); optical site TF from MuJoCo only |
+| Horizontal / vertical FOV | 360° / −7° to +52° |
+| Rate | 10 Hz; original wall-clock acquisition stamp, best-effort sensor QoS |
+| Sampling | 333 azimuths × 60 elevations, 19,980 rays per message; row 7 is horizontal |
+| Range | 0.1–40 m; conservative 10%-reflectivity range, not the 70 m bright-target maximum |
+| Range noise | Gaussian σ = 7 mm, zero mean, applied along each ray by the native plugin |
+| Missing returns | 35% independent dropouts plus actual scene occlusion and range limits |
+
+This reuses `picknik_mujoco_ros`'s image-based lidar, like the two existing SICK scanners.
+The camera stays level and renders −70° to +70°; `scripts/livox_mid360_cloud.py` retains
+only −7° to +52°, changes optical XYZ to the co-located `livox_frame`, and publishes the
+latest fresh sweep on a 10 Hz timer. Overscan avoids clipping high-elevation rays at tile
+edges on MoveIt Pro 10.2. Simply pitching a 360° camera would tilt its entire scan cone,
+not produce the Mid-360's uneven vertical FOV. The intermediate `/livox/mujoco/points`
+cloud is not the sensor output. Shared MuJoCo render/cloud rates stay at 20 Hz, leaving
+the SICK navigation scans, maps and AMCL inputs unchanged. Stale or duplicate source
+stamps are not replayed, so an overloaded renderer can reduce the observed rate.
+
+The envelope, FOV, 200,000 points/s nominal rate and conservative range come from
+[Livox's Mid-360 specifications](https://www.livoxtech.com/mid-360/specs).
+
+**Capture calibration.** A stationary 60 s Mid-360s capture (609 messages) measured
+10.000 Hz, 19,936 points per steady message, and 63.6% nonzero returns (startup/short
+packets reduce the whole-bag mean to 16,972). Robust plane-fit range residuals were
+5.6 mm on a ceiling patch at 2.0 m and 7.7 mm on a wall patch at 3.3 m. The 7 mm noise
+and approximately 64% valid-point budget match that evidence without pretending the
+capture's room-specific occluded wedge is intrinsic to the sensor.
+
+**Mount comparison.** At the start, B2 and D4, 720 horizontal first-hit rays were cast
+against the rendered robot, shelves and walls, with default and navigation-stowed arms:
+
+| Candidate origin in `base_link` (m) | Default / stowed self-occluded rays | Choice |
+|---|---|---|
+| Front deck `(0.350, 0, 0.410)` | 35.4% / 45.4% | Chassis/spine and arms hide a broad sector |
+| Head roof `(0.405, 0, 0.965)` | 46.9% / 50.8% | The fixed spine rises above the head; arms also occlude |
+| Fixed spine cap `(0.138289, 0, 1.515)` | 0% / 0% | Horizontal ring sees shelf faces and aisle walls |
+
+The selected slice is below the 1.836 m shelf tops; at B2 it hits shelves in 691 of 720
+bearings and walls in 26. The remaining bearings see other scene geometry or doorways.
+The −7° edge cannot see the floor until roughly 12.3 m on level ground: this is a real
+consequence of a high Mid-360 mount, not a replacement for the low safety scanners.
+The mount is verified for default and stowed navigation poses, **not** arbitrary extended
+arms or a raised carriage, which can occlude it. Native rendered occlusions remain in
+the cloud; no robot self-return is hidden to make the mount appear better.
+
+**Limitations.** Sampling is an organized angular approximation, not the real
+non-repeating rosette/time-per-point pattern. Dropouts approximate one capture's valid
+budget, not a reflectivity-dependent return model. No intensity, tag, line or per-point
+timestamp fields are synthesized, and no additional Livox IMU is emulated. The Duo's
+existing IMU is unchanged. This sensor is not connected to AMCL or a new 2D scan; that
+integration is separate work.
+
+Run normally with `moveit_pro run -w "$PWD" -c market_sim` (use the repository's
+worktree-specific config/image/instance procedure when validating from a worktree).
+In the Desktop App, open **3D Visualizer Settings → Sensor Streaming** and enable
+**livox_lidar** only; enabling **livox_mujoco** would display the uncropped diagnostic
+source. Use `ros2 topic info -v /livox/lidar` and a bounded `ros2 topic hz /livox/lidar`
+inside the selected runtime graph to verify publishing. `test/test_livox_mid360.py`
+checks the compiled mount, horizontal first hits, full kept-ring coverage through the
+installed native stitcher, range noise/dropouts, frame/schema conversion and fresh 10 Hz
+ROS delivery. To revert the accessory, revert its model, xacro and launch additions;
+no navigation configuration or external driver changes need undoing.
+
+## Teleoperation
+
 Teleoperation jogs each arm, and the `mobile_base` group jogs the base (joint jog through
 `base_jvc`, pose jog through `base_vfc`). Nav2 drives the base through `base_jgvc`.
 The `spine` group joint-jogs the spine through `spine_jvc`.

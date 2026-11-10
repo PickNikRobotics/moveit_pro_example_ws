@@ -259,6 +259,13 @@ def generate_launch_description():
             }
         ],
     )
+    # Native 360-deg depth lidar -> asymmetric Mid-360 cloud, separate from SICK navigation.
+    livox_cloud = Node(
+        package="market_sim",
+        executable="livox_mid360_cloud.py",
+        name="livox_mid360_cloud",
+        output="log",
+    )
     # Exclude returns inside the stowed Duo envelope; navigation stows the arms before driving.
     with open(os.path.join(share, "params", "nav2_params.yaml")) as stream:
         navigation_params = yaml.safe_load(stream)
@@ -496,6 +503,7 @@ def generate_launch_description():
         + frames
         + [
             lidar_flattener,
+            livox_cloud,
             scan_merger,
             base_velocity,
             odometry,
