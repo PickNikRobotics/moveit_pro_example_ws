@@ -55,8 +55,9 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
       />
-      <Action
-        ID="SetupMTCPlanToPose"
+      <SubTree
+        ID="Setup MTC Move To Pose"
+        _collapsed="true"
         acceleration_scale_factor="0.5"
         ik_frame="{part_name}"
         collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"

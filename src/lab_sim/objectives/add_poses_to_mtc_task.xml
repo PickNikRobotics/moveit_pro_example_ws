@@ -28,8 +28,9 @@
             marker_size="0.100000"
           />
           <Action ID="Script" code="pose_ctr += 1" />
-          <Action
-            ID="SetupMTCPlanToPose"
+          <SubTree
+            ID="Setup MTC Move To Pose"
+            _collapsed="true"
             ik_frame="{ik_frame}"
             planning_group_name="{planning_group_name}"
             target_pose="{target_pose}"

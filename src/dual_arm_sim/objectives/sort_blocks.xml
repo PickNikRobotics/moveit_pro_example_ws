@@ -44,8 +44,9 @@
                   task_id="right_grasp_task"
                 />
                 <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-                <Action
-                  ID="SetupMTCPlanToPose"
+                <SubTree
+                  ID="Setup MTC Move To Pose"
+                  _collapsed="true"
                   acceleration_scale_factor="1.000000"
                   ik_frame="right_fr3_hand_tcp"
                   max_iterations="5000"
@@ -171,8 +172,9 @@
                   task_id="left_grasp_task"
                 />
                 <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-                <Action
-                  ID="SetupMTCPlanToPose"
+                <SubTree
+                  ID="Setup MTC Move To Pose"
+                  _collapsed="true"
                   acceleration_scale_factor="1.000000"
                   ik_frame="left_fr3_hand_tcp"
                   max_iterations="5000"

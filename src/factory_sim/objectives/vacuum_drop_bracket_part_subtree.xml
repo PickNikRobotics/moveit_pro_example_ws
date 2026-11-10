@@ -34,8 +34,9 @@
         allow_collision="true"
         task="{mtc_task}"
       />
-      <Action
-        ID="SetupMTCPlanToPose"
+      <SubTree
+        ID="Setup MTC Move To Pose"
+        _collapsed="true"
         acceleration_scale_factor="0.5"
         ik_frame="tool0"
         collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"

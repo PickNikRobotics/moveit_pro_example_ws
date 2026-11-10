@@ -57,8 +57,9 @@
       <Control ID="Sequence">
         <Action ID="InitializeMTCTask" task="{mtc_task}" />
         <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-        <Action
-          ID="SetupMTCPlanToPose"
+        <SubTree
+          ID="Setup MTC Move To Pose"
+          _collapsed="true"
           acceleration_scale_factor="0.5"
           ik_frame="tool0"
           max_iterations="5000"
