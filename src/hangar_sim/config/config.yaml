@@ -56,6 +56,9 @@ moveit_params:
   joint_jog:
     package: "hangar_sim"
     path: "config/moveit/joint_jog.yaml"
+  base_jog:
+    package: "hangar_sim"
+    path: "config/moveit/base_jog.yaml"
 
 
 # Configuration for loading behaviors and objectives.
@@ -109,6 +112,7 @@ ros2_control:
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
     - "platform_velocity_controller_nav2"
+    - "platform_velocity_controller_base_jog"
     - "joint_trajectory_controller"
     - "velocity_force_controller"
     - "arm_only_velocity_force_controller"

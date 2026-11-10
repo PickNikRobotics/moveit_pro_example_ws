@@ -62,10 +62,11 @@ CONTROL_YAML = (
     / "picknik_ur.ros2_control.yaml"
 )
 
-# Both mecanum controller instances drive the same four wheels.
+# All mecanum controller instances drive the same four wheels.
 MECANUM_CONTROLLERS = (
     "platform_velocity_controller",
     "platform_velocity_controller_nav2",
+    "platform_velocity_controller_base_jog",
 )
 RIDGEBACK_XACRO = (
     Path(get_package_share_directory("ridgeback_description"))

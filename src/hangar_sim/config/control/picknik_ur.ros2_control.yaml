@@ -13,6 +13,8 @@ controller_manager:
       type: clearpath_mecanum_drive_controller/MecanumDriveController
     platform_velocity_controller_nav2:
       type: clearpath_mecanum_drive_controller/MecanumDriveController
+    platform_velocity_controller_base_jog:
+      type: clearpath_mecanum_drive_controller/MecanumDriveController
     imu_sensor_broadcaster:
       type: imu_sensor_broadcaster/IMUSensorBroadcaster
     vacuum_gripper:
@@ -141,6 +143,60 @@ platform_velocity_controller_nav2:
 
     angular.z.has_velocity_limits: true
     angular.z.has_acceleration_limits: false
+    angular.z.max_velocity: 4.0
+    angular.z.min_velocity: -4.0
+    angular.z.max_acceleration: 2.0
+    angular.z.min_acceleration: -2.0
+
+# Base tab (config/moveit/base_jog.yaml). Shares the wheels, so activating it deactivates the other base controllers.
+platform_velocity_controller_base_jog:
+  ros__parameters:
+    use_sim_time: False
+    interface_name: velocity
+    command_joint_names: ["front_left_wheel", "rear_left_wheel", "rear_right_wheel", "front_right_wheel"]
+    body_frame_control: true
+    front_left_wheel_command_joint_name: "front_left_wheel"
+    front_right_wheel_command_joint_name: "front_right_wheel"
+    rear_right_wheel_command_joint_name: "rear_right_wheel"
+    rear_left_wheel_command_joint_name: "rear_left_wheel"
+
+    # Hull rolling radius; see platform_velocity_controller above.
+    kinematics.wheels_radius: 0.0756
+    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.59
+    wheel_separation_multiplier: 1.0
+    wheel_radius_multiplier: 1.0
+
+    publish_rate: 50.0
+    reference_timeout: 0.5
+    # BaseJog publishes geometry_msgs/msg/TwistStamped.
+    use_stamped_vel: True
+
+    pose_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 0.03]
+    twist_covariance_diagonal: [0.001, 0.001, 0.001, 1000000.0, 1000000.0, 0.03]
+
+    command_timeout: 5.0
+
+    base_frame_id: "ridgeback_base_link"
+    odom_frame_id: "odom"
+    enable_odom_tf: false
+
+    # Ramps BaseJog's step commands. Symmetric, or reverse would brake at a different rate than forward.
+    linear.x.has_velocity_limits: true
+    linear.x.has_acceleration_limits: true
+    linear.x.max_velocity: 1.3
+    linear.x.min_velocity: -1.3
+    linear.x.max_acceleration: 1.5
+    linear.x.min_acceleration: -1.5
+
+    linear.y.has_velocity_limits: true
+    linear.y.has_acceleration_limits: true
+    linear.y.max_velocity: 1.3
+    linear.y.min_velocity: -1.3
+    linear.y.max_acceleration: 1.5
+    linear.y.min_acceleration: -1.5
+
+    angular.z.has_velocity_limits: true
+    angular.z.has_acceleration_limits: true
     angular.z.max_velocity: 4.0
     angular.z.min_velocity: -4.0
     angular.z.max_acceleration: 2.0

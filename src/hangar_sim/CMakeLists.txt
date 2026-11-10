@@ -57,7 +57,12 @@ if(BUILD_TESTING)
   # so it stays outside the long objectives suite below.
   ament_add_pytest_test(
           base_geometry_test test/test_base_geometry.py
-          TIMEOUT 30)
+          TIMEOUT 30
+          ENV MOVEIT_CONFIG_PACKAGE=hangar_sim)
+  ament_add_pytest_test(
+          base_jog_config_test test/test_base_jog_config.py
+          TIMEOUT 30
+          ENV MOVEIT_CONFIG_PACKAGE=hangar_sim)
   # launch_testing imports sibling objectives_integration_test.py at collection; it needs this ENV.
   ament_add_pytest_test(
           gripper_objectives_test test/test_gripper_objectives.py

@@ -1,0 +1,5 @@
+planning_group: linear_actuator
+controller: platform_velocity_controller_base_jog
+# Keep turning below the controller's limit for pad control.
+max_linear_velocity: 1.3
+max_angular_velocity: 1.0

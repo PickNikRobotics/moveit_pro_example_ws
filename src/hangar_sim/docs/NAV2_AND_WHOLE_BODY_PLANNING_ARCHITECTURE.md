@@ -7,7 +7,7 @@ This document describes the architectural implementation of mobile manipulation 
 1. Virtual joint representation of mobile base degrees of freedom in the URDF
 2. Bidirectional odometry-to-joint-state conversion for state estimation
 3. **Custom-modified chainable controller** with frame transformation capabilities
-4. Dual platform controller configuration for mode-specific operation
+4. Separate platform controllers for whole-body motion, navigation, and base teleoperation
 
 The architecture enables transparent integration of mobile base motion into MoveIt's trajectory planning framework while maintaining compatibility with standard Nav2 navigation workflows.
 
@@ -437,10 +437,10 @@ These interfaces are named to match the virtual joints defined in the URDF, crea
 
 ---
 
-## Component 5: Dual Controller Configuration
+## Component 5: Platform Controller Configuration
 
 ### Design Rationale
-The system employs two distinct instances of the mecanum drive controller to support different operational modes with varying command frame conventions and input sources. This separation provides operational flexibility while maintaining a clean interface boundary between navigation and manipulation subsystems.
+Three mecanum controller instances serve whole-body motion, navigation, and base teleoperation. `platform_velocity_controller_base_jog` accepts body-frame stamped commands with acceleration limits. All three claim the same wheels, so activating one deactivates conflicting controllers.
 
 ### Controller Specifications
 
@@ -965,7 +965,7 @@ The architecture implements coordinate frame transformations within the controll
 
 ### Mode-Specific Controller Instances
 
-The dual controller configuration provides specialized interfaces for navigation and manipulation modes while sharing the underlying kinematic model implementation. This approach avoids mode logic within individual controllers and enables clean transitions between operational paradigms through controller activation state changes.
+Separate platform controllers serve navigation, manipulation, and base teleoperation while sharing the kinematic implementation. This approach avoids mode logic within individual controllers and enables clean transitions between operational paradigms through controller activation state changes.
 
 ### Closed-Loop State Feedback
 
@@ -1096,7 +1096,7 @@ This architecture achieves coordinated mobile manipulation through a modular, la
 
 **Bidirectional State Flow**: The odometry bridge closes the control loop by converting platform odometry into joint state feedback, enabling accurate state estimation and closed-loop trajectory tracking.
 
-**Mode-Specific Interfaces**: Dual controller configuration provides optimized interfaces for navigation and manipulation while sharing implementation, facilitating clean mode transitions through controller state management.
+**Mode-Specific Interfaces**: Separate controllers serve navigation, manipulation, and base teleoperation while sharing implementation; controller activation switches modes.
 
 This design pattern can be adapted to other mobile manipulator configurations by modifying:
 - Virtual joint definitions to match the mobile base's degrees of freedom
