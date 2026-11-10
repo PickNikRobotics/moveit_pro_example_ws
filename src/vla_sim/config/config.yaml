@@ -113,6 +113,8 @@ ros2_control:
 # Configuration for loading behaviors and objectives.
 # [Required]
 objectives:
+  # Lets a run force a Behavior's result while debugging. Simulation only: never set it on hardware.
+  allow_node_substitution: true
   # List of plugins for loading custom behaviors.
   # [Required]
   behavior_loader_plugins:

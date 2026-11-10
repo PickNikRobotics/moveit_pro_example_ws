@@ -24,6 +24,8 @@ hardware:
     path: "launch/sim_drivers.launch.py"
 
 objectives:
+  # Lets a run force a Behavior's result while debugging. Simulation only: never set it on hardware.
+  allow_node_substitution: true
   behavior_loader_plugins:
     # A list replaces the base config's list, so the base loaders are repeated.
     core:
