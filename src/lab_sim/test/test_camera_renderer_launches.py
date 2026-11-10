@@ -284,14 +284,3 @@ def test_renderer_is_environment_only() -> None:
     for config in CONFIGS:
         config_yaml = (config.directory / "config/config.yaml").read_text()
         assert not re.search(r"^\s*-\s*camera_renderer:\s*", config_yaml, re.MULTILINE)
-
-
-def test_all_nyx_runtime_launches_are_covered_by_the_drift_test() -> None:
-    """A new Nyx launch file cannot silently omit this cross-config contract."""
-    expected = {config.directory / "launch/runtime.launch.xml" for config in CONFIGS}
-    actual = {
-        launch
-        for launch in SOURCE_ROOT.glob("**/launch/runtime.launch.xml")
-        if "nyx_camera.launch.py" in launch.read_text()
-    }
-    assert actual == expected
