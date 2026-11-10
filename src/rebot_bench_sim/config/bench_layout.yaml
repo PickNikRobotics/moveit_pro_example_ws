@@ -33,8 +33,7 @@
 # (world -X).
 # CALIBRATED: x, y and yaw from the wrist D435's board pose at rest, through
 # the arm's forward kinematics and the measured wrist_camera mount below, so
-# they share that mount's provisional accuracy. rebot_bench_base_config's
-# config.yaml carries the same base pose but not that mount. Roll/pitch are held at 0 and z
+# they share that mount's provisional accuracy. Roll/pitch are held at 0 and z
 # at the bench plane: the base plate is bolted level to the bench, and the
 # solve's tilt is within its error.
 robot_base:
@@ -42,7 +41,7 @@ robot_base:
   rpy: [0.0, 0.0, 3.1380]
 
 # scene_camera_link (REP-103: x along the view axis, z up) in the world. The
-# colour optical frame follows from it as in rebot_bench_base_config.
+# colour optical frame follows the REP-103 camera convention, as a MuJoCo site.
 # CALIBRATED: the scene camera's board pose (corner reprojection RMS 0.15 px)
 # with its factory intrinsics.
 scene_camera:
@@ -56,8 +55,7 @@ scene_camera:
 # CALIBRATED, PROVISIONAL: a hand-eye solve over six arm poses with small
 # relative rotations (3-18 deg); leave-one-out spread up to 17 mm and 2.5 deg,
 # so treat it as good to about 2 cm until a wider-pose calibration replaces it.
-# Sim only: the real configuration (rebot_bench_base_config) keeps the nominal
-# mount; applying this one on the arm is follow-up work.
+# Simulation calibration only; this package does not configure a physical arm.
 wrist_camera:
   xyz: [0.086316, -0.001875, 0.065734]
   rpy: [0.063587, -1.015548, -3.132472]
@@ -98,8 +96,7 @@ cubes:
 
 # Initial state, MuJoCo keyframe "default" (also the Reset MuJoCo Sim target).
 # joint1-joint6 in radians, then joint7 (the gripper motor; 0 is closed).
-# The cubes start at their poses above. Zeroed Rest, the base config's
-# startup pose.
+# The cubes start at their poses above. Zeroed Rest is the startup pose.
 keyframe:
   arm: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
   gripper: 0.0

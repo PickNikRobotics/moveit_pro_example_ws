@@ -10,7 +10,7 @@ namespace
 {
 using Trigger = std_srvs::srv::Trigger;
 
-/** Replaces the base's bare "Server not available" with why the bridge is missing and how to start it. */
+/** Replaces the base's bare "Server not available" with a message that no leader bridge service is available. */
 class LeaderClient final : public moveit_pro::behaviors::ClientInterfaceBase<Trigger>
 {
 public:
@@ -31,12 +31,7 @@ public:
   {
     if (!available_)
     {
-      return tl::make_unexpected(
-          "The reBot leader bridge is not running. The backend starts it only when "
-          "ros_global_params.rebot_leader_enabled is true in the selected configuration's config.yaml; the "
-          "shipped default is false. Set it to true, then restart the backend (moveit_pro run) and run Mirror reBot "
-          "Leader again. If it is already true, the bridge exited at startup: check the backend log for "
-          "rebot_leader_bridge errors.");
+      return tl::make_unexpected("No reBot leader bridge service is available.");
     }
     return client_->syncSendRequest(request);
   }
@@ -108,7 +103,7 @@ tl::expected<bool, std::string> CallRebotLeaderService::processResponse(const st
   // AsyncBehaviorBase publishes unexpected errors to the UI's failure buffer; a plain false loses this text.
   return tl::make_unexpected(response.message.empty() ?
                                  "Following was refused without a reason. Check the leader connection and backend "
-                                 "diagnostics before retrying Mirror reBot Leader." :
+                                 "diagnostics before retrying." :
                                  response.message);
 }
 }  // namespace rebot_bench_behaviors

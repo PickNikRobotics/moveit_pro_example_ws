@@ -1,6 +1,6 @@
 <!--
   reBot B601-RS kinematic tree, transcribed from
-  rebot_bench_base_config/description/rebot.urdf.xacro. Included inside the
+  description/rebot.urdf.xacro. Included inside the
   scene's base_link body, which carries the placement from bench_layout.yaml;
   MuJoCo splices in this file's children and discards the wrapping <body>.
 
@@ -11,7 +11,7 @@
   test/test_scene_model.py checks every link pose against the URDF.
 
   Visual geoms sit at the URDF's visual origins; the printed trim, wrist
-  bracket and D435 use the STL conversions of the base package's COLLADA
+  bracket and D435 use the local STL conversions of the COLLADA
   meshes (rebot_assets.xml).
 -->
 <body xmlns:xacro="http://www.ros.org/wiki/xacro">
@@ -368,7 +368,7 @@
                       />
                       <!-- Colour sensor at the URDF's d435_color_optical_frame.
                            fovy 43.09 deg is the published fy 607.8 px at
-                           640x480 (base config docs/camera-acceptance.json).
+                           640x480 (measured intrinsics, documented in README.md).
                            The camera looks along its -z; the site is the same
                            pose turned 180 deg about x, the ROS optical frame. -->
                       <camera

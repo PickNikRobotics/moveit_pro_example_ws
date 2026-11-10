@@ -80,7 +80,7 @@
 
     <!-- Scene camera, Luxonis OAK-D Pro W 97, at the URDF's
          scene_camera_link. fovy 80.69 deg keeps the real horizontal view: fx
-         282.5 px at 640 wide, 97.1 deg (base config README). The real stream
+         282.5 px at 640 wide, 97.1 deg (measured bench intrinsics). The real stream
          is 640x400; the shared 640x480 buffer renders the same view with 40
          extra rows above and below. -->
     <body name="scene_camera_link" pos="${' '.join(map(str, layout['scene_camera']['xyz']))}" euler="${' '.join(map(str, layout['scene_camera']['rpy']))}">

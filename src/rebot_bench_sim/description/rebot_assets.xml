@@ -1,15 +1,14 @@
 <!--
   reBot B601-RS assets, defaults, actuators and gripper coupling; the body tree
-  is rebot_arm.xml. Meshes are the base package's own STL files, resolved
-  through package:// URIs, not copies. MuJoCo cannot load the base package's
-  COLLADA visuals (printed trim, wrist bracket, D435), so assets/ holds them
+  is rebot_arm.xml. Meshes are this package's own STL files, resolved
+  through package:// URIs. MuJoCo cannot load the source COLLADA visuals (printed trim, wrist bracket, D435), so assets/ holds them
   converted to STL in the same frame and units, one file per embedded
   material; see assets/NOTICE.md.
 
   ros2_control takes its interfaces from the actuators: one position actuator
-  per URDF motor joint, named after the joint. Gains are the real driver's
-  motion-mode kp/kd (rebot.urdf.xacro), except joint7's kv (see its actuator),
-  forces its effort limits. The links are gravity-compensated (gravcomp in
+  per URDF motor joint, named after the joint. Gains retain the bench's
+  motion-mode kp/kd, except joint7's kv (see its actuator); force limits match
+  the URDF's effort limits. The links are gravity-compensated (gravcomp in
   rebot_arm.xml), unlike the real arm in motion mode: sagging out of the folded
   rest pose can put the arm in self-collision, and MoveIt then refuses to plan
   from it.
@@ -32,107 +31,107 @@
 
     <mesh
       name="base_link"
-      file="package://rebot_bench_base_config/description/assets/shared/base_link.STL"
+      file="package://rebot_bench_sim/description/assets/shared/base_link.STL"
     />
     <mesh
       name="link1"
-      file="package://rebot_bench_base_config/description/assets/shared/link1.STL"
+      file="package://rebot_bench_sim/description/assets/shared/link1.STL"
     />
     <mesh
       name="link2"
-      file="package://rebot_bench_base_config/description/assets/shared/link2.STL"
+      file="package://rebot_bench_sim/description/assets/shared/link2.STL"
     />
     <mesh
       name="link3"
-      file="package://rebot_bench_base_config/description/assets/shared/link3.STL"
+      file="package://rebot_bench_sim/description/assets/shared/link3.STL"
     />
     <mesh
       name="link4"
-      file="package://rebot_bench_base_config/description/assets/shared/link4.STL"
+      file="package://rebot_bench_sim/description/assets/shared/link4.STL"
     />
     <mesh
       name="link5"
-      file="package://rebot_bench_base_config/description/assets/shared/link5.STL"
+      file="package://rebot_bench_sim/description/assets/shared/link5.STL"
     />
     <mesh
       name="link6"
-      file="package://rebot_bench_base_config/description/assets/shared/link6.STL"
+      file="package://rebot_bench_sim/description/assets/shared/link6.STL"
     />
     <mesh
       name="gripper_end"
-      file="package://rebot_bench_base_config/description/assets/shared/gripper_end.STL"
+      file="package://rebot_bench_sim/description/assets/shared/gripper_end.STL"
     />
     <mesh
       name="gripper_left"
-      file="package://rebot_bench_base_config/description/assets/shared/gripper_left.STL"
+      file="package://rebot_bench_sim/description/assets/shared/gripper_left.STL"
     />
     <mesh
       name="gripper_right"
-      file="package://rebot_bench_base_config/description/assets/shared/gripper_right.STL"
+      file="package://rebot_bench_sim/description/assets/shared/gripper_right.STL"
     />
     <mesh
       name="motor_2_3"
-      file="package://rebot_bench_base_config/description/assets/visual/motor_2_3.STL"
+      file="package://rebot_bench_sim/description/assets/visual/motor_2_3.STL"
     />
     <mesh
       name="motor_4"
-      file="package://rebot_bench_base_config/description/assets/visual/motor_4.STL"
+      file="package://rebot_bench_sim/description/assets/visual/motor_4.STL"
     />
     <mesh
       name="motor_5"
-      file="package://rebot_bench_base_config/description/assets/visual/motor_5.STL"
+      file="package://rebot_bench_sim/description/assets/visual/motor_5.STL"
     />
     <mesh
       name="motor_6"
-      file="package://rebot_bench_base_config/description/assets/visual/motor_6.STL"
+      file="package://rebot_bench_sim/description/assets/visual/motor_6.STL"
     />
     <mesh
       name="motor_7"
-      file="package://rebot_bench_base_config/description/assets/visual/motor_7.STL"
+      file="package://rebot_bench_sim/description/assets/visual/motor_7.STL"
     />
     <mesh
       name="cnc2"
-      file="package://rebot_bench_base_config/description/assets/visual/cnc2.STL"
+      file="package://rebot_bench_sim/description/assets/visual/cnc2.STL"
     />
     <mesh
       name="cnc3"
-      file="package://rebot_bench_base_config/description/assets/visual/cnc3.STL"
+      file="package://rebot_bench_sim/description/assets/visual/cnc3.STL"
     />
     <mesh
       name="cnc4"
-      file="package://rebot_bench_base_config/description/assets/visual/cnc4.STL"
+      file="package://rebot_bench_sim/description/assets/visual/cnc4.STL"
     />
     <mesh
       name="cnc5"
-      file="package://rebot_bench_base_config/description/assets/visual/cnc5.STL"
+      file="package://rebot_bench_sim/description/assets/visual/cnc5.STL"
     />
     <mesh
       name="cnc7"
-      file="package://rebot_bench_base_config/description/assets/visual/cnc7.STL"
+      file="package://rebot_bench_sim/description/assets/visual/cnc7.STL"
     />
     <mesh
       name="cnc_left"
-      file="package://rebot_bench_base_config/description/assets/visual/cnc_left.STL"
+      file="package://rebot_bench_sim/description/assets/visual/cnc_left.STL"
     />
     <mesh
       name="cnc_right"
-      file="package://rebot_bench_base_config/description/assets/visual/cnc_right.STL"
+      file="package://rebot_bench_sim/description/assets/visual/cnc_right.STL"
     />
     <mesh
       name="pla_left"
-      file="package://rebot_bench_base_config/description/assets/visual/pla_left.STL"
+      file="package://rebot_bench_sim/description/assets/visual/pla_left.STL"
     />
     <mesh
       name="pla_right"
-      file="package://rebot_bench_base_config/description/assets/visual/pla_right.STL"
+      file="package://rebot_bench_sim/description/assets/visual/pla_right.STL"
     />
     <mesh
       name="pla2_internal"
-      file="package://rebot_bench_base_config/description/assets/printed/pla2_internal.STL"
+      file="package://rebot_bench_sim/description/assets/printed/pla2_internal.STL"
     />
     <mesh
       name="pla3_internal"
-      file="package://rebot_bench_base_config/description/assets/printed/pla3_internal.STL"
+      file="package://rebot_bench_sim/description/assets/printed/pla3_internal.STL"
     />
     <mesh
       name="1-DOWN-DL_purple"
@@ -285,11 +284,10 @@
       kv="4"
       ctrlrange="-3.054326190990 3.054326190990"
     />
-    <!-- kp matches the hardware jaw_kp (rebot.urdf.xacro). kv stays 0.05, not jaw_kd's
-         0.5, and the RS00 force range stays, not rebot_leader_tuning.yaml's 1 Nm: the
-         trajectory controller runs on the wall clock, so on a twin slower than real time
-         kv 0.5 lags Close Gripper past the then-configured 0.15 rad path tolerance
-         (now 0.16 rad). -->
+    <!-- Retain kp 12 and the -14 to 14 Nm force range. kv stays 0.05:
+         the trajectory controller runs on the wall clock, so on a twin slower
+         than real time kv 0.5 lagged Close Gripper past its path tolerance.
+         This is simulation tuning, not a validated physical grip-force model. -->
     <position
       name="joint7"
       joint="joint7"
