@@ -60,6 +60,7 @@ the error state.
 
 import argparse
 import base64
+import copy
 import hashlib
 import hmac
 import json
@@ -662,6 +663,84 @@ class PolicyRunner:
         return cold_s, steady_s, chunk.shape[0]
 
 
+class QnnPolicyRunner(PolicyRunner):
+    """Native pi0.5 backend behind the same inference/warmup/HTTP interface."""
+
+    def __init__(
+        self,
+        bundle: str,
+        checkpoint: str,
+        policy_type: str,
+        revision: str,
+        state_dim: int,
+        fps: float,
+        guidance_horizon: int,
+        rtc_schedule: str,
+    ):
+        if policy_type not in ("", "pi05"):
+            raise ValueError("the QNN backend supports pi05 only; GR00T uses PyTorch")
+        if not bundle:
+            raise ValueError("set qnn_bundle in vla_serving.yaml (or --qnn-bundle)")
+        if not 0 <= guidance_horizon <= 50:
+            raise ValueError("QNN guidance_horizon must be in 0..50 steps")
+        from vla_qnn_policy import QnnPolicy
+
+        self.device = "npu:qnn_htp"
+        self.lock = threading.Lock()
+        self.guidance_horizon = guidance_horizon
+        self.policy = QnnPolicy(
+            bundle,
+            checkpoint,
+            revision,
+            state_dim,
+            fps,
+            RTCConfig(
+                enabled=True,
+                prefix_attention_schedule=resolve_rtc_schedule(rtc_schedule),
+            ),
+        )
+        self.state_dim = self.policy.config["request_state_dim"]
+        self.request_names = self.policy.config["camera_names"]
+        self.int8 = any(
+            value == "w8a16" for value in self.policy.config["precision"].values()
+        )
+
+    def expected_state_dim(self) -> int:
+        return self.state_dim
+
+    def expected_camera_keys(self) -> list:
+        return self.request_names
+
+    def prepare_rtc(self, payload: dict) -> tuple:
+        from vla_qnn_policy import prepare_rtc
+
+        return prepare_rtc(
+            payload,
+            self.policy.config["chunk_size"],
+            self.policy.config["model_action_dim"],
+        )
+
+    def infer(
+        self, images, state, prompt, prev_chunk, inference_delay, guidance_horizon
+    ):
+        horizon = resolve_rtc_horizon(
+            inference_delay, guidance_horizon, self.guidance_horizon
+        )
+        with self.lock:
+            return self.policy.infer(
+                images, state, prompt, prev_chunk, inference_delay, horizon
+            )
+
+    def warmup(self) -> tuple[float, float, int]:
+        # Warmup is not an observation: preserve the seeded noise stream for
+        # the first real request and every subsequent chunk.
+        rng_state = copy.deepcopy(self.policy.rng.bit_generator.state)
+        try:
+            return super().warmup()
+        finally:
+            self.policy.rng.bit_generator.state = rng_state
+
+
 class ServerState:
     """Load status shared between the loader thread and the HTTP handlers."""
 
@@ -905,6 +984,7 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
     """Load + warm the policy in the background; on failure park in the error state."""
     state.checkpoint = args.checkpoint
     state.checkpoint_revision = getattr(args, "checkpoint_revision", "")
+    runner = None
     try:
         # A malformed serving config was deferred out of parse_args so the
         # socket could bind first; surface it here like any other load failure.
@@ -931,46 +1011,63 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 "this private Trainer checkpoint requires Hugging Face model access; "
                 "configure it from the Trainer tab"
             )
-        # Resolving the fps can read the checkpoint's train_config.json (a
-        # download for hub checkpoints), so it happens here rather than before
-        # the socket binds, and an unresolvable rate parks in the error state
-        # instead of exiting into a compose restart loop.
-        state.fps = resolve_fps(args.checkpoint, args.fps, args.checkpoint_revision)
-        policy_type = resolve_policy_type(
-            args.checkpoint, args.policy_class, args.checkpoint_revision
-        )
-        device = resolve_device(
-            args.device,
-            torch.cuda.is_available(),
-            os.environ.get("VLA_REQUIRE_GPU") == "1",
-        )
-        if policy_type not in TESTED_POLICY_TYPES:
-            log(
-                f"WARNING: policy family '{policy_type}' is untested with this "
-                f"server (tested: {', '.join(TESTED_POLICY_TYPES)}); loading best-effort"
+        backend = getattr(args, "backend", "pytorch")
+        if backend == "qnn":
+            log(f"loading pi05 compiled QNN bundle '{args.qnn_bundle}' ...")
+            runner = QnnPolicyRunner(
+                args.qnn_bundle,
+                args.checkpoint,
+                args.policy_class,
+                args.checkpoint_revision,
+                args.state_dim,
+                args.fps,
+                args.guidance_horizon,
+                args.rtc_schedule,
             )
-        log(
-            f"loading {policy_type} checkpoint '{args.checkpoint}'"
-            f"{f' at {args.checkpoint_revision}' if args.checkpoint_revision else ''} "
-            f"on '{device}' "
-            f"(torch {torch.__version__}, HIP {torch.version.hip}, CUDA {torch.version.cuda}"
-            f"{', int8' if args.int8 and policy_type == 'pi05' else ''}) ..."
-        )
-        runner = PolicyRunner(
-            args.checkpoint,
-            policy_type,
-            device,
-            args.guidance_horizon,
-            args.rtc_schedule,
-            args.state_dim,
-            args.int8,
-            checkpoint_revision=args.checkpoint_revision,
-            groot_rtc_ramp_rate=args.groot_rtc_ramp_rate,
-        )
+            # All serving metadata comes from the locally compiled bundle, not
+            # a mutable Hub HEAD. No host neural weights are downloaded/loaded.
+            state.fps = runner.policy.fps
+            state.checkpoint_revision = runner.policy.config["model_revision"]
+            device = runner.device
+        elif backend == "pytorch":
+            # Metadata resolution can download Hub files, so it stays on this
+            # loader thread, after the socket binds.
+            state.fps = resolve_fps(args.checkpoint, args.fps, args.checkpoint_revision)
+            policy_type = resolve_policy_type(
+                args.checkpoint, args.policy_class, args.checkpoint_revision
+            )
+            device = resolve_device(
+                args.device,
+                torch.cuda.is_available(),
+                os.environ.get("VLA_REQUIRE_GPU") == "1",
+            )
+            if policy_type not in TESTED_POLICY_TYPES:
+                log(
+                    f"WARNING: policy family '{policy_type}' is untested with this "
+                    f"server (tested: {', '.join(TESTED_POLICY_TYPES)}); loading best-effort"
+                )
+            log(
+                f"loading {policy_type} checkpoint '{args.checkpoint}'"
+                f"{f' at {args.checkpoint_revision}' if args.checkpoint_revision else ''} "
+                f"on '{device}' "
+                f"(torch {torch.__version__}, HIP {torch.version.hip}, CUDA {torch.version.cuda}"
+                f"{', int8' if args.int8 and policy_type == 'pi05' else ''}) ..."
+            )
+            runner = PolicyRunner(
+                args.checkpoint,
+                policy_type,
+                device,
+                args.guidance_horizon,
+                args.rtc_schedule,
+                args.state_dim,
+                args.int8,
+                checkpoint_revision=args.checkpoint_revision,
+                groot_rtc_ramp_rate=args.groot_rtc_ramp_rate,
+            )
+        else:
+            raise ValueError("backend must be pytorch or qnn in vla_serving.yaml")
 
-        image_features = [
-            k for k in runner.policy.config.input_features if "image" in k
-        ]
+        image_features = runner.expected_camera_keys()
         log(
             f"checkpoint expects {len(image_features)} camera(s) {image_features} "
             f"(request names: {runner.request_names}) and a "
@@ -1009,6 +1106,10 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                     f"real-time budget at {state.fps:g} fps"
                 )
         except Exception as exc:
+            if isinstance(runner, QnnPolicyRunner):
+                # Fixed-shape native bundles have no padded-state exception;
+                # a failed graph execution must never advertise a ready NPU.
+                raise
             log(
                 f"WARNING: warmup inference failed ({type(exc).__name__}: {exc}); "
                 "continuing, the first request pays the cold cost"
@@ -1027,6 +1128,11 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
         state.status = "error"
         log(f"FATAL: model load failed: {state.detail}")
     except Exception as exc:
+        if isinstance(runner, QnnPolicyRunner):
+            try:
+                runner.policy.close()
+            except Exception as cleanup_error:
+                log(f"QNN cleanup after load failure: {cleanup_error}")
         traceback.print_exc()
         state.detail = f"{type(exc).__name__}: {exc}"
         state.status = "error"
@@ -1039,6 +1145,8 @@ def run_inference(state: ServerState, payload: dict) -> dict:
     new_episode in the payload is informational only: PolicyRunner resets per
     call, and the episode boundary is carried by an empty prev_chunk.
     """
+    if not isinstance(payload, dict):
+        raise ValueError("/infer payload must be a JSON object")
     for key in ("state", "images", "task"):
         if key not in payload:
             raise ValueError(f"/infer payload is missing '{key}'")
@@ -1085,29 +1193,33 @@ def run_inference(state: ServerState, payload: dict) -> dict:
             "image_names to the checkpoint's name for the camera on the "
             "matching image_topics entry"
         )
-    images = {name: decode_image_b64(data) for name, data in payload["images"].items()}
-
-    prev_chunk = None
-    prev = payload.get("prev_chunk_left_over")
-    if prev:
-        try:
-            prev_chunk = np.asarray(prev, dtype=float)
-        except (TypeError, ValueError) as exc:
+    if isinstance(runner, QnnPolicyRunner):
+        # QNN's fixed graph ABI cannot accept truncated widths, fractional step
+        # counts or overflowing carryover. Refuse before native execution.
+        prev_chunk, inference_delay, guidance_horizon = runner.prepare_rtc(payload)
+    else:
+        prev_chunk = None
+        prev = payload.get("prev_chunk_left_over")
+        if prev:
+            try:
+                prev_chunk = np.asarray(prev, dtype=float)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(
+                    f"/infer payload 'prev_chunk_left_over' is not a numeric array ({exc})"
+                ) from exc
+            if prev_chunk.ndim != 2 or not np.isfinite(prev_chunk).all():
+                raise ValueError(
+                    "/infer payload 'prev_chunk_left_over' must be a 2-D array of "
+                    "finite numbers"
+                )
+        inference_delay = int(payload.get("inference_delay", 0))
+        guidance_horizon = int(payload.get("guidance_horizon", 0))
+        if inference_delay < 0 or guidance_horizon < 0:
             raise ValueError(
-                f"/infer payload 'prev_chunk_left_over' is not a numeric array ({exc})"
-            ) from exc
-        if prev_chunk.ndim != 2 or not np.isfinite(prev_chunk).all():
-            raise ValueError(
-                "/infer payload 'prev_chunk_left_over' must be a 2-D array of "
-                "finite numbers"
+                "/infer payload 'inference_delay' and 'guidance_horizon' must be "
+                "non-negative"
             )
-    inference_delay = int(payload.get("inference_delay", 0))
-    guidance_horizon = int(payload.get("guidance_horizon", 0))
-    if inference_delay < 0 or guidance_horizon < 0:
-        raise ValueError(
-            "/infer payload 'inference_delay' and 'guidance_horizon' must be "
-            "non-negative"
-        )
+    images = {name: decode_image_b64(data) for name, data in payload["images"].items()}
 
     absolute, carryover = runner.infer(
         images,
@@ -1368,10 +1480,29 @@ def parse_args() -> argparse.Namespace:
         help="training fps; response dt=1/fps; 0 reads the "
         "checkpoint's train_config.json",
     )
+    backend = resolve_default(config.get("backend"), "pytorch")
+    if backend not in ("pytorch", "qnn"):
+        config_errors.append("backend must be pytorch or qnn")
+        backend = "pytorch"
+    parser.add_argument(
+        "--backend",
+        choices=("pytorch", "qnn"),
+        default=backend,
+        help="inference backend: pytorch (default) or native QNN HTP (pi05 only)",
+    )
+    bundle = resolve_default(config.get("qnn_bundle"), "")
+    if not isinstance(bundle, str):
+        config_errors.append("qnn_bundle must be a local JSON manifest path")
+        bundle = ""
+    parser.add_argument(
+        "--qnn-bundle",
+        default=bundle,
+        help="local compiled QNN bundle JSON manifest; required for backend=qnn",
+    )
     parser.add_argument(
         "--device",
         default=str(resolve_default(config.get("device"), "auto")),
-        help="torch device: auto | cpu | cuda",
+        help="PyTorch backend device: auto | cpu | cuda; QNN uses bundle placement",
     )
     parser.add_argument(
         "--int8",

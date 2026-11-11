@@ -73,6 +73,98 @@ The ROCm image targets Linux `amd64` and refuses an automatic CPU fallback when 
 unavailable. `device: cpu` remains an explicit opt-out. CUDA/CPU images retain their existing Torch
 versions and `VLA_TORCH_INDEX` override; ROCm preserves the libraries from its pinned base image.
 
+## Qualcomm Hexagon NPU (pi0.5)
+
+Select `backend: qnn` and set `qnn_bundle` to a local compiled-context JSON
+manifest in `../config/vla_serving.yaml`. For example:
+
+```yaml
+backend: qnn
+qnn_bundle: /models/pi05-qnn/bundle.json
+checkpoint: PickNikRobotics/pi05_kinova_gen3_cube_stack_sim
+checkpoint_revision: "823bd5e3a82a961df9a5dfd0a1374358cd2d368e"
+policy_class: pi05
+fps: 10.0
+state_dim: 8
+```
+
+The backend runs native `QnnGraph_execute` on IQ9 HTP devices, not an ONNX
+Runtime session or a PyTorch NPU device. `device` and `int8` apply only to
+PyTorch; QNN placement and precision come from the compiled bundle. GR00T
+N1.7 remains a PyTorch policy; GR00T NPU support is not implemented.
+
+### Compiled bundle
+
+The schema-1 manifest identifies `model_id` and the immutable source
+`model_revision`, `camera_names` in training order, `request_state_dim`,
+`model_action_dim`, `state_columns`, `normalization`, `action_mapping`,
+`chunk_size`, `max_action_dim`, `denoising_steps`, `expert_output`, `dt`,
+`noise_seed`, `stats`, `tokenizer`, `graphs`, `device_placement`, and `precision`.
+Paths to graph directories, statistics and tokenizer are absolute or relative
+to the manifest, so the bundle can be mounted read-only under `/models`.
+No checkpoint weights or tokenizer are fetched from the Hub on the QNN path.
+`checkpoint` must equal `model_id`; a nonempty `checkpoint_revision` must equal
+`model_revision`. `fps` and `state_dim` must match, or be 0 to use the bundle's
+trained values. `/status` reports the bundle's actual immutable source revision.
+
+Supported graph ABIs are `aihub.pi05.four_graphs.euler.v1` (vision encoder,
+token embedding, backbone, action expert) and
+`kinova.pi05.six_graphs.euler.v1` (the `backbone` entry is replaced by
+`prefix_0_6`, `prefix_6_12` and `prefix_12_18`). They require three 224x224 RGB
+cameras, 200 language tokens, 50-step
+chunks padded to 32 action dimensions and ten already-integrated expert
+updates. Host preprocessing uses the saved QUANTILES state/action statistics
+and absolute trained joint order; relative-action bundles are unsupported.
+The statistics JSON contains finite `observation.state.q01`,
+`observation.state.q99`, `action.q01` and `action.q99` arrays. The tokenizer
+must be a complete local Hugging Face tokenizer directory. Vision/token run
+on HTP1; backbone/expert run on HTP0.
+
+Each graph directory contains `model.bin` (native compiled context), `abi.json`
+(from `qnn-context-binary-utility`) and `manifest.json`. The latter declares
+`context_sha256` and a one-to-one `output_aliases` map from compiler output
+names to source graph names. The backend checks the context digest and fixed
+input/output names, shapes and dtypes before serving; quantized, dynamic or
+sparse graph IO is refused. Compilation precision is fixed by the bundle:
+vision FP16/W8A16, token FP16, backbone W4A16/W8A16 or FP16 split, and expert
+W8A16/W16A16/native-RMS FP16. Serving support does not qualify a compiled
+checkpoint's accuracy or authorize real-robot deployment; validate that
+checkpoint independently before using its actions.
+
+### Native runtime requirements
+
+The standard inference image intentionally does **not** install QAIRT. Use a
+board environment with QAIRT 2.49 (QNN core API 2.38), compatible compiled
+contexts and the HTP/FastRPC devices accessible to the inference process.
+Install or mount the native libraries and DSP skeletons, retain their library
+search paths and permissions, and set:
+
+- `QNN_HTP_LIBRARY`: full path to `libQnnHtp.so` (default
+  `/usr/lib/libQnnHtp.so`).
+- `LD_LIBRARY_PATH` and `ADSP_LIBRARY_PATH`: the board's QAIRT host libraries
+  and compatible Hexagon skeleton directories.
+- `QNN_HTP_BURST=1`: enable the native burst/TURBO performance configuration.
+- `OMP_NUM_THREADS=1`: bound host image preprocessing threads.
+
+Hardware/library provisioning is a host deployment requirement, not a new
+launcher image target. Do not expose a plain HTTP listener over the network;
+use the existing remote TLS proxy and inference-only bearer key. Missing QAIRT,
+unsupported ABI, mismatched source metadata or failed native warmup parks the
+existing server in `error`, with no CPU/GPU neural fallback. Restore
+`backend: pytorch` to return to the existing path; replacing the serving YAML
+reloads the process when the policy is idle.
+
+QNN keeps the same `/infer` RTC fields: `prev_chunk_left_over` contains the
+unexecuted normalized `action_chunk_raw` tail, `inference_delay` is the frozen
+prefix length, and `guidance_horizon` is soft width beyond that prefix (0 uses
+the configured default). Malformed carryover is refused before graph execution.
+After each native integrated expert update, host residual arithmetic uses stock
+LeRobot RTC guidance with the configured schedule and weight cap; it never takes
+a second Euler update. Without carryover the native output and seeded noise
+sequence are unchanged. Every response includes physical `action_chunk`,
+normalized trained-width `action_chunk_raw`, and the bundle's trained `dt`.
+Warmup preserves the noise stream for the first real request.
+
 ## Environment
 
 Set these in the workspace `.env`; all are optional.
@@ -171,9 +263,19 @@ server, so anything after the image name is appended as arguments to it, and
 
 ## Tests
 
-`test_vla_inference_server.py` needs `lerobot` and `torch`, so it runs in the
-container, which mounts this directory at `/app`:
+The inference-server tests need `lerobot` and `torch`, so they run in the
+inference image. From the workspace root, use a fresh CPU-only container without
+starting or changing a running server:
 
 ```bash
-docker exec "$(docker ps -qf name=inference_server)" python -m unittest -v test_vla_inference_server
+docker run --rm --network none --entrypoint python \
+  -e PYTHONDONTWRITEBYTECODE=1 -e OMP_NUM_THREADS=1 \
+  -v "$PWD/src/vla_sim/docker:/app:ro" -w /app \
+  moveit_pro-inference_server:latest \
+  -m unittest -v test_vla_inference_server test_vla_qnn_backend
 ```
+
+QNN tests use fake native sessions and need neither QAIRT, NPU hardware, a Hub
+connection nor checkpoint weights. They cover bundle selection/validation,
+off-path output and RNG parity, stock LeRobot RTC arithmetic, malformed
+carryover and the authenticated `/status`/`/infer` round-trip.
