@@ -138,6 +138,9 @@ RELOAD_IDLE_SECONDS = 5.0
 # policy_call_timeout of 10.0 in the stock objective), and a hung inference
 # must not block the reload that would replace it.
 INFER_ABANDONED_SECONDS = 30.0
+# How long a reload waits for a hung /infer to release the native QNN sessions
+# before replacing the process without freeing them.
+QNN_RELEASE_TIMEOUT_SECONDS = 1.0
 INFERENCE_KEY_ENV = "MOVEIT_INFERENCE_KEY"
 _HF_TOKEN_FILE_SOURCE_ENV = "MOVEIT_PRO_HF_TOKEN_FROM_FILE"
 
@@ -701,9 +704,8 @@ class QnnPolicyRunner(PolicyRunner):
         )
         self.state_dim = self.policy.config["request_state_dim"]
         self.request_names = self.policy.config["camera_names"]
-        self.int8 = any(
-            value == "w8a16" for value in self.policy.config["precision"].values()
-        )
+        self.int8 = False
+        self.precision = dict(self.policy.config["precision"])
 
     def expected_state_dim(self) -> int:
         return self.state_dim
@@ -730,6 +732,18 @@ class QnnPolicyRunner(PolicyRunner):
             return self.policy.infer(
                 images, state, prompt, prev_chunk, inference_delay, horizon
             )
+
+    def close(self) -> None:
+        """Free the native sessions unless a hung /infer still holds them."""
+        if not self.lock.acquire(timeout=QNN_RELEASE_TIMEOUT_SECONDS):
+            log("WARNING: a hung /infer holds the QNN sessions; not freeing them")
+            return
+        try:
+            self.policy.close()
+        except Exception as exc:
+            log(f"ERROR: QNN cleanup failed: {exc}")
+        finally:
+            self.lock.release()
 
     def warmup(self) -> tuple[float, float, int]:
         # Warmup is not an observation: preserve the seeded noise stream for
@@ -934,6 +948,8 @@ def watch_runtime_inputs(
                     f"call(s) hung for more than {INFER_ABANDONED_SECONDS:g}s"
                 )
             log("serving configuration changed; reloading the model")
+            if state is not None and isinstance(state.runner, QnnPolicyRunner):
+                state.runner.close()
             try:
                 restart()
             except OSError as exc:
@@ -1129,14 +1145,19 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
         log(f"FATAL: model load failed: {state.detail}")
     except Exception as exc:
         if isinstance(runner, QnnPolicyRunner):
-            try:
-                runner.policy.close()
-            except Exception as cleanup_error:
-                log(f"QNN cleanup after load failure: {cleanup_error}")
+            runner.close()
         traceback.print_exc()
         state.detail = f"{type(exc).__name__}: {exc}"
         state.status = "error"
         log(f"FATAL: model load failed: {state.detail}")
+
+
+def ready_fields(runner: PolicyRunner) -> dict:
+    """Device and precision fields /health and /status report for a ready policy."""
+    fields = {"device": runner.device, "int8": runner.int8}
+    if isinstance(runner, QnnPolicyRunner):
+        fields["qnnPrecision"] = runner.precision
+    return fields
 
 
 def run_inference(state: ServerState, payload: dict) -> dict:
@@ -1261,8 +1282,7 @@ def make_handler(state: ServerState):
                 if state.status == "error":
                     health["detail"] = state.detail
                 elif state.status == "ready":
-                    health["device"] = state.runner.device
-                    health["int8"] = state.runner.int8
+                    health.update(ready_fields(state.runner))
                 self._send(200, health)
                 return
             if self.path != "/status":
@@ -1287,8 +1307,7 @@ def make_handler(state: ServerState):
             if state.status == "error":
                 health["detail"] = state.detail
             elif state.status == "ready":
-                health["device"] = state.runner.device
-                health["int8"] = state.runner.int8
+                health.update(ready_fields(state.runner))
             self._send(200, health)
 
         def _authorized(self) -> bool:

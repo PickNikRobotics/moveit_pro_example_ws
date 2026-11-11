@@ -346,11 +346,6 @@ class NativeRuntime:
             raise ValueError("QNN HTP device must be 0 or 1")
         if index in self.devices:
             return self.devices[index]
-        if os.environ.get("QNN_HTP_BURST") != "1":
-            raise RuntimeError(
-                "Native HTP serving requires QNN_HTP_BURST=1 before load; "
-                "set it in the inference process environment"
-            )
         actual = c.POINTER(Platform)()
         self.check(
             self.functions["platform_info"](None, c.byref(actual)),
@@ -397,6 +392,8 @@ class NativeRuntime:
                     self.functions["platform_free"](None, actual),
                     "deviceFreePlatformInfo",
                 )
+        if os.environ.get("QNN_HTP_BURST", "1") == "0":
+            return handle
         infra = c.POINTER(Infrastructure)()
         self.check(
             self.functions["infrastructure"](c.byref(infra)), "deviceGetInfrastructure"

@@ -143,11 +143,15 @@ search paths and permissions, and set:
   `/usr/lib/libQnnHtp.so`).
 - `LD_LIBRARY_PATH` and `ADSP_LIBRARY_PATH`: the board's QAIRT host libraries
   and compatible Hexagon skeleton directories.
-- `QNN_HTP_BURST=1`: enable the native burst/TURBO performance configuration.
+- `QNN_HTP_BURST`: the native burst/TURBO performance configuration is applied
+  by default; set `0` to leave the HTP power configuration untouched.
 - `OMP_NUM_THREADS=1`: bound host image preprocessing threads.
 
 Hardware/library provisioning is a host deployment requirement, not a new
-launcher image target. Do not expose a plain HTTP listener over the network;
+launcher image target: the shipped `inference_server` service does not mount
+QAIRT, the HTP devices or a compiled bundle, so `backend: qnn` through the
+launcher parks in `error`. Launcher deployment is tracked in
+`PickNikRobotics/moveit_pro#24494`. Do not expose a plain HTTP listener over the network;
 use the existing remote TLS proxy and inference-only bearer key. Missing QAIRT,
 unsupported ABI, mismatched source metadata or failed native warmup parks the
 existing server in `error`, with no CPU/GPU neural fallback. Restore
@@ -181,6 +185,8 @@ Set these in the workspace `.env`; all are optional.
 ## The HTTP contract
 
 `GET /health` reports `loading` / `ready` / `error` and needs no token.
+With QNN, `int8` is always `false` and `qnnPrecision` reports the bundle's
+per-graph `precision` map, on both `/health` and `/status`.
 Authenticated `GET /status` also reports the selected checkpoint and immutable
 revision so Trainer can confirm the exact model is loaded. It also reports
 `configRevision`, the sha256 of the serving file this process loaded, which

@@ -34,6 +34,7 @@ import ctypes
 import hashlib
 import http.client
 import json
+import os
 import tempfile
 import threading
 import unittest
@@ -58,6 +59,7 @@ from vla_inference_server import (
     make_handler,
     parse_args,
     run_inference,
+    watch_runtime_inputs,
 )
 from vla_qnn_policy import (
     FOUR_GRAPH_ABI,
@@ -70,7 +72,19 @@ from vla_qnn_policy import (
     resize_with_pad,
     validate_bundle,
 )
-from vla_qnn_runtime import NativeModel, NativeRuntime, Tensor, function
+from vla_qnn_runtime import (
+    ERROR,
+    Hardware,
+    HtpExtension,
+    Infrastructure,
+    NativeModel,
+    NativeRuntime,
+    Perf,
+    Platform,
+    Power,
+    Tensor,
+    function,
+)
 
 
 def expert_update(actions):
@@ -612,7 +626,8 @@ class TestQnnInference(QnnFixture):
         runner, runtime = self.runner()
         result = run_inference(self.ready_state(runner), self.payload())
         self.assertEqual(set(runtime.models), set(FOUR_GRAPH_ORDER))
-        self.assertTrue(runner.int8)
+        self.assertFalse(runner.int8)
+        self.assertEqual(runner.precision["backbone"], "w8a16")
         self.assertEqual(np.shape(result["action_chunk_raw"]), (50, 8))
         self.assertEqual(result["dt"], 0.1)
 
@@ -633,6 +648,13 @@ class TestQnnInference(QnnFixture):
         status = json.loads(response.read())
         self.assertEqual(response.status, 200)
         self.assertEqual(status["device"], "npu:qnn_htp")
+        self.assertIs(status["int8"], False)
+        self.assertEqual(status["qnnPrecision"], self.config["precision"])
+        conn.request("GET", "/health")
+        response = conn.getresponse()
+        health = json.loads(response.read())
+        self.assertEqual(health["qnnPrecision"], self.config["precision"])
+        self.assertIs(health["int8"], False)
         self.assertEqual(status["checkpointRevision"], "a" * 40)
         self.assertIn("configRevision", status)
         conn.request(
@@ -673,6 +695,123 @@ class TestQnnInference(QnnFixture):
         response.read()
         self.assertEqual(response.status, 400)
         self.assertEqual(len(runtime.models["action_expert"].calls), 20)
+
+
+class TestQnnReload(QnnFixture):
+    def watch(self, state):
+        serving = self.root / "watched.yaml"
+        serving.write_text("backend: qnn\n")
+        closed_at_restart = []
+
+        def wait(_seconds):
+            serving.write_text("backend: pytorch\n")
+
+        def restart():
+            closed_at_restart.append(self.runtime.closed)
+
+        watch_runtime_inputs(
+            [str(serving)], state=state, wait=wait, restart=restart, clock=lambda: 0
+        )
+        return closed_at_restart
+
+    def test_reload_frees_native_sessions_before_replacing_the_process(self):
+        runner, self.runtime = self.runner()
+        self.assertEqual(self.watch(self.ready_state(runner)), [True])
+
+    def test_reload_over_a_hung_infer_does_not_wait_for_its_sessions(self):
+        runner, self.runtime = self.runner()
+        runner.lock.acquire()
+        self.addCleanup(runner.lock.release)
+        with patch("vla_inference_server.QNN_RELEASE_TIMEOUT_SECONDS", 0.01):
+            self.assertEqual(self.watch(self.ready_state(runner)), [False])
+
+
+class TestNativeBurst(unittest.TestCase):
+    """Drive NativeRuntime.device through fake QNN entry points, no QAIRT."""
+
+    def device(self, environment):
+        runtime = NativeRuntime.__new__(NativeRuntime)
+        runtime.devices = {}
+        runtime.power = {}
+        modes = []
+        extension = HtpExtension()
+        hardware = Hardware()
+        hardware.version = 1
+        hardware.v1.device_id = 0
+        hardware.v1.num_cores = 1
+        hardware.v1.cores = 1
+        hardware.v1.extension = ctypes.pointer(extension)
+        platform = Platform()
+        platform.version = 1
+        platform.v1.num_devices = 1
+        platform.v1.devices = ctypes.pointer(hardware)
+
+        def platform_info(_backend, result):
+            result._obj.contents = platform
+            return 0
+
+        def device_create(_backend, _configs, result):
+            result._obj.value = 7
+            return 0
+
+        def create_id(_device, _core, client):
+            client[0] = 3
+            return 0
+
+        def set_power(_client, values):
+            modes.append(values[0].contents.value.dcvs.mode)
+            return 0
+
+        callbacks = [
+            ctypes.CFUNCTYPE(*types)(callback)
+            for types, callback in (
+                (
+                    (
+                        ERROR,
+                        ctypes.c_uint32,
+                        ctypes.c_uint32,
+                        ctypes.POINTER(ctypes.c_uint32),
+                    ),
+                    create_id,
+                ),
+                ((ERROR, ctypes.c_uint32), lambda _client: 0),
+                (
+                    (ERROR, ctypes.c_uint32, ctypes.POINTER(ctypes.POINTER(Power))),
+                    set_power,
+                ),
+            )
+        ]
+        addresses = [ctypes.cast(cb, ctypes.c_void_p).value for cb in callbacks]
+        infrastructure = Infrastructure(0, Perf(*addresses, None))
+
+        def infrastructure_info(result):
+            result._obj.contents = infrastructure
+            return 0
+
+        runtime.functions = {
+            "platform_info": platform_info,
+            "platform_free": lambda _backend, _platform: 0,
+            "device_create": device_create,
+            "infrastructure": infrastructure_info,
+        }
+        with patch.dict(os.environ):
+            os.environ.pop("QNN_HTP_BURST", None)
+            os.environ.update(environment)
+            handle = runtime.device(0)
+        self.assertEqual(handle.value, 7)
+        return modes, runtime.power
+
+    def test_burst_is_applied_by_default(self):
+        for environment in ({}, {"QNN_HTP_BURST": "1"}):
+            with self.subTest(environment=environment):
+                modes, power = self.device(environment)
+                self.assertEqual(modes, [0x10])
+                self.assertEqual(list(power), [0])
+
+    def test_burst_can_be_turned_off(self):
+        modes, power = self.device({"QNN_HTP_BURST": "0"})
+        self.assertEqual(modes, [])
+        self.assertEqual(power, {})
 
 
 class TestNativeRtcArithmetic(unittest.TestCase):
