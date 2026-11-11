@@ -272,15 +272,16 @@ class NamedGraph:
 
     def __init__(self, runtime, artifact: Path, device: int):
         manifest = json.loads((artifact / "manifest.json").read_text())
-        with (artifact / "model.bin").open("rb") as stream:
-            if (
-                hashlib.file_digest(stream, "sha256").hexdigest()
-                != manifest["context_sha256"]
-            ):
-                raise ValueError(
-                    f"QNN context hash changed for {artifact.name}; restore the compiled bundle"
-                )
-        self.model = runtime.load(artifact / "model.bin", artifact / "abi.json", device)
+        # Snapshot once: a later replacement of model.bin cannot swap the
+        # bytes that were checked for different, ABI-compatible weights.
+        binary = (artifact / "model.bin").read_bytes()
+        if hashlib.sha256(binary).hexdigest() != manifest["context_sha256"]:
+            raise ValueError(
+                f"QNN context hash changed for {artifact.name}; restore the compiled bundle"
+            )
+        self.model = runtime.load(
+            binary, artifact / "abi.json", device, name=artifact.name
+        )
         self.aliases = manifest["output_aliases"]
         if (
             not isinstance(self.aliases, dict)
@@ -443,37 +444,39 @@ class QnnPolicy:
 
         self.runtime = NativeRuntime()
         self.sessions = {}
-        try:
-            for name in self.order:
-                self.sessions[name] = NamedGraph(
-                    self.runtime,
-                    local_path(config["graphs"][name]),
-                    config["device_placement"][name],
+        self.artifacts = {
+            name: local_path(config["graphs"][name]) for name in self.order
+        }
+
+    def load(self):
+        """Load graphs after the runner owns this policy, retaining cleanup on failure.
+
+        Cleanup belongs to the owning runner/load_policy path; a failed native
+        free must not discard the runtime's retained handles.
+        """
+        for name in self.order:
+            self.sessions[name] = NamedGraph(
+                self.runtime,
+                self.artifacts[name],
+                self.config["device_placement"][name],
+            )
+        for name, (inputs, outputs) in graph_ports(
+            self.config["graph_abi"] == SIX_GRAPH_ABI
+        ).items():
+            session = self.sessions[name]
+            model = session.model
+            actual_inputs = {
+                key: (ref["shape"], ref["dtype"])
+                for key, ref in zip(model.input_names, model.input_refs, strict=True)
+            }
+            actual_outputs = {
+                session.aliases[key]: (ref["shape"], ref["dtype"])
+                for key, ref in zip(model.output_names, model.output_refs, strict=True)
+            }
+            if actual_inputs != inputs or actual_outputs != outputs:
+                raise ValueError(
+                    f"QNN {name} input/output names, shapes or dtypes differ from the compiled graph ABI"
                 )
-            for name, (inputs, outputs) in graph_ports(
-                config["graph_abi"] == SIX_GRAPH_ABI
-            ).items():
-                session = self.sessions[name]
-                model = session.model
-                actual_inputs = {
-                    key: (ref["shape"], ref["dtype"])
-                    for key, ref in zip(
-                        model.input_names, model.input_refs, strict=True
-                    )
-                }
-                actual_outputs = {
-                    session.aliases[key]: (ref["shape"], ref["dtype"])
-                    for key, ref in zip(
-                        model.output_names, model.output_refs, strict=True
-                    )
-                }
-                if actual_inputs != inputs or actual_outputs != outputs:
-                    raise ValueError(
-                        f"QNN {name} input/output names, shapes or dtypes differ from the compiled graph ABI"
-                    )
-        except Exception:
-            self.runtime.close()
-            raise
 
     def run_backbone(self, feed):
         """Hide the validated residual split; preserve all 36 unchanged cache names."""

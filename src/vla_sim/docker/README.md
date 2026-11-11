@@ -123,9 +123,11 @@ on HTP1; backbone/expert run on HTP0.
 Each graph directory contains `model.bin` (native compiled context), `abi.json`
 (from `qnn-context-binary-utility`) and `manifest.json`. The latter declares
 `context_sha256` and a one-to-one `output_aliases` map from compiler output
-names to source graph names. The backend checks the context digest and fixed
-input/output names, shapes and dtypes before serving; quantized, dynamic or
-sparse graph IO is refused. Compilation precision is fixed by the bundle:
+names to source graph names. The backend snapshots each context once, checks
+its digest, and loads those same bytes. The nonpersistent native context input
+is released after deserialization, so a second host weight copy does not stay
+resident. Fixed input/output names, shapes and dtypes are checked before serving;
+quantized, dynamic or sparse graph IO is refused. Compilation precision is fixed by the bundle:
 vision FP16/W8A16, token FP16, backbone W4A16/W8A16 or FP16 split, and expert
 W8A16/W16A16/native-RMS FP16. Serving support does not qualify a compiled
 checkpoint's accuracy or authorize real-robot deployment; validate that
@@ -146,6 +148,11 @@ search paths and permissions, and set:
 - `QNN_HTP_BURST`: the native burst/TURBO performance configuration is applied
   by default; set `0` to leave the HTP power configuration untouched.
 - `OMP_NUM_THREADS=1`: bound host image preprocessing threads.
+- Docker `--ulimit memlock=-1:-1`: allow the native FastRPC weight mappings.
+  The default Docker limit is 8 MiB; the six-context IQ9 bundle failed native
+  load with QNN status 1002 (`QNN_COMMON_ERROR_MEM_ALLOC`) at that limit, and
+  loaded with unlimited memlock. This is a container setting, not a host
+  permission or system-library change.
 
 Hardware/library provisioning is a host deployment requirement, not a new
 launcher image target: the shipped `inference_server` service does not mount
@@ -157,7 +164,8 @@ unsupported ABI, mismatched source metadata or failed native warmup parks the
 existing server in `error`, with no CPU/GPU neural fallback. Restore
 `backend: pytorch` to return to the existing path; replacing the serving YAML
 reloads the process when the policy is idle and any QNN load has finished,
-freeing the native sessions first.
+freeing the native sessions first. A failed native release retains ownership
+for retry instead of dropping the runner or claiming a ready NPU.
 
 QNN keeps the same `/infer` RTC fields: `prev_chunk_left_over` contains the
 unexecuted normalized `action_chunk_raw` tail, `inference_delay` is the frozen

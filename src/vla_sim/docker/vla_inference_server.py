@@ -709,6 +709,12 @@ class QnnPolicyRunner(PolicyRunner):
         self.request_names = self.policy.config["camera_names"]
         self.int8 = False
         self.precision = dict(self.policy.config["precision"])
+        self.release_started = False
+
+    def load(self):
+        """Allocate graph contexts only after the server owns this runner."""
+        with self.lock:
+            self.policy.load()
 
     def expected_state_dim(self) -> int:
         return self.state_dim
@@ -732,6 +738,10 @@ class QnnPolicyRunner(PolicyRunner):
             inference_delay, guidance_horizon, self.guidance_horizon
         )
         with self.lock:
+            if self.release_started:
+                raise RuntimeError(
+                    "QNN sessions are releasing or closed; reload the server"
+                )
             return self.policy.infer(
                 images, state, prompt, prev_chunk, inference_delay, horizon
             )
@@ -745,9 +755,13 @@ class QnnPolicyRunner(PolicyRunner):
             log("WARNING: a hung /infer holds the QNN sessions; not freeing them")
             return False
         try:
+            self.release_started = True
             self.policy.close()
         except Exception as exc:
+            # Retain this runner for cleanup retry. Some contexts may already
+            # be freed, so release_started also prevents advertising ready.
             log(f"ERROR: QNN cleanup failed: {exc}")
+            raise
         finally:
             self.lock.release()
         return True
@@ -769,6 +783,9 @@ class ServerState:
         self.status = "loading"
         self.detail = ""
         self.runner: PolicyRunner | None = None
+        # A failed QNN load whose native resources still need release. This
+        # runner is never used for inference but remains reachable for retry.
+        self.cleanup_runner: QnnPolicyRunner | None = None
         # Resolved by the loader thread; meaningful once status is "ready".
         self.fps = 0.0
         # The selected checkpoint is available through the authenticated
@@ -972,11 +989,22 @@ def watch_runtime_inputs(
                     f"call(s) hung for more than {INFER_ABANDONED_SECONDS:g}s"
                 )
             log("serving configuration changed; reloading the model")
-            released = (
-                state is not None
-                and isinstance(state.runner, QnnPolicyRunner)
-                and state.runner.close()
-            )
+            released = False
+            native_runner = None
+            if state is not None:
+                native_runner = state.cleanup_runner
+                if native_runner is None and isinstance(state.runner, QnnPolicyRunner):
+                    native_runner = state.runner
+            if native_runner is not None:
+                try:
+                    released = native_runner.close()
+                except Exception as exc:
+                    state.detail = f"QNN cleanup failed during reload ({exc}); retrying"
+                    state.status = "error"
+                    state.cancel_reload()
+                    continue
+                if released:
+                    state.cleanup_runner = None
             try:
                 restart()
             except OSError as exc:
@@ -1080,6 +1108,8 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 args.guidance_horizon,
                 args.rtc_schedule,
             )
+            state.cleanup_runner = runner
+            runner.load()
             # All serving metadata comes from the locally compiled bundle, not
             # a mutable Hub HEAD. No host neural weights are downloaded/loaded.
             state.fps = runner.policy.fps
@@ -1172,6 +1202,7 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             )
 
         state.runner = runner
+        state.cleanup_runner = None
         state.status = "ready"
         log("ready")
     except (GatedRepoError, RepositoryNotFoundError) as exc:
@@ -1185,7 +1216,12 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
         log(f"FATAL: model load failed: {state.detail}")
     except Exception as exc:
         if isinstance(runner, QnnPolicyRunner):
-            runner.close()
+            state.cleanup_runner = runner
+            try:
+                if runner.close():
+                    state.cleanup_runner = None
+            except Exception as cleanup_error:
+                log(f"QNN cleanup retained for retry: {cleanup_error}")
         traceback.print_exc()
         state.detail = f"{type(exc).__name__}: {exc}"
         state.status = "error"

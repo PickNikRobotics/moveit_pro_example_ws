@@ -78,6 +78,7 @@ from vla_qnn_runtime import (
     HtpExtension,
     Infrastructure,
     NativeModel,
+    ContextConfig,
     NativeRuntime,
     Perf,
     Platform,
@@ -163,9 +164,9 @@ class FakeRuntime:
         self.models = {}
         self.closed = False
 
-    def load(self, binary, abi, device):
+    def load(self, binary, abi, device, *, name="model.bin"):
+        assert isinstance(binary, bytes)
         assert Path(abi).is_file()
-        name = Path(binary).parent.name
         model = FakeModel(name, device, self.ports[name])
         self.models[name] = model
         return model
@@ -263,6 +264,7 @@ class QnnFixture(unittest.TestCase):
             "vla_qnn_policy.AutoTokenizer.from_pretrained", return_value=self.tokenizer
         ) as tokenizer_load:
             runner = QnnPolicyRunner(**values)
+            runner.load()
         tokenizer_load.assert_called_once_with(
             str(self.root / "tokenizer"), local_files_only=True
         )
@@ -443,10 +445,40 @@ class TestQnnSelection(QnnFixture):
         with patch("vla_qnn_runtime.NativeRuntime", return_value=runtime), patch(
             "vla_qnn_policy.AutoTokenizer.from_pretrained", return_value=self.tokenizer
         ), self.assertRaisesRegex(ValueError, "graph ABI"):
-            QnnPolicyRunner(
+            runner = QnnPolicyRunner(
                 str(self.bundle), "test/pi05", "pi05", "", 8, 10.0, 8, "EXP"
             )
+            try:
+                runner.load()
+            finally:
+                runner.close()
         self.assertTrue(runtime.closed)
+
+    def test_native_load_uses_verified_snapshot_after_file_replacement(self):
+        runtime = FakeRuntime(self.ports)
+        original_load = runtime.load
+        loaded = []
+        expected = (self.root / "vision_encoder" / "model.bin").read_bytes()
+
+        def replace(binary, abi, device, **kwargs):
+            name = kwargs["name"]
+            if name == "vision_encoder":
+                (self.root / name / "model.bin").write_bytes(
+                    b"replacement after hash check"
+                )
+                loaded.append(binary)
+            return original_load(binary, abi, device, **kwargs)
+
+        runtime.load = replace
+        with patch("vla_qnn_runtime.NativeRuntime", return_value=runtime), patch(
+            "vla_qnn_policy.AutoTokenizer.from_pretrained", return_value=self.tokenizer
+        ):
+            runner = QnnPolicyRunner(
+                str(self.bundle), "test/pi05", "pi05", "", 8, 10.0, 8, "EXP"
+            )
+            runner.load()
+        self.addCleanup(runtime.close)
+        self.assertEqual(loaded, [expected])
 
     def test_bundle_refuses_unsupported_sampling_mapping_and_devices(self):
         changes = {
@@ -714,6 +746,43 @@ class TestQnnReload(QnnFixture):
         )
         return closed_at_restart
 
+    def test_failed_warmup_cleanup_retains_runner_until_retry_succeeds(self):
+        args = self.parsed_args()
+        self.runtime = FakeRuntime(self.ports)
+        original_close = self.runtime.close
+        self.runtime.close = MagicMock(side_effect=RuntimeError("native free failed"))
+        state = ServerState()
+        with patch("vla_qnn_runtime.NativeRuntime", return_value=self.runtime), patch(
+            "vla_qnn_policy.AutoTokenizer.from_pretrained", return_value=self.tokenizer
+        ), patch.object(
+            QnnPolicyRunner, "warmup", side_effect=RuntimeError("native warmup failed")
+        ):
+            load_policy(state, args)
+        self.assertEqual(state.status, "error")
+        self.assertIsNone(state.runner)
+        self.assertIsInstance(state.cleanup_runner, QnnPolicyRunner)
+        self.assertTrue(state.cleanup_runner.release_started)
+        self.runtime.close.side_effect = original_close
+        self.assertEqual(self.watch(state), [True])
+        self.assertIsNone(state.cleanup_runner)
+
+    def test_cleanup_failure_during_reload_retries_before_exec(self):
+        runner, self.runtime = self.runner()
+        state = self.ready_state(runner)
+        original_close = self.runtime.close
+        attempts = []
+
+        def close():
+            attempts.append(True)
+            if len(attempts) == 1:
+                raise RuntimeError("context free failed")
+            original_close()
+
+        self.runtime.close = close
+        self.assertEqual(self.watch(state), [True])
+        self.assertEqual(len(attempts), 2)
+        self.assertEqual(state.status, "error")
+
     def test_reload_frees_native_sessions_before_replacing_the_process(self):
         runner, self.runtime = self.runner()
         self.assertEqual(self.watch(self.ready_state(runner)), [True])
@@ -789,6 +858,106 @@ class TestQnnReload(QnnFixture):
         self.addCleanup(runner.lock.release)
         with patch("vla_inference_server.QNN_RELEASE_TIMEOUT_SECONDS", 0.01):
             self.assertEqual(self.watch(self.ready_state(runner)), [False])
+
+
+class TestNativeContextOwnership(unittest.TestCase):
+    def runtime(self, fail_retrieve=False, fail_free=False):
+        runtime = NativeRuntime.__new__(NativeRuntime)
+        runtime.lock = threading.RLock()
+        runtime.models = []
+        runtime.devices = {0: ctypes.c_void_p(7)}
+        runtime.power = {}
+        runtime.backend = ctypes.c_void_p(8)
+        runtime.device = lambda _device: runtime.devices[0]
+        observed = []
+        frees = []
+
+        def check(status, operation):
+            if status:
+                raise RuntimeError(operation + " failed")
+
+        def create(_backend, _device, config, data, size, context, _profile):
+            options = ctypes.cast(config, ctypes.POINTER(ctypes.POINTER(ContextConfig)))
+            observed.append(
+                (
+                    ctypes.string_at(data, size),
+                    options[0].contents.option,
+                    options[0].contents.value.is_persistent_binary,
+                )
+            )
+            context._obj.value = 11
+            return 0
+
+        def retrieve(_context, _name, graph):
+            if fail_retrieve:
+                return 1
+            graph._obj.value = 12
+            return 0
+
+        def free(_context, _profile):
+            frees.append(True)
+            return 1 if fail_free and len(frees) == 1 else 0
+
+        runtime.check = check
+        runtime.functions = {
+            "context_create": create,
+            "graph_retrieve": retrieve,
+            "context_free": free,
+            "device_free": MagicMock(return_value=0),
+            "backend_free": MagicMock(return_value=0),
+        }
+        return runtime, observed, frees
+
+    def abi(self, root):
+        row = TestNativeTensorAbi().row()
+        output = json.loads(json.dumps(row))
+        output["info"].update(
+            name="actions",
+            type="QNN_TENSOR_TYPE_APP_READ",
+            dataType="QNN_DATATYPE_FLOAT_32",
+        )
+        path = root / "abi.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "info": {
+                        "backendId": 6,
+                        "numGraphs": 1,
+                        "graphs": [
+                            {
+                                "info": {
+                                    "graphName": "test",
+                                    "graphInputs": [row],
+                                    "graphOutputs": [output],
+                                }
+                            }
+                        ],
+                    }
+                }
+            )
+        )
+        return path
+
+    def test_partial_context_stays_owned_when_graph_and_cleanup_fail(self):
+        runtime, _observed, frees = self.runtime(fail_retrieve=True, fail_free=True)
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaises(RuntimeError):
+                runtime.load(b"validated snapshot", self.abi(Path(directory)), 0)
+            self.assertEqual(len(runtime.models), 1)
+            self.assertTrue(runtime.models[0].context)
+            runtime.functions["device_free"].assert_not_called()
+            runtime.close()
+            self.assertEqual(len(frees), 2)
+            self.assertEqual(runtime.models, [])
+            runtime.functions["device_free"].assert_called_once()
+
+    def test_native_context_reads_snapshot_and_releases_nonpersistent_buffer(self):
+        runtime, observed, _frees = self.runtime()
+        with tempfile.TemporaryDirectory() as directory:
+            model = runtime.load(b"validated snapshot", self.abi(Path(directory)), 0)
+            self.assertEqual(observed, [(b"validated snapshot", 7, 0)])
+            self.assertIsNone(model.binary)
+            runtime.close()
 
 
 class TestNativeBurst(unittest.TestCase):

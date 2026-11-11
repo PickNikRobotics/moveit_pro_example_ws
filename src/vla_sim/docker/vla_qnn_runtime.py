@@ -37,7 +37,6 @@ is opened at import time, and there is no ONNX Runtime or CPU/GPU fallback.
 
 import ctypes as c
 import json
-import mmap
 import os
 import threading
 import time
@@ -216,6 +215,16 @@ def function(address, result, *args):
     if not address:
         raise RuntimeError("QNN required API pointer is null; use QAIRT 2.49")
     return c.CFUNCTYPE(result, *args)(address)
+
+
+class ContextConfigValue(c.Union):
+    _fields_ = [("is_persistent_binary", c.c_uint8), ("storage", c.c_uint64)]
+
+
+class ContextConfig(c.Structure):
+    # QNN_CONTEXT_CONFIG_PERSISTENT_BINARY=7; explicitly opt out so the
+    # immutable snapshot can be released after createFromBinary returns.
+    _fields_ = [("option", c.c_int), ("value", ContextConfigValue)]
 
 
 class NativeRuntime:
@@ -439,11 +448,21 @@ class NativeRuntime:
         )
         return handle
 
-    def load(self, binary, abi, device):
-        """Keep a native context resident until close, with verified binary ports."""
+    def load(self, binary: bytes, abi, device, *, name="model.bin"):
+        """Load verified snapshot bytes; own a partial model before native allocation."""
+        if not isinstance(binary, bytes) or not binary:
+            raise ValueError("QNN load requires a nonempty immutable context snapshot")
         with self.lock:
-            model = NativeModel(self, binary, abi, device)
+            model = NativeModel(self, abi, device)
             self.models.append(model)
+            try:
+                model.load(binary, name)
+            except Exception:
+                # If native free fails, ownership remains here and close()
+                # will retry this context before releasing its dependencies.
+                model.close()
+                self.models.remove(model)
+                raise
             return model
 
     def close(self):
@@ -468,10 +487,9 @@ class NativeRuntime:
 class NativeModel:
     """Run dense native tensors by name, preserving integer IDs and every output."""
 
-    def __init__(self, runtime, binary, abi, device):
+    def __init__(self, runtime, abi, device):
         self.runtime = runtime
         self.device_id = device
-        path = Path(binary)
         info = json.loads(Path(abi).read_text())["info"]
         if info["backendId"] != 6 or info["numGraphs"] != 1 or len(info["graphs"]) != 1:
             raise ValueError("Native QNN context must contain exactly one HTP graph")
@@ -484,43 +502,44 @@ class NativeModel:
         self.context = HANDLE()
         self.graph = HANDLE()
         self.call_count = 0
+        self.binary: bytes | None = None
+
+    def load(self, binary: bytes, name: str):
+        """Deserialize the exact checked bytes, not a re-opened artifact path."""
         began = time.perf_counter()
-        with path.open("rb") as handle:
-            self.mapping = mmap.mmap(handle.fileno(), 0, access=mmap.ACCESS_COPY)
-        address = c.addressof(c.c_char.from_buffer(self.mapping))
+        self.binary = binary
+        buffer = c.c_char_p(binary)
+        config = ContextConfig(7, ContextConfigValue(is_persistent_binary=0))
+        configs = (c.POINTER(ContextConfig) * 2)(c.pointer(config), None)
         try:
-            runtime.check(
-                runtime.functions["context_create"](
-                    runtime.backend,
-                    runtime.device(device),
-                    None,
-                    address,
-                    len(self.mapping),
+            self.runtime.check(
+                self.runtime.functions["context_create"](
+                    self.runtime.backend,
+                    self.runtime.device(self.device_id),
+                    configs,
+                    c.cast(buffer, HANDLE),
+                    len(binary),
                     c.byref(self.context),
                     None,
                 ),
-                f"contextCreateFromBinary({path.name},device{device})",
+                f"contextCreateFromBinary({name},device{self.device_id})",
             )
-            if not self.context:
-                raise RuntimeError(
-                    "Native QNN returned a null context; refuse graph retrieval"
-                )
-            runtime.check(
-                runtime.functions["graph_retrieve"](
-                    self.context, self.graph_name.encode(), c.byref(self.graph)
-                ),
-                f"graphRetrieve({self.graph_name})",
+        finally:
+            # PERSISTENT_BINARY=false guarantees QNN does not retain this
+            # buffer, avoiding a second resident copy of multi-GiB weights.
+            self.binary = None
+        if not self.context:
+            raise RuntimeError(
+                "Native QNN returned a null context; refuse graph retrieval"
             )
-            if not self.context or not self.graph:
-                raise RuntimeError(
-                    "Native QNN reported a null context/graph; refuse execution"
-                )
-        except Exception:
-            if self.context:
-                self.close()
-            else:
-                self.mapping.close()
-            raise
+        self.runtime.check(
+            self.runtime.functions["graph_retrieve"](
+                self.context, self.graph_name.encode(), c.byref(self.graph)
+            ),
+            f"graphRetrieve({self.graph_name})",
+        )
+        if not self.graph:
+            raise RuntimeError("Native QNN reported a null graph; refuse execution")
         self.load_s = time.perf_counter() - began
 
     @staticmethod
@@ -668,4 +687,4 @@ class NativeModel:
             )
             self.context = HANDLE()
             self.graph = HANDLE()
-            self.mapping.close()
+        self.binary = None
