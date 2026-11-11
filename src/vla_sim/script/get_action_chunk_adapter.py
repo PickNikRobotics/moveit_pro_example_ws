@@ -322,9 +322,9 @@ class GetActionChunkAdapter(Node):
         except (ValueError, RuntimeError) as exc:
             raise RequestError(f"image encode failed: {exc}") from exc
         payload = {
-            # The request carries the policy's full trained state: the arm group's
-            # joints plus the gripper joint appended last when the Objective configures one.
+            # The server matches each value to the policy's trained joints by name.
             "state": list(request.robot_state.position),
+            "state_names": list(request.robot_state.name),
             "task": request.prompt,
             "images": images,
             "new_episode": bool(request.new_episode),
@@ -554,20 +554,33 @@ class GetActionChunkAdapter(Node):
         chunk_arr = _finite_2d(chunk, "action_chunk")
         if chunk_arr.shape[1] != expected_dims:
             raise RequestError(
-                f"/infer chunk width {chunk_arr.shape[1]} does not match the "
-                f"observed joint count {expected_dims}"
+                f"/infer returned {chunk_arr.shape[1]} values per step but names "
+                f"{expected_dims} joints"
             )
         return chunk_arr
+
+    @staticmethod
+    def _chunk_joint_names(data: dict, request) -> list:
+        """The joint each chunk column commands."""
+        names = data.get("action_names")
+        if names is None:
+            # A server that names no actions returns one column per state entry.
+            return list(request.robot_state.name)
+        if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
+            raise RequestError(
+                "/infer response 'action_names' must be a list of joint names"
+            )
+        return names
 
     def _fill_response(self, request, response) -> None:
         payload = self._build_payload(request)
         data = self._post_infer(payload)
-        chunk = self._validate_chunk(data, len(request.robot_state.name))
+        joint_names = self._chunk_joint_names(data, request)
+        chunk = self._validate_chunk(data, len(joint_names))
 
-        # The chunk: absolute joint positions. The action columns line up with the request's
-        # state entries, so the request's joint names are also the chunk's joint names.
+        # The chunk: absolute joint positions, one column per named joint.
         traj = JointTrajectory()
-        traj.joint_names = list(request.robot_state.name)
+        traj.joint_names = joint_names
         for step in chunk:
             point = JointTrajectoryPoint()
             point.positions = [float(v) for v in step]

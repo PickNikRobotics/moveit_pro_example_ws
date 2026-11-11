@@ -282,6 +282,7 @@ class TestOnRequest(unittest.TestCase):
         self.assertEqual(url, self.node.infer_url)
         sent_payload = mock_post.call_args.kwargs["json"]
         self.assertEqual(sent_payload["state"], [0.1, 0.2])
+        self.assertEqual(sent_payload["state_names"], ["j1", "j2"])
         self.assertEqual(list(sent_payload["images"].keys()), ["front"])
         self.assertTrue(sent_payload["new_episode"])
 
@@ -529,7 +530,50 @@ class TestOnRequest(unittest.TestCase):
         response = self.node._on_request(make_request(), GetActionChunk.Response())
 
         self.assertEqual(response.status, GetActionChunk.Response.ERROR)
-        self.assertIn("does not match", response.message)
+        self.assertIn("values per step but names 2 joints", response.message)
+
+    @patch(SESSION_POST)
+    def test_server_action_names_label_the_chunk(self, mock_post: MagicMock) -> None:
+        """A server that names its actions labels each column, in its training order."""
+        stub_json(
+            mock_post,
+            {"action_chunk": [[0.6, 0.5]], "action_names": ["j2", "j1"], "dt": 0.05},
+        )
+        response = self.node._on_request(make_request(), GetActionChunk.Response())
+
+        self.assertEqual(
+            response.status, GetActionChunk.Response.CHUNK_PRODUCED, response.message
+        )
+        self.assertEqual(list(response.chunk.joint_names), ["j2", "j1"])
+
+    @patch(SESSION_POST)
+    def test_action_names_that_miscount_the_chunk_fail(
+        self, mock_post: MagicMock
+    ) -> None:
+        stub_json(
+            mock_post,
+            {"action_chunk": [[0.6, 0.5]], "action_names": ["j1"], "dt": 0.05},
+        )
+        response = self.node._on_request(make_request(), GetActionChunk.Response())
+
+        self.assertEqual(response.status, GetActionChunk.Response.ERROR)
+        self.assertIn("returned 2 values per step but names 1 joints", response.message)
+
+    @patch(SESSION_POST)
+    def test_malformed_action_names_fail(self, mock_post: MagicMock) -> None:
+        """Non-string names cannot label a column, so the request fails."""
+        for names in (["j1", 2], "j1"):
+            with self.subTest(names=names):
+                stub_json(
+                    mock_post,
+                    {"action_chunk": [[0.6, 0.5]], "action_names": names, "dt": 0.05},
+                )
+                response = self.node._on_request(
+                    make_request(), GetActionChunk.Response()
+                )
+
+                self.assertEqual(response.status, GetActionChunk.Response.ERROR)
+                self.assertIn("'action_names'", response.message)
 
     @patch(SESSION_POST)
     def test_ragged_chunk_fails_naming_action_chunk(self, mock_post: MagicMock) -> None:
