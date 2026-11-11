@@ -156,7 +156,8 @@ use the existing remote TLS proxy and inference-only bearer key. Missing QAIRT,
 unsupported ABI, mismatched source metadata or failed native warmup parks the
 existing server in `error`, with no CPU/GPU neural fallback. Restore
 `backend: pytorch` to return to the existing path; replacing the serving YAML
-reloads the process when the policy is idle.
+reloads the process when the policy is idle and any QNN load has finished,
+freeing the native sessions first.
 
 QNN keeps the same `/infer` RTC fields: `prev_chunk_left_over` contains the
 unexecuted normalized `action_chunk_raw` tail, `inference_delay` is the frozen

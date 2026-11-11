@@ -718,6 +718,71 @@ class TestQnnReload(QnnFixture):
         runner, self.runtime = self.runner()
         self.assertEqual(self.watch(self.ready_state(runner)), [True])
 
+    def test_reload_during_load_waits_to_free_the_new_sessions(self):
+        args = self.parsed_args()
+        self.runtime = FakeRuntime(self.ports)
+        state = ServerState()
+        warming = threading.Event()
+        finish = threading.Event()
+        waits = 0
+
+        def warmup(_runner):
+            warming.set()
+            finish.wait(10)
+            return 0.1, 0.1, 50
+
+        def wait(seconds):
+            nonlocal waits
+            waits += 1
+            serving.write_text("backend: pytorch\n")
+            if waits == 4:
+                finish.set()
+                loader.join(10)
+
+        def restart():
+            closed_at_restart.append((state.status, self.runtime.closed))
+
+        serving = self.root / "watched.yaml"
+        serving.write_text("backend: qnn\n")
+        closed_at_restart = []
+        with patch("vla_qnn_runtime.NativeRuntime", return_value=self.runtime), patch(
+            "vla_qnn_policy.AutoTokenizer.from_pretrained", return_value=self.tokenizer
+        ), patch.object(QnnPolicyRunner, "warmup", warmup):
+            loader = threading.Thread(target=load_policy, args=(state, args))
+            loader.start()
+            self.assertTrue(warming.wait(10))
+            watch_runtime_inputs(
+                [str(serving)], state=state, wait=wait, restart=restart
+            )
+        self.addCleanup(state.runner.policy.close)
+        self.assertEqual(closed_at_restart, [("ready", True)])
+        self.assertTrue(state.reload_pending)
+
+    def test_failed_exec_after_release_parks_in_error_and_retries(self):
+        runner, self.runtime = self.runner()
+        state = self.ready_state(runner)
+        serving = self.root / "watched.yaml"
+        serving.write_text("backend: qnn\n")
+        status_at_retry = []
+
+        def restart():
+            if not status_at_retry:
+                status_at_retry.append(None)
+                raise OSError("text file busy")
+            status_at_retry.append((state.status, state.detail, state.reloading))
+
+        watch_runtime_inputs(
+            [str(serving)],
+            state=state,
+            wait=lambda _seconds: serving.write_text("backend: pytorch\n"),
+            restart=restart,
+            clock=lambda: 0,
+        )
+        status, detail, reloading = status_at_retry[1]
+        self.assertEqual(status, "error")
+        self.assertIn("text file busy", detail)
+        self.assertTrue(reloading)
+
     def test_reload_over_a_hung_infer_does_not_wait_for_its_sessions(self):
         runner, self.runtime = self.runner()
         runner.lock.acquire()

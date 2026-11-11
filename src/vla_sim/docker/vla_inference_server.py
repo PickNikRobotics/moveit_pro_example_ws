@@ -141,6 +141,9 @@ INFER_ABANDONED_SECONDS = 30.0
 # How long a reload waits for a hung /infer to release the native QNN sessions
 # before replacing the process without freeing them.
 QNN_RELEASE_TIMEOUT_SECONDS = 1.0
+# How long a reload waits for a QNN load and warmup to finish, so it can free
+# the sessions that load created, before replacing the process over it.
+QNN_LOAD_ABANDONED_SECONDS = 120.0
 INFERENCE_KEY_ENV = "MOVEIT_INFERENCE_KEY"
 _HF_TOKEN_FILE_SOURCE_ENV = "MOVEIT_PRO_HF_TOKEN_FROM_FILE"
 
@@ -733,17 +736,21 @@ class QnnPolicyRunner(PolicyRunner):
                 images, state, prompt, prev_chunk, inference_delay, horizon
             )
 
-    def close(self) -> None:
-        """Free the native sessions unless a hung /infer still holds them."""
+    def close(self) -> bool:
+        """Free the native sessions unless a hung /infer still holds them.
+
+        @return: True when the sessions were released and can no longer serve.
+        """
         if not self.lock.acquire(timeout=QNN_RELEASE_TIMEOUT_SECONDS):
             log("WARNING: a hung /infer holds the QNN sessions; not freeing them")
-            return
+            return False
         try:
             self.policy.close()
         except Exception as exc:
             log(f"ERROR: QNN cleanup failed: {exc}")
         finally:
             self.lock.release()
+        return True
 
     def warmup(self) -> tuple[float, float, int]:
         # Warmup is not an observation: preserve the seeded noise stream for
@@ -789,6 +796,8 @@ class ServerState:
         # Set once the watcher commits to a reload, so no /infer starts in the
         # moment before the process is replaced.
         self.reloading = False
+        # Start of a QNN load still creating or warming native sessions.
+        self.native_load_started: float | None = None
 
     @property
     def inflight_infers(self) -> int:
@@ -807,7 +816,22 @@ class ServerState:
             del self.infer_starts[threading.get_ident()]
             self.last_infer_monotonic = time.monotonic()
 
+    def begin_native_load(self) -> bool:
+        """Record a QNN load starting; False when a reload has been committed."""
+        with self.activity_lock:
+            if self.reloading:
+                return False
+            self.native_load_started = time.monotonic()
+            return True
+
     def _idle(self, now: float) -> bool:
+        # A QNN load owns native sessions before state.runner is published;
+        # wait for it so the reload can free them, unless the load hung.
+        if (
+            self.native_load_started is not None
+            and now - self.native_load_started < QNN_LOAD_ABANDONED_SECONDS
+        ):
+            return False
         # Judged on the oldest /infer: once it outlives INFER_ABANDONED_SECONDS
         # it is hung, and every later request is queued behind it on the
         # runner's lock, so none of them can hold off the reload that clears it.
@@ -948,13 +972,24 @@ def watch_runtime_inputs(
                     f"call(s) hung for more than {INFER_ABANDONED_SECONDS:g}s"
                 )
             log("serving configuration changed; reloading the model")
-            if state is not None and isinstance(state.runner, QnnPolicyRunner):
-                state.runner.close()
+            released = (
+                state is not None
+                and isinstance(state.runner, QnnPolicyRunner)
+                and state.runner.close()
+            )
             try:
                 restart()
             except OSError as exc:
                 # The inputs still differ from the baseline, so the next poll
-                # retries; until then keep serving the loaded model.
+                # retries; until then keep serving the loaded model, unless
+                # its native sessions were already released.
+                if released:
+                    state.detail = (
+                        "the reload could not replace the process after "
+                        f"releasing the QNN sessions ({exc}); retrying, or "
+                        "restart the inference server"
+                    )
+                    state.status = "error"
                 if state is not None:
                     state.cancel_reload()
                 log(f"ERROR: the reload could not replace the process: {exc}")
@@ -1029,6 +1064,11 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             )
         backend = getattr(args, "backend", "pytorch")
         if backend == "qnn":
+            if not state.begin_native_load():
+                raise RuntimeError(
+                    "the serving configuration changed before the QNN load "
+                    "started; the server is reloading"
+                )
             log(f"loading pi05 compiled QNN bundle '{args.qnn_bundle}' ...")
             runner = QnnPolicyRunner(
                 args.qnn_bundle,
@@ -1150,6 +1190,8 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
         state.detail = f"{type(exc).__name__}: {exc}"
         state.status = "error"
         log(f"FATAL: model load failed: {state.detail}")
+    finally:
+        state.native_load_started = None
 
 
 def ready_fields(runner: PolicyRunner) -> dict:
