@@ -841,6 +841,21 @@ class ServerState:
             self.native_load_started = time.monotonic()
             return True
 
+    def publish_ready(self, runner: PolicyRunner) -> bool:
+        """Publish the loaded policy atomically with the watcher's reload commit."""
+        with self.activity_lock:
+            # A reload can outlive an expired load's warmup. Even when exec
+            # fails and cancel_reload clears reloading, released QNN sessions
+            # must not overwrite the watcher's error or accept new /infer.
+            if self.reloading or (
+                isinstance(runner, QnnPolicyRunner) and runner.release_started
+            ):
+                return False
+            self.runner = runner
+            self.cleanup_runner = None
+            self.status = "ready"
+            return True
+
     def _idle(self, now: float) -> bool:
         # A QNN load owns native sessions before state.runner is published;
         # wait for it so the reload can free them, unless the load hung.
@@ -1201,10 +1216,10 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 "continuing, the first request pays the cold cost"
             )
 
-        state.runner = runner
-        state.cleanup_runner = None
-        state.status = "ready"
-        log("ready")
+        if state.publish_ready(runner):
+            log("ready")
+        else:
+            log("model load finished after reload committed; not publishing ready")
     except (GatedRepoError, RepositoryNotFoundError) as exc:
         traceback.print_exc()
         state.detail = hub_access_error_message(

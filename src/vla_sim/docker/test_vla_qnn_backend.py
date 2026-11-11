@@ -52,6 +52,7 @@ from lerobot.policies.rtc.modeling_rtc import RTCProcessor
 
 from test_vla_inference_server import encode_bgr_jpeg_b64
 from vla_inference_server import (
+    QNN_LOAD_ABANDONED_SECONDS,
     PolicyRunner,
     QnnPolicyRunner,
     ServerState,
@@ -781,6 +782,117 @@ class TestQnnReload(QnnFixture):
         self.assertEqual(self.watch(state), [True])
         self.assertEqual(len(attempts), 2)
         self.assertEqual(state.status, "error")
+
+    def test_expired_load_preserves_failed_replacement_error_before_publication(self):
+        """A watcher releasing the warm runner must win over the loader's ready write."""
+        args = self.parsed_args()
+        self.runtime = FakeRuntime(self.ports)
+        state = ServerState()
+        state.bearer_key = "qnn-test-key"
+        serving = self.root / "watched.yaml"
+        serving.write_text("backend: qnn\n")
+        original_warmup = QnnPolicyRunner.warmup
+        failure_details = []
+        waits = 0
+
+        class StopWatcher(Exception):
+            pass
+
+        def wait(_seconds):
+            nonlocal waits
+            waits += 1
+            if waits == 1:
+                serving.write_text("backend: pytorch\n")
+            if waits == 3:
+                # Yield the watcher after failed exec, before its next retry.
+                failure_details.append(state.detail)
+                raise StopWatcher
+
+        def restart():
+            self.assertTrue(self.runtime.closed)
+            raise OSError("replacement unavailable")
+
+        def warmup(runner):
+            timings = original_warmup(runner)
+            self.assertIs(state.cleanup_runner, runner)
+            expired = state.native_load_started + QNN_LOAD_ABANDONED_SECONDS + 1
+            with self.assertRaises(StopWatcher):
+                watch_runtime_inputs(
+                    [str(serving)],
+                    state=state,
+                    wait=wait,
+                    restart=restart,
+                    clock=lambda: expired,
+                )
+            self.assertTrue(runner.release_started)
+            self.assertFalse(state.reloading)
+            return timings
+
+        with patch("vla_qnn_runtime.NativeRuntime", return_value=self.runtime), patch(
+            "vla_qnn_policy.AutoTokenizer.from_pretrained", return_value=self.tokenizer
+        ), patch.object(QnnPolicyRunner, "warmup", warmup):
+            load_policy(state, args)
+
+        self.assertEqual(state.status, "error")
+        self.assertEqual(state.detail, failure_details[0])
+        self.assertIn("replacement unavailable", state.detail)
+        self.assertIsNone(state.runner)
+        self.assertIsNone(state.cleanup_runner)
+        self.assertIsNone(state.native_load_started)
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(state))
+        worker = threading.Thread(target=server.serve_forever, daemon=True)
+        worker.start()
+        self.addCleanup(worker.join)
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        connection = http.client.HTTPConnection(
+            "127.0.0.1", server.server_port, timeout=2
+        )
+        self.addCleanup(connection.close)
+        connection.request("GET", "/health")
+        health = json.loads(connection.getresponse().read())
+        self.assertEqual(health["status"], "error")
+        self.assertEqual(health["detail"], failure_details[0])
+        for _ in range(3):
+            connection.request(
+                "POST",
+                "/infer",
+                body=json.dumps(self.payload()),
+                headers={"Authorization": "Bearer qnn-test-key"},
+            )
+            response = connection.getresponse()
+            error = json.loads(response.read())
+            self.assertEqual(response.status, 500)
+            self.assertIn("replacement unavailable", error["error"])
+        # Refusals must not postpone the still-pending reload by marking activity.
+        self.assertIsNone(state.last_infer_monotonic)
+        self.assertEqual(state.inflight_infers, 0)
+        self.assertEqual(self.watch(state), [True])
+
+    def test_expired_load_does_not_publish_while_reload_is_committed(self):
+        args = self.parsed_args()
+        self.runtime = FakeRuntime(self.ports)
+        state = ServerState()
+        original_warmup = QnnPolicyRunner.warmup
+
+        def warmup(runner):
+            timings = original_warmup(runner)
+            expired = state.native_load_started + QNN_LOAD_ABANDONED_SECONDS + 1
+            self.assertTrue(state.try_begin_reload(expired))
+            self.assertFalse(runner.release_started)
+            return timings
+
+        with patch("vla_qnn_runtime.NativeRuntime", return_value=self.runtime), patch(
+            "vla_qnn_policy.AutoTokenizer.from_pretrained", return_value=self.tokenizer
+        ), patch.object(QnnPolicyRunner, "warmup", warmup):
+            load_policy(state, args)
+
+        self.assertEqual(state.status, "loading")
+        self.assertIsNone(state.runner)
+        self.assertIsInstance(state.cleanup_runner, QnnPolicyRunner)
+        self.assertFalse(state.begin_infer())
+        self.assertEqual(self.watch(state), [True])
 
     def test_reload_frees_native_sessions_before_replacing_the_process(self):
         runner, self.runtime = self.runner()
