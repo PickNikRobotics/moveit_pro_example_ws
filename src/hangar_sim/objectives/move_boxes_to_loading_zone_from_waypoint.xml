@@ -154,7 +154,8 @@
           stays false from the reset at the top, so the parent Objective treats
           the SUCCESS as "scanned and found nothing" rather than a pick error.
 
-          Inside, Inverter+ForEach+Inverter short-circuits on the first
+          Projection and graspable-object construction propagate failures.
+          The pick-only Inverter+ForEach+Inverter short-circuits on the first
           successful pick and silently retries on per-mask failure, so FAILURE
           means every detection reached the pick pipeline and failed there. The
           enclosing Fallback carves out the one case where that is not a real
@@ -166,51 +167,51 @@
           execution abort) are indistinguishable from recoverable ones
           (unreachable IK) inside this loop.
         -->
-        <Control ID="Fallback" _skipIf="mask_count == 0">
-          <Decorator ID="Inverter">
+        <Control ID="Sequence" _skipIf="mask_count == 0">
+          <!--
+            Per-cycle reset, immediately before this cycle's detections are
+            built; this is the load-bearing one.
+          -->
+          <Action ID="Script" code="graspable_candidate_count := 0" />
+          <Action
+            ID="GetMasks3DFromMasks2D"
+            camera_info="{camera_info}"
+            masks2d="{masks2d}"
+            point_cloud="{point_cloud_cropped}"
+            masks3d="{masks3d}"
+          />
+          <Decorator
+            ID="ForEach"
+            vector_in="{masks3d}"
+            index="{index}"
+            out="{mask3d}"
+          >
             <Control ID="Sequence">
-              <!--
-                Per-cycle reset, immediately before this cycle's detections are
-                built; this is the load-bearing one.
-              -->
-              <Action ID="Script" code="graspable_candidate_count := 0" />
               <Action
-                ID="GetMasks3DFromMasks2D"
-                camera_info="{camera_info}"
-                masks2d="{masks2d}"
+                ID="GetPointCloudFromMask3D"
+                mask3d="{mask3d}"
                 point_cloud="{point_cloud_cropped}"
-                masks3d="{masks3d}"
+                point_cloud_fragment="{point_cloud_fragment}"
               />
-              <Decorator
-                ID="ForEach"
-                vector_in="{masks3d}"
-                index="{index}"
-                out="{mask3d}"
-              >
-                <Control ID="Sequence">
-                  <Action
-                    ID="GetPointCloudFromMask3D"
-                    mask3d="{mask3d}"
-                    point_cloud="{point_cloud_cropped}"
-                    point_cloud_fragment="{point_cloud_fragment}"
-                  />
-                  <Action
-                    ID="SendPointCloudToUI"
-                    pcd_topic="/pcd_pointcloud_captures"
-                    point_cloud="{point_cloud_fragment}"
-                  />
-                </Control>
-              </Decorator>
               <Action
-                ID="GetGraspableObjectsFromMasks3D"
-                base_frame="world"
-                masks3d="{masks3d}"
-                minimum_face_area="0.0003"
-                plane_inlier_threshold="0.01"
-                point_cloud="{point_cloud_cropped}"
-                graspable_objects="{graspable_objects}"
-                face_separation_threshold="0.2"
+                ID="SendPointCloudToUI"
+                pcd_topic="/pcd_pointcloud_captures"
+                point_cloud="{point_cloud_fragment}"
               />
+            </Control>
+          </Decorator>
+          <Action
+            ID="GetGraspableObjectsFromMasks3D"
+            base_frame="world"
+            masks3d="{masks3d}"
+            minimum_face_area="0.0003"
+            plane_inlier_threshold="0.01"
+            point_cloud="{point_cloud_cropped}"
+            graspable_objects="{graspable_objects}"
+            face_separation_threshold="0.2"
+          />
+          <Control ID="Fallback">
+            <Decorator ID="Inverter">
               <Decorator
                 ID="ForEach"
                 vector_in="{graspable_objects}"
@@ -256,7 +257,7 @@
                       end_effector_group_name="gripper"
                       generate_centroid_grasps="true"
                       grasp_poses="{grasp_poses}"
-                      num_orientation_samples="8"
+                      num_orientation_samples="1"
                       padding_dimension="0.01"
                       planning_scene_msg="{planning_scene}"
                       samples_per_plane="2"
@@ -276,16 +277,16 @@
                       the outer Objective's `place_pose`) costs nothing at the
                       cup.
 
-                      Tradeoff: this collapses the 20 wrist-angle samples to one
-                      orientation per (face, position, flip), so candidates that
-                      only succeeded at a non-trivial wrist angle now fail IK.
-                      The centroid grasp and the bidirectional flip variant
-                      remain, which has sufficed for top-face picks of cubes.
+                      One wrist sample preserves the centroid and random spatial
+                      samples without repeating poses whose orientations are
+                      overwritten below. Keep one of each adjacent flipped pair:
+                      they coincide because ee_to_tcp is identity.
                     -->
                     <Action
                       ID="ResetPoseStampedVector"
                       vector="{leveled_grasp_poses}"
                     />
+                    <Action ID="Script" code="keep_grasp := true" />
                     <Decorator
                       ID="ForEach"
                       vector_in="{grasp_poses}"
@@ -293,18 +294,21 @@
                       out="{grasp_pose}"
                     >
                       <Control ID="Sequence">
-                        <Action
-                          ID="OverridePoseOrientation"
-                          input_pose="{grasp_pose}"
-                          orientation_xyzw="0;1.0;0;0"
-                          output_pose="{leveled_grasp_pose}"
-                        />
-                        <Action
-                          ID="PushBackVector"
-                          input_vector="{leveled_grasp_poses}"
-                          element="{leveled_grasp_pose}"
-                          output_vector="{leveled_grasp_poses}"
-                        />
+                        <Control ID="Sequence" _skipIf="!keep_grasp">
+                          <Action
+                            ID="OverridePoseOrientation"
+                            input_pose="{grasp_pose}"
+                            orientation_xyzw="0;1.0;0;0"
+                            output_pose="{leveled_grasp_pose}"
+                          />
+                          <Action
+                            ID="PushBackVector"
+                            input_vector="{leveled_grasp_poses}"
+                            element="{leveled_grasp_pose}"
+                            output_vector="{leveled_grasp_poses}"
+                          />
+                        </Control>
+                        <Action ID="Script" code="keep_grasp := !keep_grasp" />
                       </Control>
                     </Decorator>
                     <!--
@@ -589,20 +593,23 @@
                   </Control>
                 </Decorator>
               </Decorator>
-            </Control>
-          </Decorator>
-          <!--
-            The pick loop above reported FAILURE, which normally means every
-            detection reached the pick pipeline and failed there. A zero
-            `graspable_candidate_count` means none of them did: the box-height
-            gate rejected them all as false positives. That is the same
-            situation as `mask_count == 0` — scanned, found nothing to pick — so
-            succeed here with `picked_box` still false and let the parent
-            Objective decide whether the scene is drained. A non-zero count
-            means a real box did reach the pipeline and failed, so the FAILURE
-            stands.
-          -->
-          <Action ID="ScriptCondition" code="graspable_candidate_count == 0" />
+            </Decorator>
+            <!--
+              The pick loop above reported FAILURE, which normally means every
+              detection reached the pick pipeline and failed there. A zero
+              `graspable_candidate_count` means none of them did: the box-height
+              gate rejected them all as false positives. That is the same
+              situation as `mask_count == 0` — scanned, found nothing to pick — so
+              succeed here with `picked_box` still false and let the parent
+              Objective decide whether the scene is drained. A non-zero count
+              means a real box did reach the pipeline and failed, so the FAILURE
+              stands.
+            -->
+            <Action
+              ID="ScriptCondition"
+              code="graspable_candidate_count == 0"
+            />
+          </Control>
         </Control>
       </Control>
     </Control>

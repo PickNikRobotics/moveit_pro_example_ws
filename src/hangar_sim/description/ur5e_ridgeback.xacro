@@ -52,6 +52,7 @@
     <origin xyz="0 0 0.27365" rpy="1.5708 0 -1.5708"/>
   </joint>
 
+  <!-- Arm mounting surface and supports; the elevated shelf is omitted for floor-pick clearance. -->
   <link name="ham_assem_link">
     <visual>
       <geometry>
