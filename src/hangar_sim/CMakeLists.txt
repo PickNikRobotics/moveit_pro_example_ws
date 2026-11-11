@@ -60,6 +60,9 @@ if(BUILD_TESTING)
           TIMEOUT 30
           ENV MOVEIT_CONFIG_PACKAGE=hangar_sim)
   ament_add_pytest_test(
+          hangar_scene_test test/test_hangar_scene.py
+          TIMEOUT 30)
+  ament_add_pytest_test(
           base_jog_config_test test/test_base_jog_config.py
           TIMEOUT 30
           ENV MOVEIT_CONFIG_PACKAGE=hangar_sim)

@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="hangar_urdf" params="parent">
-    <!-- connect collisions to parent frame, e.g. world frame -->
+<!-- The hangar's planning-scene geometry, kept out of the robot description so that every node
+     loading robot_description does not have to load the scene's meshes. MuJoCo simulates the
+     hangar from description/hangar.xml; the "Add Hangar to Planning Scene" Objective adds this
+     file to the planning scene at the world origin, with AddURDF. -->
+<robot name="hangar">
+    <link name="hangar_base"/>
     <joint name="parent_collision_SM_Floor_376_joint" type="fixed">
-      <parent link="${parent}"/>
+      <parent link="hangar_base"/>
       <child link="collision_SM_Floor_376"/>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </joint>
@@ -1019,6 +1022,4 @@
       <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
 
     </joint>
-    
-  </xacro:macro>
 </robot>

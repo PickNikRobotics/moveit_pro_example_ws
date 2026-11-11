@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Add Hangar to Planning Scene">
+  <BehaviorTree
+    ID="Add Hangar to Planning Scene"
+    _description="Add the hangar's walls, pillars, carts, access stand and airplane to the planning scene, so motions plan around them. Does nothing if the hangar is already in the planning scene. Objectives that move the robot run this first."
+    _favorite="false"
+  >
+    <Control ID="Fallback" name="AddHangarIfMissing">
+      <Control ID="Sequence" name="HangarAlreadyInScene">
+        <Action
+          ID="GetCurrentPlanningScene"
+          planning_scene_msg="{planning_scene}"
+        />
+        <Action
+          ID="IsCollisionObjectInPlanningScene"
+          planning_scene="{planning_scene}"
+          collision_object_name="hangar"
+        />
+      </Control>
+      <Control ID="Sequence" name="AddHangar">
+        <!-- hangar.urdf's poses are already in world. -->
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="world"
+          position_xyz="0;0;0"
+          orientation_xyzw="0;0;0;1"
+          pose_stamped="{hangar_pose}"
+        />
+        <Action
+          ID="AddURDF"
+          urdf_name="hangar"
+          package_name="hangar_sim"
+          urdf_file_path="description/hangar.urdf"
+          urdf_pose="{hangar_pose}"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Add Hangar to Planning Scene">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Planning Scene" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

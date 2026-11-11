@@ -572,6 +572,7 @@ def _run_objective_xml(
 
 def _test_scene_objects(
     resource: ExecuteObjectiveResource,
+    object_ids: tuple[str, ...] = TEST_OBJECTS,
 ) -> dict[str, CollisionObject]:
     client = resource.node.create_client(GetPlanningScene, "/get_planning_scene")
     try:
@@ -590,7 +591,7 @@ def _test_scene_objects(
         return {
             obstacle.id: obstacle
             for obstacle in response.scene.world.collision_objects
-            if obstacle.id in TEST_OBJECTS
+            if obstacle.id in object_ids
         }
     finally:
         resource.node.destroy_client(client)
@@ -660,6 +661,26 @@ def test_box_drop_footprint_is_reserved_before_hover(
     for box_id in expected_boxes:
         box = objects[box_id]
         assert box.pose.position.z == pytest.approx(RESTING_BOX_CENTER_Z, abs=1e-6)
+
+
+# --- Hangar planning scene ---
+#
+# The hangar is not in the robot description; "Add Hangar to Planning Scene"
+# adds it as one world collision object, and the motion Objectives run it
+# first. It must be safe to run when the hangar is already there.
+ADD_HANGAR_OBJECTIVE = "Add Hangar to Planning Scene"
+HANGAR_OBJECT_ID = "hangar"
+
+
+def test_add_hangar_to_planning_scene_is_idempotent(
+    execute_objective_resource: ExecuteObjectiveResource,
+) -> None:
+    """The Objective adds the hangar once, and succeeds again when it is already present."""
+    for _ in range(2):
+        run_objective(ADD_HANGAR_OBJECTIVE, False, execute_objective_resource)
+    hangar = _test_scene_objects(execute_objective_resource, (HANGAR_OBJECT_ID,))
+    assert HANGAR_OBJECT_ID in hangar, "the hangar is not in the planning scene"
+    assert hangar[HANGAR_OBJECT_ID].meshes, "the hangar has no collision meshes"
 
 
 @pytest.mark.parametrize(

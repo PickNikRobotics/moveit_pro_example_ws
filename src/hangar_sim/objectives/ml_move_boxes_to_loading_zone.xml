@@ -10,6 +10,8 @@
           Objective (the per-box "placed_box_N" obstacles added below persist until removed).
           Without this, stale boxes from the last run would block planning at their old poses.-->
       <Action ID="ResetPlanningSceneObjects" />
+      <!--The reset above also removes the hangar, so add it back before planning.-->
+      <SubTree ID="Add Hangar to Planning Scene" _collapsed="true" />
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"

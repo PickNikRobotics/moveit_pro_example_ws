@@ -8,6 +8,7 @@
     _hardcoded="false"
   >
     <Control ID="Sequence">
+      <SubTree ID="Add Hangar to Planning Scene" _collapsed="true" />
       <Action ID="Script" code="teleop_mode := 0" />
       <Control ID="Parallel" success_count="1" failure_count="1">
         <Action

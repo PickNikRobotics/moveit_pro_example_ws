@@ -7,6 +7,7 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Add Hangar to Planning Scene" _collapsed="true" />
       <!--Stops if the scans do not fit the map.-->
       <SubTree ID="Refine Localization In Place" />
       <!--Stow the arm so every run drives in the same configuration. arm_only keeps the base still. Zero padding as in Move to Arm Upright: at 0.01 m the resting pose is rejected as self-colliding.-->
