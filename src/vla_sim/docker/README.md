@@ -157,8 +157,8 @@ search paths and permissions, and set:
 Hardware/library provisioning is a host deployment requirement, not a new
 launcher image target: the shipped `inference_server` service does not mount
 QAIRT, the HTP devices or a compiled bundle, so `backend: qnn` through the
-launcher parks in `error`. Launcher deployment is tracked in
-`PickNikRobotics/moveit_pro#24494`. Do not expose a plain HTTP listener over the network;
+launcher parks in `error`. Launcher deployment is tracked as a follow-up.
+Do not expose a plain HTTP listener over the network;
 use the existing remote TLS proxy and inference-only bearer key. Missing QAIRT,
 unsupported ABI, mismatched source metadata or failed native warmup parks the
 existing server in `error`, with no CPU/GPU neural fallback. Restore

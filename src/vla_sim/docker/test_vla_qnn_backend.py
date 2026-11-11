@@ -894,6 +894,79 @@ class TestQnnReload(QnnFixture):
         self.assertFalse(state.begin_infer())
         self.assertEqual(self.watch(state), [True])
 
+    def test_pytorch_load_finishing_during_failed_reload_keeps_serving(self):
+        state = ServerState()
+        runner = object.__new__(PolicyRunner)
+        serving = self.root / "watched.yaml"
+        serving.write_text("backend: pytorch\n")
+        status_at_retry = []
+
+        def restart():
+            if not status_at_retry:
+                status_at_retry.append(None)
+                # The loader finishes after the reload commit, before exec fails.
+                self.assertTrue(state.publish_ready(runner))
+                raise OSError("text file busy")
+            status_at_retry.append((state.status, state.runner))
+
+        watch_runtime_inputs(
+            [str(serving)],
+            state=state,
+            wait=lambda _seconds: serving.write_text("backend: qnn\n"),
+            restart=restart,
+            clock=lambda: 0,
+        )
+        self.assertEqual(status_at_retry[1], ("ready", runner))
+
+    def test_release_between_warmup_passes_keeps_failed_replacement_error(self):
+        args = self.parsed_args()
+        self.runtime = FakeRuntime(self.ports)
+        state = ServerState()
+        serving = self.root / "watched.yaml"
+        serving.write_text("backend: qnn\n")
+        original_infer = QnnPolicyRunner.infer
+        waits = 0
+        failure_details = []
+
+        class StopWatcher(Exception):
+            pass
+
+        def wait(_seconds):
+            nonlocal waits
+            waits += 1
+            if waits == 1:
+                serving.write_text("backend: pytorch\n")
+            if waits == 3:
+                failure_details.append(state.detail)
+                raise StopWatcher
+
+        def restart():
+            raise OSError("replacement unavailable")
+
+        def infer(runner, *args):
+            result = original_infer(runner, *args)
+            if not failure_details:
+                expired = state.native_load_started + QNN_LOAD_ABANDONED_SECONDS + 1
+                with self.assertRaises(StopWatcher):
+                    watch_runtime_inputs(
+                        [str(serving)],
+                        state=state,
+                        wait=wait,
+                        restart=restart,
+                        clock=lambda: expired,
+                    )
+            return result
+
+        with patch("vla_qnn_runtime.NativeRuntime", return_value=self.runtime), patch(
+            "vla_qnn_policy.AutoTokenizer.from_pretrained", return_value=self.tokenizer
+        ), patch.object(QnnPolicyRunner, "infer", infer):
+            load_policy(state, args)
+
+        self.assertEqual(state.status, "error")
+        self.assertIn("replacement unavailable", failure_details[0])
+        self.assertEqual(state.detail, failure_details[0])
+        self.assertIsNone(state.runner)
+
     def test_reload_frees_native_sessions_before_replacing_the_process(self):
         runner, self.runtime = self.runner()
         self.assertEqual(self.watch(self.ready_state(runner)), [True])

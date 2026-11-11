@@ -847,8 +847,8 @@ class ServerState:
             # A reload can outlive an expired load's warmup. Even when exec
             # fails and cancel_reload clears reloading, released QNN sessions
             # must not overwrite the watcher's error or accept new /infer.
-            if self.reloading or (
-                isinstance(runner, QnnPolicyRunner) and runner.release_started
+            if isinstance(runner, QnnPolicyRunner) and (
+                self.reloading or runner.release_started
             ):
                 return False
             self.runner = runner
@@ -1230,6 +1230,11 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
         state.status = "error"
         log(f"FATAL: model load failed: {state.detail}")
     except Exception as exc:
+        released_by_watcher = (
+            isinstance(runner, QnnPolicyRunner)
+            and runner.release_started
+            and state.status == "error"
+        )
         if isinstance(runner, QnnPolicyRunner):
             state.cleanup_runner = runner
             try:
@@ -1238,9 +1243,10 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             except Exception as cleanup_error:
                 log(f"QNN cleanup retained for retry: {cleanup_error}")
         traceback.print_exc()
-        state.detail = f"{type(exc).__name__}: {exc}"
+        if not released_by_watcher:
+            state.detail = f"{type(exc).__name__}: {exc}"
         state.status = "error"
-        log(f"FATAL: model load failed: {state.detail}")
+        log(f"FATAL: model load failed: {type(exc).__name__}: {exc}")
     finally:
         state.native_load_started = None
 
