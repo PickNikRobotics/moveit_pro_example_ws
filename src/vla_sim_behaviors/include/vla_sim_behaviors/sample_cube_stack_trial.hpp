@@ -51,6 +51,7 @@ namespace vla_sim_behaviors
  * | seed           | input     | int                                          |
  * | cube_poses     | output    | std::vector<geometry_msgs::msg::PoseStamped> |
  * | top_color      | output    | std::string                                  |
+ * | top_start_pose | output    | geometry_msgs::msg::PoseStamped              |
  * | bottom_color   | output    | std::string                                  |
  * | prompt         | output    | std::string                                  |
  */

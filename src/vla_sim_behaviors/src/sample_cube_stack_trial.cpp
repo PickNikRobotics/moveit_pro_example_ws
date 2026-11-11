@@ -56,6 +56,7 @@ constexpr auto kPortIDTrialIndex = "trial_index";
 constexpr auto kPortIDSeed = "seed";
 constexpr auto kPortIDCubePoses = "cube_poses";
 constexpr auto kPortIDTopColor = "top_color";
+constexpr auto kPortIDTopStartPose = "top_start_pose";
 constexpr auto kPortIDBottomColor = "bottom_color";
 constexpr auto kPortIDPrompt = "prompt";
 
@@ -101,6 +102,10 @@ BT::PortsList SampleCubeStackTrial::providedPorts()
         "Poses of the red, green, and blue cubes, in that order, in mj_world. Pass them to SetMujocoFreeBodyPoses "
         "with body_names 'cube_red;cube_green;cube_blue'."),
     BT::OutputPort<std::string>(kPortIDTopColor, "{top_color}", "The cube to pick: red, green, or blue."),
+    BT::OutputPort<geometry_msgs::msg::PoseStamped>(kPortIDTopStartPose, "{top_start_pose}",
+                                                    "Where the top_color cube starts the trial, its entry of "
+                                                    "cube_poses. Compare it with the cube's pose after "
+                                                    "the task to check whether the cube moved."),
     BT::OutputPort<std::string>(kPortIDBottomColor, "{bottom_color}",
                                 "The cube to stack top_color on: red, green, or blue, never the same as top_color."),
     BT::OutputPort<std::string>(kPortIDPrompt, "{prompt}",
@@ -143,6 +148,7 @@ BT::NodeStatus SampleCubeStackTrial::tick()
 
   setOutput(kPortIDCubePoses, cube_poses);
   setOutput(kPortIDTopColor, trial->top_color);
+  setOutput(kPortIDTopStartPose, cube_poses[trial->top_index]);
   setOutput(kPortIDBottomColor, trial->bottom_color);
   setOutput(kPortIDPrompt, trial->prompt);
   return BT::NodeStatus::SUCCESS;

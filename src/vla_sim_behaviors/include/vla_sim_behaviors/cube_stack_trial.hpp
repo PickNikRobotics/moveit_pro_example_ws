@@ -29,6 +29,7 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <string>
 
 #include <tl/expected.hpp>
@@ -53,6 +54,8 @@ struct CubeStackTrial
   std::array<CubePlacement, 3> placements;
   /** @brief The cube to pick: "red", "green", or "blue". */
   std::string top_color;
+  /** @brief The index of the top_color cube in placements. */
+  std::size_t top_index = 0;
   /** @brief The cube to stack it on, never the same as top_color. */
   std::string bottom_color;
   /** @brief "stack the <top_color> cube on the <bottom_color> cube". */

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Check if the Top Cube Moved">
+  <!--
+    A milestone Objective for evaluating the cube-stacking policy. Next to Check the Cube Stacking Trial, its count separates trials where the policy never moved the cube it was asked to pick from trials where it moved that cube but did not stack it. A placed cube does not drift from where the reset Objective put it, so the 1.5 cm tolerance, half a cube width as in Check if One Cube Is on Another, only has to be larger than a light push from the gripper. top_start_pose carries no time stamp, so TransformPoseFrame takes the latest transform and neither waits nor warns.
+  -->
+  <BehaviorTree
+    ID="Check if the Top Cube Moved"
+    _description="Checks the simulator's cube poses once, for evaluating the cube-stacking policy. Returns SUCCESS if the cube the trial's prompt asks to pick up is more than 1.5 cm from where the reset Objective placed it, and FAILURE otherwise."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Sample a Cube Stacking Trial"
+        _collapsed="true"
+        trial_index="{trial_index}"
+        cube_poses="{cube_poses}"
+        top_color="{top_color}"
+        top_start_pose="{top_start_pose}"
+        bottom_color="{bottom_color}"
+        prompt="{prompt}"
+      />
+      <Action ID="Script" code="top_frame := 'cube_' .. top_color .. '_tf'" />
+      <!--The start pose in the cube's own frame is near the origin only when the cube is still where the reset Objective placed it. A missing frame fails here with its own error.-->
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{top_start_pose}"
+        target_frame_id="{top_frame}"
+        output_pose="{start_in_cube_frame}"
+      />
+      <!--A rotation_tolerance above pi accepts every rotation, so only the position counts.-->
+      <Decorator ID="Inverter">
+        <Action
+          ID="IsPoseNearIdentity"
+          pose="{start_in_cube_frame}"
+          position_tolerance="0.015"
+          rotation_tolerance="3.15"
+        />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Check if the Top Cube Moved">
+      <MetadataFields>
+        <Metadata subcategory="Application - VLA Examples" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port name="trial_index" default="0" type="int">
+        The number of the trial to check, counting from 0. An evaluation sets it
+        for each trial.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
