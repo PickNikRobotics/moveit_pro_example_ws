@@ -78,7 +78,6 @@ from vla_qnn_runtime import (
     HtpExtension,
     Infrastructure,
     NativeModel,
-    ContextConfig,
     NativeRuntime,
     Perf,
     Platform,
@@ -877,14 +876,7 @@ class TestNativeContextOwnership(unittest.TestCase):
                 raise RuntimeError(operation + " failed")
 
         def create(_backend, _device, config, data, size, context, _profile):
-            options = ctypes.cast(config, ctypes.POINTER(ctypes.POINTER(ContextConfig)))
-            observed.append(
-                (
-                    ctypes.string_at(data, size),
-                    options[0].contents.option,
-                    options[0].contents.value.is_persistent_binary,
-                )
-            )
+            observed.append((ctypes.string_at(data, size), config))
             context._obj.value = 11
             return 0
 
@@ -951,11 +943,11 @@ class TestNativeContextOwnership(unittest.TestCase):
             self.assertEqual(runtime.models, [])
             runtime.functions["device_free"].assert_called_once()
 
-    def test_native_context_reads_snapshot_and_releases_nonpersistent_buffer(self):
+    def test_native_context_loads_snapshot_with_default_config_and_releases_it(self):
         runtime, observed, _frees = self.runtime()
         with tempfile.TemporaryDirectory() as directory:
             model = runtime.load(b"validated snapshot", self.abi(Path(directory)), 0)
-            self.assertEqual(observed, [(b"validated snapshot", 7, 0)])
+            self.assertEqual(observed, [(b"validated snapshot", None)])
             self.assertIsNone(model.binary)
             runtime.close()
 

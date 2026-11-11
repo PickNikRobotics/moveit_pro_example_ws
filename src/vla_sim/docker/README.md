@@ -124,9 +124,9 @@ Each graph directory contains `model.bin` (native compiled context), `abi.json`
 (from `qnn-context-binary-utility`) and `manifest.json`. The latter declares
 `context_sha256` and a one-to-one `output_aliases` map from compiler output
 names to source graph names. The backend snapshots each context once, checks
-its digest, and loads those same bytes. The nonpersistent native context input
-is released after deserialization, so a second host weight copy does not stay
-resident. Fixed input/output names, shapes and dtypes are checked before serving;
+its digest, and loads those same bytes with QNN's default (nonpersistent)
+context config, then releases them after deserialization, so a second host
+weight copy does not stay resident. Fixed input/output names, shapes and dtypes are checked before serving;
 quantized, dynamic or sparse graph IO is refused. Compilation precision is fixed by the bundle:
 vision FP16/W8A16, token FP16, backbone W4A16/W8A16 or FP16 split, and expert
 W8A16/W16A16/native-RMS FP16. Serving support does not qualify a compiled

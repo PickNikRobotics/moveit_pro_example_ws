@@ -217,16 +217,6 @@ def function(address, result, *args):
     return c.CFUNCTYPE(result, *args)(address)
 
 
-class ContextConfigValue(c.Union):
-    _fields_ = [("is_persistent_binary", c.c_uint8), ("storage", c.c_uint64)]
-
-
-class ContextConfig(c.Structure):
-    # QNN_CONTEXT_CONFIG_PERSISTENT_BINARY=7; explicitly opt out so the
-    # immutable snapshot can be released after createFromBinary returns.
-    _fields_ = [("option", c.c_int), ("value", ContextConfigValue)]
-
-
 class NativeRuntime:
     """Own HTP backend, device, power clients and resident graph contexts."""
 
@@ -509,14 +499,12 @@ class NativeModel:
         began = time.perf_counter()
         self.binary = binary
         buffer = c.c_char_p(binary)
-        config = ContextConfig(7, ContextConfigValue(is_persistent_binary=0))
-        configs = (c.POINTER(ContextConfig) * 2)(c.pointer(config), None)
         try:
             self.runtime.check(
                 self.runtime.functions["context_create"](
                     self.runtime.backend,
                     self.runtime.device(self.device_id),
-                    configs,
+                    None,
                     c.cast(buffer, HANDLE),
                     len(binary),
                     c.byref(self.context),
@@ -525,8 +513,8 @@ class NativeModel:
                 f"contextCreateFromBinary({name},device{self.device_id})",
             )
         finally:
-            # PERSISTENT_BINARY=false guarantees QNN does not retain this
-            # buffer, avoiding a second resident copy of multi-GiB weights.
+            # QNN's default context config is nonpersistent, so it does not
+            # retain this buffer and no second multi-GiB weight copy stays resident.
             self.binary = None
         if not self.context:
             raise RuntimeError(
