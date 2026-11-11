@@ -38,6 +38,10 @@ state_estimator:
       wholebody_odom_sensor:
         type: fuse_models::Odometry3D
         motion_models: [mobile_base_motion]
+      # Base teleoperation; mapping needs odometry while the operator drives.
+      base_jog_odom_sensor:
+        type: fuse_models::Odometry3D
+        motion_models: [mobile_base_motion]
       imu_sensor:
         type: fuse_models::Imu3D
         motion_models: [mobile_base_motion]
@@ -76,6 +80,25 @@ state_estimator:
     # Same settings as wheel_odom_sensor above, on the whole-body controller's topic.
     wholebody_odom_sensor:
       topic: /platform_velocity_controller/odom
+      queue_size: 10
+      pose_loss:
+        type: fuse_loss::HuberLoss
+        a: 1.0
+      linear_velocity_loss:
+        type: fuse_loss::HuberLoss
+        a: 1.0
+      position_dimensions: ['x', 'y', 'z']
+      linear_velocity_dimensions: ['x', 'y']
+      # yaw dimensions omitted, not []: the exact simulated IMU owns yaw, and rclcpp cannot type an empty list.
+      differential: true
+      independent: false
+      use_twist_covariance: true
+      # This topic arrives at the ~390 Hz controller-manager rate too, not its configured 50.
+      throttle_period: 0.02
+
+    # Same settings as wheel_odom_sensor above, on the base teleoperation controller's topic.
+    base_jog_odom_sensor:
+      topic: /platform_velocity_controller_base_jog/odom
       queue_size: 10
       pose_loss:
         type: fuse_loss::HuberLoss
