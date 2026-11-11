@@ -1,6 +1,6 @@
 <!--
   reBot B601-RS kinematic tree, transcribed from
-  rebot_bench_base_config/description/rebot.urdf.xacro. Included inside the
+  description/rebot.urdf.xacro. Included inside the
   scene's base_link body, which carries the placement from bench_layout.yaml;
   MuJoCo splices in this file's children and discards the wrapping <body>.
 
@@ -10,13 +10,13 @@
   TF published from MuJoCo sites joins robot_state_publisher's tree.
   test/test_scene_model.py checks every link pose against the URDF.
 
-  Visual geoms sit at the URDF's visual origins; the printed trim, wrist
-  bracket and D435 use the STL conversions of the base package's COLLADA
-  meshes (rebot_assets.xml).
+  Visual geoms sit at the URDF's visual origins; the printed trim uses local
+  STL conversions of the COLLADA meshes (rebot_assets.xml). The stock
+  Gemini 305 attachment is frame-only, without camera housing or inertia.
 -->
 <body xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="layout" default="$(find rebot_bench_sim)/description/bench_layout.yaml" />
-  <xacro:property name="mount" value="${xacro.load_yaml('$(arg layout)')['wrist_camera_mount']}" />
+  <xacro:property name="wrist" value="${xacro.load_yaml('$(arg layout)')['wrist_camera']}" />
   <inertial
     pos="2.87641888266442E-06 -0.000122302488725115 0.0243376121934547"
     mass="1.1774"
@@ -341,54 +341,27 @@
                   <geom class="collision" mesh="cnc_right" />
                 </body>
 
-                <body
-                  name="d435_mount_link"
-                  pos="${' '.join(map(str, mount['xyz']))}"
-                  euler="${' '.join(map(str, mount['rpy']))}"
-                >
-                  <!-- The measured wrist-camera mount, from the layout's
-                       wrist_camera entry (scripts/layout_snapshot.py). -->
-                  <geom
-                    class="visual"
-                    mesh="D435_mount_purple"
-                    material="print_purple"
-                  />
-                  <body
-                    name="d435_bottom_screw_frame"
-                    pos="-0.0003 0.0445 -0.0095"
-                    euler="0.0126 -1.0489 -1.5981"
-                  >
-                    <body name="d435_link" pos="0.0106 0.0175 0.0125">
-                      <geom
-                        class="visual"
-                        mesh="d435"
-                        material="d435_grey"
-                        pos="0.0043 -0.0175 0"
-                        euler="1.5707963267948966 0 1.5707963267948966"
-                      />
-                      <!-- Colour sensor at the URDF's d435_color_optical_frame.
-                           fovy 43.09 deg is the published fy 607.8 px at
-                           640x480 (base config docs/camera-acceptance.json).
-                           The camera looks along its -z; the site is the same
-                           pose turned 180 deg about x, the ROS optical frame. -->
-                      <camera
-                        name="d435_color"
-                        mode="fixed"
-                        pos="0 0.015 0"
-                        quat="0.5 0.5 -0.5 -0.5"
-                        fovy="43.09"
-                        resolution="640 480"
-                      />
-                      <site
-                        name="d435_color_optical_frame"
-                        pos="0 0.015 0"
-                        quat="0.5 -0.5 0.5 -0.5"
-                        size="0.005"
-                        group="5"
-                      />
-                    </body>
-                  </body>
-                </body>
+                <!-- Gemini 305 at the stock gripper_end -> colour optical pose.
+                     Orbbec's public 68 deg vertical FOV gives nominal fy 593.024
+                     px at 1280x800; real units use their factory CameraInfo.
+                     MuJoCo looks along -z, so rotate the optical pose 180 deg
+                     about its local x (add pi to URDF roll). RGB only, as stock. -->
+                <camera
+                  name="wrist_mounted_camera_color"
+                  mode="fixed"
+                  pos="${' '.join(map(str, wrist['xyz']))}"
+                  euler="${wrist['rpy'][0] + pi} ${wrist['rpy'][1]} ${wrist['rpy'][2]}"
+                  fovy="68"
+                  resolution="1280 800"
+                  user="1"
+                />
+                <site
+                  name="wrist_mounted_camera_color_optical_frame"
+                  pos="${' '.join(map(str, wrist['xyz']))}"
+                  euler="${' '.join(map(str, wrist['rpy']))}"
+                  size="0.005"
+                  group="5"
+                />
               </body>
             </body>
           </body>

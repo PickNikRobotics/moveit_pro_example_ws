@@ -142,12 +142,9 @@ CONFIGURATIONS = [
 
 def test_compiled_joint_limits_match_expanded_urdf_and_planning(model):
     robot = sim_urdf()
-    limits = yaml.safe_load(
-        (
-            Path(get_package_share_directory("rebot_bench_base_config"))
-            / "config/moveit/joint_limits.yaml"
-        ).read_text()
-    )["joint_limits"]
+    limits = yaml.safe_load((SHARE / "config/moveit/joint_limits.yaml").read_text())[
+        "joint_limits"
+    ]
     for name in ARM + ["joint7", "gripper_joint1", "gripper_joint2"]:
         joint = robot.find(f"joint[@name='{name}']")
         bound = joint.find("limit")
@@ -193,24 +190,24 @@ def test_every_mujoco_body_and_camera_site_sits_on_its_urdf_link(model, configur
     )
 
     # The simulated description, and the camera optical frames it leaves to
-    # MuJoCo, taken from the base description with the same placements.
+    # MuJoCo, taken from the driver-free geometry with the same placements.
     sim = urdf_link_poses(sim_urdf(), positions)
     args = {
+        "include_camera_optical_frames": "true",
         "world_to_base_xyz": " ".join(map(str, LAYOUT["robot_base"]["xyz"])),
         "world_to_base_rpy": " ".join(map(str, LAYOUT["robot_base"]["rpy"])),
         "scene_camera_xyz": " ".join(map(str, LAYOUT["scene_camera"]["xyz"])),
         "scene_camera_rpy": " ".join(map(str, LAYOUT["scene_camera"]["rpy"])),
-        "wrist_camera_mount_xyz": " ".join(
-            map(str, LAYOUT["wrist_camera_mount"]["xyz"])
+        "wrist_camera_color_optical_xyz": " ".join(
+            map(str, LAYOUT["wrist_camera"]["xyz"])
         ),
-        "wrist_camera_mount_rpy": " ".join(
-            map(str, LAYOUT["wrist_camera_mount"]["rpy"])
+        "wrist_camera_color_optical_rpy": " ".join(
+            map(str, LAYOUT["wrist_camera"]["rpy"])
         ),
     }
     base = urdf_link_poses(
         expand(
-            Path(get_package_share_directory("rebot_bench_base_config"))
-            / "description/rebot.urdf.xacro",
+            SHARE / "description/rebot.urdf.xacro",
             **args,
         ),
         positions,
@@ -228,8 +225,11 @@ def test_every_mujoco_body_and_camera_site_sits_on_its_urdf_link(model, configur
             body.xmat.reshape(3, 3), pose[:3, :3], atol=5e-4, err_msg=link
         )
         checked += 1
-    assert checked == 15
-    for frame in ["d435_color_optical_frame", "scene_camera_color_optical_frame"]:
+    assert checked == 12
+    for frame in [
+        "wrist_mounted_camera_color_optical_frame",
+        "scene_camera_color_optical_frame",
+    ]:
         assert frame not in sim, "MuJoCo publishes this frame; the URDF must not"
         site = data.site(frame)
         np.testing.assert_allclose(
@@ -243,12 +243,16 @@ def test_every_mujoco_body_and_camera_site_sits_on_its_urdf_link(model, configur
 @pytest.mark.parametrize(
     ("camera", "vertical_focal_px", "topic"),
     [
-        # docs/camera-acceptance.json in the base config: D435 colour fy at 640x480.
-        ("d435_color", 607.8, "/wrist_mounted_camera/color/image_raw"),
-        # 97.1 deg across 640 px: fx = 282.5 px for the OAK-D Pro W at 640 wide.
+        # Nominal public Gemini 305 colour V68 deg, not unit-specific calibration.
+        (
+            "wrist_mounted_camera_color",
+            400 / math.tan(math.radians(34)),
+            "/wrist_mounted_camera/color/image_raw",
+        ),
+        # Retain OAK-D Pro W H97.1 deg: twice its measured 640-wide focal length.
         (
             "scene_camera_color",
-            320 / math.tan(math.radians(97.1 / 2)),
+            640 / math.tan(math.radians(97.1 / 2)),
             "/scene_camera/color/image_raw",
         ),
     ],
@@ -269,9 +273,9 @@ def test_cameras_match_the_real_intrinsics_frames_and_topics(
         model.cam_mode[model.camera(camera).id] == mujoco.mjtCamLight.mjCAMLIGHT_FIXED
     )
     # Every rendered camera shares the one offscreen buffer.
-    assert tuple(model.cam_resolution[model.camera(camera).id]) == (640, 480)
-    assert (model.vis.global_.offwidth, model.vis.global_.offheight) == (640, 480)
-    focal = 240 / math.tan(math.radians(model.cam_fovy[model.camera(camera).id] / 2))
+    assert tuple(model.cam_resolution[model.camera(camera).id]) == (1280, 800)
+    assert (model.vis.global_.offwidth, model.vis.global_.offheight) == (1280, 800)
+    focal = 400 / math.tan(math.radians(model.cam_fovy[model.camera(camera).id] / 2))
     assert focal == pytest.approx(vertical_focal_px, rel=2e-3)
     # Pinned, since the description otherwise reads MOVEIT_PRO_CAMERA_RENDERER from the environment.
     sensors = {
@@ -280,11 +284,27 @@ def test_cameras_match_the_real_intrinsics_frames_and_topics(
     }
     params = {p.get("name"): p.text for p in sensors[camera].findall("param")}
     assert params["rgb_topic"] == topic
+    assert params["camera_info_topic"] == topic.replace("image_raw", "camera_info")
+    assert model.cam_user[model.camera(camera).id, 0] == (
+        1 if camera == "wrist_mounted_camera_color" else 0
+    )
+    if camera == "wrist_mounted_camera_color":
+        assert "depth_topic" not in params
+        assert "points_topic" not in params
+        assert model.camera(camera).fovy[0] == 68
+    else:
+        horizontal_fov = math.degrees(2 * math.atan(640 / focal))
+        assert horizontal_fov == pytest.approx(97.1, abs=1e-6)
+        assert params["depth_topic"] == "/scene_camera/depth/image_rect_raw"
+        assert params["points_topic"] == "/scene_camera/depth/color/points"
 
 
 @pytest.mark.parametrize(
     "camera, prefix",
-    [("d435_color", "/wrist_mounted_camera"), ("scene_camera_color", "/scene_camera")],
+    [
+        ("wrist_mounted_camera_color", "/wrist_mounted_camera"),
+        ("scene_camera_color", "/scene_camera"),
+    ],
 )
 def test_the_camera_renderer_moves_only_mujoco_color(camera, prefix):
     """nyx turns MuJoCo's color off for the Nyx node to publish; both moves it under opengl."""
@@ -303,7 +323,10 @@ def test_the_camera_renderer_moves_only_mujoco_color(camera, prefix):
     assert both["camera_info_topic"] == f"{prefix}/opengl/color/camera_info"
     assert "color_enabled" not in both
     for renderer_params in (nyx, both):
-        assert renderer_params["depth_topic"] == params("opengl")["depth_topic"]
+        assert renderer_params.get("depth_topic") == params("opengl").get("depth_topic")
+        assert renderer_params.get("points_topic") == params("opengl").get(
+            "points_topic"
+        )
 
 
 def test_cubes_are_50_mm_and_settle_on_the_mat_where_the_layout_puts_them(model, data):
@@ -362,24 +385,60 @@ def test_keyframe_follows_the_layout(model):
     np.testing.assert_allclose(key.ctrl, arm)
 
 
-def test_wrist_camera_sits_at_the_layouts_measured_mount(data):
-    def pose(body):
-        pose = np.eye(4)
-        pose[:3, :3] = data.body(body).xmat.reshape(3, 3)
-        pose[:3, 3] = data.body(body).xpos
-        return pose
-
-    camera_in_link6 = np.linalg.inv(pose("link6")) @ pose("d435_link")
-    measured = LAYOUT["wrist_camera"]
-    np.testing.assert_allclose(camera_in_link6[:3, 3], measured["xyz"], atol=1e-5)
+def test_wrist_camera_site_follows_the_layout_in_gripper_end(model, data):
+    frame = "wrist_mounted_camera_color_optical_frame"
+    mount = LAYOUT["wrist_camera"]
+    assert set(mount) == {"xyz", "rpy"}
+    site = data.site(frame)
+    gripper = data.body("gripper_end")
+    rotation = gripper.xmat.reshape(3, 3)
     np.testing.assert_allclose(
-        camera_in_link6[:3, :3], rpy_matrix(*measured["rpy"]), atol=1e-5
+        rotation.T @ (site.xpos - gripper.xpos), mount["xyz"], atol=1e-12
     )
+    np.testing.assert_allclose(
+        rotation.T @ site.xmat.reshape(3, 3), rpy_matrix(*mount["rpy"]), atol=1e-12
+    )
+    assert model.site_bodyid[model.site(frame).id] == model.body("gripper_end").id
+
+
+def test_geometry_defaults_to_the_stock_nominal_optical_mount():
+    frame = "wrist_mounted_camera_color_optical_frame"
+    geometry = expand(
+        SHARE / "description/rebot.urdf.xacro", include_camera_optical_frames="true"
+    )
+    joint = geometry.find(f"joint[@name='wrist_mounted_camera_color_optical_joint']")
+    assert joint.find("parent").get("link") == "gripper_end"
+    assert joint.find("child").get("link") == frame
+    assert joint.find("origin").attrib == {
+        "xyz": "-0.111 0.009 0.109",
+        "rpy": "-2.109 0.003 -1.579",
+    }
+    assert not geometry.find(f"link[@name='{frame}']").findall("visual")
+    assert not any("d435" in link.get("name") for link in geometry.findall("link"))
+
+
+def test_geometry_optical_mount_can_be_overridden():
+    robot = expand(
+        SHARE / "description/rebot.urdf.xacro",
+        include_camera_optical_frames="true",
+        wrist_camera_color_optical_xyz="1 2 3",
+        wrist_camera_color_optical_rpy="0.1 0.2 0.3",
+    )
+    origin = robot.find(
+        "joint[@name='wrist_mounted_camera_color_optical_joint']/origin"
+    )
+    assert origin.attrib == {"xyz": "1 2 3", "rpy": "0.1 0.2 0.3"}
 
 
 def test_sim_description_refuses_any_other_hardware():
     with pytest.raises(xacro.XacroException):
         sim_urdf(hardware_interface="mock")
+    with pytest.raises(xacro.XacroException):
+        sim_urdf(hardware_interface="real")
+    with pytest.raises(xacro.XacroException):
+        sim_urdf(include_camera_optical_frames="true")
+    geometry = expand(SHARE / "description/rebot.urdf.xacro")
+    assert not geometry.findall("ros2_control")
     plugins = [p.text for p in sim_urdf().findall("ros2_control/hardware/plugin")]
     assert plugins == ["picknik_mujoco_ros/MujocoSystem"]
 
@@ -443,9 +502,10 @@ def _top_down_grasp_ik(model, target, seed):
 
 
 @pytest.mark.xfail(
+    tuple(int(part) for part in mujoco.__version__.split(".")[:2]) < (3, 13),
     strict=True,
     raises=AssertionError,
-    reason="Physical mimic-jaw contact slips; sim grasp proxy does not validate grip fidelity.",
+    reason="Mimic-jaw contact slips before MuJoCo 3.13; sim grasp proxy does not validate grip fidelity.",
 )
 def test_45_mm_grip_physically_lifts_a_cube_50_mm(model, data):
     """The real aperture command must transmit force through the mimic jaws."""
@@ -527,12 +587,11 @@ def test_jaw_closes_from_open_inside_the_path_tolerance_below_real_time(model, d
     advances sim time, so at a real-time factor of 0.7 (a loaded host) the jaw has
     to follow the planned profile 1/0.7 times faster.
     """
-    base = Path(get_package_share_directory("rebot_bench_base_config"))
-    jaw = yaml.safe_load((base / "config/moveit/joint_limits.yaml").read_text())[
+    jaw = yaml.safe_load((SHARE / "config/moveit/joint_limits.yaml").read_text())[
         "joint_limits"
     ]["joint7"]
     tolerance = yaml.safe_load(
-        (base / "config/control/rebot.ros2_control.yaml").read_text()
+        (SHARE / "config/control/rebot.ros2_control.yaml").read_text()
     )["joint_trajectory_admittance_controller"]["ros__parameters"][
         "default_path_tolerance"
     ]
@@ -610,6 +669,6 @@ def test_nyx_output_is_remapped_onto_the_topics_mujoco_would_publish():
         checked.add((camera, mode))
     assert checked == {
         (camera, mode)
-        for camera in ("scene_camera_color", "d435_color")
+        for camera in ("scene_camera_color", "wrist_mounted_camera_color")
         for mode in ("nyx", "both")
     }

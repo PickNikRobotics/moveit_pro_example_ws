@@ -27,7 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 """Integration tests for the rebot_bench_sim objective library."""
 
+import time
+
 import pytest
+from controller_manager_msgs.srv import ListControllers
 
 from moveit_pro_test_utils.objective_test_fixture import (
     ExecuteObjectiveResource,
@@ -39,8 +42,44 @@ from moveit_pro_test_utils.objective_test_fixture import (
     run_objective,
 )
 
-# Reset the MuJoCo keyframe between tests.
-SIM_RESETTER.register("rebot_bench_sim", MUJOCO_RESET_HOOK)
+# The agent heartbeat does not mean the serial controller spawners are done.
+STARTUP_CONTROLLERS = {
+    "joint_state_broadcaster",
+    "joint_trajectory_admittance_controller",
+}
+CONTROLLERS_READY_TIMEOUT_S = 120.0
+
+
+@pytest.fixture(scope="module", autouse=True)
+def controllers_active(execute_objective_resource):
+    """Wait for the configured startup controllers before the first Objective."""
+    context = execute_objective_resource
+    client = context.list_controllers_client()
+    assert client.wait_for_service(timeout_sec=CONTROLLERS_READY_TIMEOUT_S)
+    deadline = time.monotonic() + CONTROLLERS_READY_TIMEOUT_S
+    missing = set(STARTUP_CONTROLLERS)
+    while missing and time.monotonic() < deadline:
+        listed = context.spin_until_future_complete(
+            client.call_async(ListControllers.Request()), timeout_sec=10.0
+        )
+        if listed is not None:
+            missing = STARTUP_CONTROLLERS - {
+                controller.name
+                for controller in listed.controller
+                if controller.state == "active"
+            }
+        if missing:
+            time.sleep(1.0)
+    assert not missing, f"controllers never became active: {sorted(missing)}"
+
+
+def clear_scene_and_reset(context, keyframe_name, timeout_sec, settle_sec):
+    """Clear a pick's attachment and perceived boxes before resetting physics."""
+    run_objective("Clear reBot Stack Scene", False, context)
+    return MUJOCO_RESET_HOOK(context, keyframe_name, timeout_sec, settle_sec)
+
+
+SIM_RESETTER.register("rebot_bench_sim", clear_scene_and_reset)
 
 # Looping objectives to cancel partway through rather than run to completion.
 cancel_objectives: set[str] = set()
@@ -49,7 +88,6 @@ cancel_objectives: set[str] = set()
 # the bench scene does not have.
 skip_objectives: set[str] = {
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
-    "Mirror reBot Leader",  # Needs rebot_leader_bridge, a FashionStar leader and an operator.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     "Clear Snapshot",  # No octomap: the reBot configs define no 3D sensors.
     # Each test starts from the Zeroed Rest keyframe. With joint2's and
@@ -59,10 +97,7 @@ skip_objectives: set[str] = {
     "Plan reBot Joint Move",
     "Execute reBot Joint Trajectory",  # Executes what Plan reBot Joint Move saved.
     # The pick-and-stack entry points segment the cubes with SAM3, which needs
-    # the moveit_pro_sam3 model package the CI image does not ship; Clear reBot
-    # Stack Scene removes the geometry only they add. Covered by regressions;
-    # docs/stack_validation holds Stack Blue on Red twin runs, and the README
-    # describes the unstack and cycle twin runs.
+    # the moveit_pro_sam3 model package the CI image does not ship.
     "Locate reBot Cubes",
     "Prepare reBot Stack",
     "Pick Blue Cube",
@@ -72,7 +107,6 @@ skip_objectives: set[str] = {
     "Recorded Stack Leg",  # SAM3 perception plus a Trainer recording session.
     "Recorded Unstack Leg",
     "Recover Cube from Wall",  # SAM3 perception and a wall-side placement.
-    "Clear reBot Stack Scene",
 }
 
 
@@ -87,7 +121,12 @@ def test_all_objectives(
 ) -> None:
     """Run (or cancel) each rebot_bench_sim objective and assert it completes without error."""
     try:
-        run_objective(objective_id, should_cancel, execute_objective_resource)
+        run_objective(
+            objective_id,
+            should_cancel,
+            execute_objective_resource,
+            objective_wait_time=300.0,
+        )
     except AssertionError as e:
         mode = "cancel" if should_cancel else "execute"
         pytest.fail(f"Objective '{objective_id}' failed to {mode}: {e}")

@@ -8,7 +8,7 @@
 namespace rebot_bench_behaviors
 {
 /** Call a leader Trigger service, reporting its refusal through the Objective's UI failure logger.
- * A missing bridge is reported with how to enable it. The supported service-client base owns
+ * A missing bridge service is reported as unavailable. The supported service-client base owns
  * asynchronous execution, a 3 s server wait, a 1 s response timeout, and cancellation on halt.
  */
 class CallRebotLeaderService final : public moveit_pro::behaviors::ServiceClientBehaviorBase<std_srvs::srv::Trigger>

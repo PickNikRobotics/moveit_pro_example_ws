@@ -28,6 +28,8 @@
   <!-- Remove friction-dimension drift from soft contacts under a resting stack.
        NoSlip postprocessing preserves the contact/friction material parameters. -->
   <option timestep="0.003" integrator="implicitfast" noslip_iterations="10" />
+  <!-- One camera user value: 0 = RGB-D (scene), 1 = RGB only (stock wrist). -->
+  <size nuser_cam="1" />
 
   <include file="rebot_assets.xml" />
 
@@ -35,10 +37,9 @@
 
   <visual>
     <headlight diffuse="0.5 0.5 0.5" ambient="0.35 0.35 0.35" specular="0 0 0" />
-    <!-- picknik_mujoco_ros renders every camera into one offscreen buffer, so
-         each camera's resolution must equal it. 640x480 is the wrist D435's
-         colour mode; see the scene camera below. -->
-    <global offwidth="640" offheight="480" azimuth="-130" elevation="-25" />
+    <!-- picknik_mujoco_ros requires every camera's resolution to match this
+         shared buffer: the Gemini 305 and OAK-D colour streams are 1280x800. -->
+    <global offwidth="1280" offheight="800" azimuth="-130" elevation="-25" />
     <quality shadowsize="4096" />
   </visual>
 
@@ -78,13 +79,13 @@
       <geom class="scene" type="box" size="${wall['size'][0] / 2} ${wall['size'][1] / 2} ${wall['size'][2] / 2}" rgba="0.94 0.94 0.92 1" />
     </body>
 
-    <!-- Scene camera, Luxonis OAK-D Pro W 97, at the URDF's
-         scene_camera_link. fovy 80.69 deg keeps the real horizontal view: fx
-         282.5 px at 640 wide, 97.1 deg (base config README). The real stream
-         is 640x400; the shared 640x480 buffer renders the same view with 40
-         extra rows above and below. -->
+    <!-- Scene camera, Luxonis OAK-D Pro W 97, at the unchanged
+         scene_camera_link pose. Retain its 97.1 deg horizontal view: fx/fy
+         565.229 px at 1280 wide (twice the measured 640-wide intrinsics).
+         At 1280x800, fovy 70.57236 deg matches the native colour aspect ratio
+         without the retired 640x480 buffer's extra 40 rows top and bottom. -->
     <body name="scene_camera_link" pos="${' '.join(map(str, layout['scene_camera']['xyz']))}" euler="${' '.join(map(str, layout['scene_camera']['rpy']))}">
-      <camera name="scene_camera_color" mode="fixed" quat="0.5 0.5 -0.5 -0.5" fovy="80.69" resolution="640 480" />
+      <camera name="scene_camera_color" mode="fixed" quat="0.5 0.5 -0.5 -0.5" fovy="70.572362571" resolution="1280 800" />
       <site name="scene_camera_color_optical_frame" quat="0.5 -0.5 0.5 -0.5" size="0.005" group="5" />
     </body>
 

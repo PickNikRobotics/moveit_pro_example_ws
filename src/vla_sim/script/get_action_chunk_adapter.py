@@ -333,8 +333,8 @@ class GetActionChunkAdapter(Node):
         # RTC carryover: forward the previous chunk's unexecuted tail and the overlap depth.
         # A Float64MultiArray is a flat row-major buffer plus a layout, so reshape it back
         # into (steps, action width) rows; it arrives empty on the first call and when RTC is off.
-        # previous_anchor_state is intentionally not forwarded: the carryover stays in the
-        # policy's own action space, where lerobot's RTC guidance operates without re-anchoring.
+        # previous_anchor_state is intentionally not forwarded: the server returns a carryover
+        # it can guide with as is, or one it re-encodes itself against the new state.
         prev = request.previous_action_chunk
         if prev.data:
             if len(prev.layout.dim) != 2:
@@ -575,8 +575,9 @@ class GetActionChunkAdapter(Node):
         response.chunk = traj
         response.native_control_period = float(data["dt"])
 
-        # RTC echo: the normalized model output, one row per step, one column per action
-        # dimension; the caller returns its unexecuted tail as the next previous_action_chunk.
+        # RTC echo: the server's carryover (the normalized model output, or the absolute chunk
+        # when the server re-encodes it), one row per step, one column per action dimension;
+        # the caller returns its unexecuted tail as the next previous_action_chunk.
         # An absent or empty echo means the policy offers no RTC carryover, so
         # the next request simply arrives without one.
         raw = data.get("action_chunk_raw")

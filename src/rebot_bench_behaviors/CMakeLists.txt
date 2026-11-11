@@ -38,8 +38,6 @@ if(BUILD_TESTING)
   ament_add_gtest(test_leader_service test/test_leader_service.cpp)
   ament_target_dependencies(test_leader_service moveit_pro_test_utils)
   target_link_libraries(test_leader_service ${PROJECT_NAME})
-  target_compile_definitions(test_leader_service PRIVATE
-    MIRROR_OBJECTIVE="${CMAKE_CURRENT_SOURCE_DIR}/../rebot_bench_base_config/objectives/mirror_rebot_leader.xml")
   ament_add_gtest(test_stack_checks test/test_stack_checks.cpp)
   ament_target_dependencies(test_stack_checks moveit_pro_test_utils)
   target_link_libraries(test_stack_checks ${PROJECT_NAME})

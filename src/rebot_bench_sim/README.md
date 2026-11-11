@@ -1,21 +1,22 @@
 # reBot bench simulation
 
-A MuJoCo twin of the reBot bench, layered over
-[`rebot_bench_base_config`](../rebot_bench_base_config/README.md): MoveIt Pro
-drives the reBot arm and gripper in MuJoCo through `picknik_mujoco_ros`, the
-same way `lab_sim` drives its UR. The twin holds the arm, the wrist D435 and
-the scene OAK-D Pro W 97 cameras, the blue mat, the white wall, a red and a
-blue 50 mm cube, and an axes triad at the world origin.
+A standalone MuJoCo twin of the reBot bench. MoveIt Pro drives the reBot arm
+and gripper through `picknik_mujoco_ros`, the same way `lab_sim` drives its UR.
+The description assets, SRDF, planning and controller config, waypoints and
+pick/stack Objectives are local. No motor, Orbbec or DepthAI drivers or
+leader teleoperation scripts are required. The twin holds the arm, the wrist
+Orbbec Gemini 305 and scene OAK-D Pro W 97 camera frames, the blue mat, the
+white wall, a red and a blue 50 mm cube, and an axes triad at the world origin.
 
-![Scene camera, wrist camera and third-person renders at the default keyframe](docs/render_sheet.png)
+[Historical D435-era render sheet](docs/render_sheet.png); the current wrist
+camera uses the frame-only stock Gemini 305 attachment described below.
 
 ```bash
-moveit_pro run --config-package rebot_bench_sim
+moveit_pro run --config-package rebot_bench_sim --instance rebot-sim --headless
 ```
 
-The controllers, joint limits, SRDF, waypoints and Objectives are the base
-config's. On top of them this package adds the MuJoCo behaviors, **Reset MuJoCo
-Sim**, and **Move reBot to Pose**, a Cartesian move of the gripper to a pose in
+The package loads the core and MuJoCo Behaviors, **Reset MuJoCo Sim**, and
+**Move reBot to Pose**, a Cartesian move of the gripper to a pose in
 `base_link` (by default pointing straight down above the cubes). **Move reBot to
 Waypoint** is the joint move. Run **Plan reBot Joint Move** from **Raised**. From
 the Zeroed Rest start its planned profile dipped just below joint2's and joint3's
@@ -25,13 +26,12 @@ former 0 rad lower limits; that start has not been rechecked against the current
 ## The bench layout file
 
 Every world placement is in [`config/bench_layout.yaml`](config/bench_layout.yaml).
-The build installs a snapshot of it as `description/bench_layout.yaml`, adding
-the wrist-camera mount joint derived from `wrist_camera`
-(`scripts/layout_snapshot.py`), and expands the MuJoCo scene and arm
-(`description/scene.xml.xacro`, `description/rebot_arm.xml.xacro`) from that
+The build copies it unchanged to `description/bench_layout.yaml` and expands
+the MuJoCo scene and arm (`description/scene.xml.xacro`,
+`description/rebot_arm.xml.xacro`) from that
 snapshot into the installed `description/scene.xml` and `rebot_arm.xml`. The
-robot description (`description/rebot_bench_sim.urdf.xacro`, through the base
-description's `world_to_base_*`, `scene_camera_*` and `wrist_camera_mount_*`
+robot description (`description/rebot_bench_sim.urdf.xacro`, through the local
+geometry description's `world_to_base_*`, `scene_camera_*` and `wrist_camera_color_optical_*`
 xacro arguments) reads the same snapshot, so MoveIt and MuJoCo always see the
 layout of the same build.
 
@@ -42,8 +42,8 @@ Lengths are metres, angles radians, `rpy` is URDF roll-pitch-yaw.
 | Entry | Places | Notes |
 | --- | --- | --- |
 | `robot_base` | `base_link` (the arm's mounting face) | `xyz`, `rpy` |
-| `scene_camera` | `scene_camera_link` (x along the view axis, z up) | the colour optical frame follows as in the base config |
-| `wrist_camera` | `d435_link` in `link6` (a hand-eye result) | the printed bracket moves with it |
+| `scene_camera` | `scene_camera_link` (x along the view axis, z up) | the colour optical frame is published by a MuJoCo site |
+| `wrist_camera` | `wrist_mounted_camera_color_optical_frame` in `gripper_end` | nominal stock Gemini 305 optical pose, no camera housing |
 | `mat` | the centre of the mat's top surface | `size` is the full `[x, y, thickness]`; the bench top sits at the mat's underside |
 | `wall` | the wall box centre | `size` is the full `[x, y, z]` extent |
 | `cubes` | each cube's centre, plus a yaw | `size` (edge) and `mass` apply to both |
@@ -52,20 +52,19 @@ Lengths are metres, angles radians, `rpy` is URDF roll-pitch-yaw.
 To change one, edit the file, then rebuild the package before running
 (`colcon build --packages-select rebot_bench_sim`, or `moveit_pro build`).
 Restarting `moveit_pro run` without a rebuild keeps the previous layout. A
-camera or robot-base calibration lands here: express the measured pose in the
-printed frame and replace the entry. Cube start poses are world (printed-frame)
-coordinates like every other placement, not mat-grid coordinates: the cubes are
+camera or robot-base calibration lands here: express world placements in the
+printed frame, or the wrist optical pose in `gripper_end`, and replace the
+entry. Cube start poses are world (printed-frame) coordinates like every other placement, not mat-grid coordinates: the cubes are
 free bodies that calibration measures directly, and editing `mat`'s `xyz` or
 `rpy` does not move them.
 
-**`robot_base`, `scene_camera` and `wrist_camera` are calibrated, marked
-CALIBRATED**, from a ChArUco board on the mat. The wrist camera mount is a
-provisional hand-eye solve over six arm poses, good to about 2 cm; the robot
-base's x, y and yaw are solved through it, and its roll, pitch and height are
-held level on the bench plane. The real configuration uses the same base pose
-but keeps the nominal wrist camera mount; applying this one on the arm is
-follow-up work. **Every other value
-is a first guess, marked APPROXIMATE**, from bench facts and the real scene
+**`robot_base` and `scene_camera` retain their CALIBRATED placements**, from a
+ChArUco board on the mat. The base's x, y and yaw were solved through the former
+D435's provisional hand-eye result, good to about 2 cm; roll, pitch and height
+remain level on the bench plane. **`wrist_camera` is NOMINAL**, the stock Gemini
+305 optical transform on `gripper_end`, not a transferred D435 calibration.
+This package does not configure physical hardware. **Every other value is a
+first guess, marked APPROXIMATE**, from bench facts and the real scene
 camera's frame rather than measurement. The mat runs along world X, away from
 the robot, with the foam wall along its +Y edge; the printed frame lies near
 the mat's aisle edge, its red axis pointing back toward the robot. The cubes
@@ -77,26 +76,39 @@ file gives the grid-to-world mapping and the reasoning behind each entry.
 
 | Camera | MuJoCo camera | Image frame | Topics |
 | --- | --- | --- | --- |
-| Wrist D435 colour | `d435_color` | `d435_color_optical_frame` | `/wrist_mounted_camera/color/{image_raw,camera_info}`, `/wrist_mounted_camera/depth/image_rect_raw`, `/wrist_mounted_camera/depth/color/points` |
+| Wrist Gemini 305 colour | `wrist_mounted_camera_color` | `wrist_mounted_camera_color_optical_frame` | `/wrist_mounted_camera/color/{image_raw,camera_info}` |
 | Scene OAK-D Pro W 97 | `scene_camera_color` | `scene_camera_color_optical_frame` | `/scene_camera/color/{image_raw,camera_info}`, `/scene_camera/depth/image_rect_raw`, `/scene_camera/depth/color/points` |
 
 The colour topics and frames are the real drivers'. The scene depth image and
 point cloud are the real scene camera's `scene_aligned_depth` topics, aligned to
 its colour image, from which the episode cycle confirms each stack. The wrist
-depth is extra. Images render at 30 Hz for continuous validation video; point
+is RGB-only, matching the stock Gemini driver (no depth, IR or point cloud).
+Images render at a shared 30 Hz for validation video; stock Gemini hardware uses
+1280x800 MJPG at 10 Hz. This simulator exposes no per-camera rate, so the twin
+retains its global recording rate rather than adding a custom throttle. Point
 clouds publish at 5 Hz (`point_cloud_publish_rate` in
 `description/rebot_bench_sim.urdf.xacro`).
 The image frame is the MuJoCo camera's name plus `_optical_frame`, so the
 cameras are named after the real frames, and MuJoCo publishes those two frames
-from the camera sites: with `hardware_interface: mujoco` the base description
-leaves them out, which keeps one TF parent per frame.
+from the camera sites: the driver-free geometry leaves them out, which keeps
+one TF parent per frame.
 
-Intrinsics follow the base config's measured values. The wrist camera's
-`fovy` 43.09 deg gives its fy of 607.8 px at 640x480. The scene camera's
-`fovy` 80.69 deg gives fx 282.5 px, the OAK's full 97.1 deg across 640 px.
-`picknik_mujoco_ros` renders every camera into one offscreen buffer, so both
-cameras are 640x480. The real scene stream is 640x400, the same view without
-the top and bottom 40 rows.
+The wrist uses the [stock reBot Gemini 305 optical mount](https://github.com/PickNikRobotics/moveit_pro_rebot_ws/blob/main/src/rebot_b601_rs_hw/description/rebot.urdf.xacro):
+`gripper_end` to colour optical xyz `-0.111 0.009 0.109` m, rpy
+`-2.109 0.003 -1.579` rad. It is a rounded CAD/optical-convention composition,
+not a hand-eye calibration. The [Orbbec public specification](https://www.orbbec.com/products/stereo-vision-camera/gemini-305/)
+gives nominal vertical FOV 68 degrees (±3 degrees); `fovy=68` produces nominal
+pinhole fx/fy 593.024 px at 1280x800, principal point (639.5, 399.5), without lens
+distortion. **These are not a physical unit's factory intrinsics.** The stock
+hardware driver derives `CameraInfo` from the attached device; calibrated
+physical deployments must use that data and their measured mount.
+
+`picknik_mujoco_ros` requires every camera to match one offscreen buffer, now
+1280x800. The scene camera retains its pose, frames, topics and 97.1-degree
+horizontal view, with fx/fy 565.229 px (twice its measured 640-wide focal length)
+and `fovy=70.572362571`. This uses the OAK colour stream's native aspect ratio
+instead of the former 640x480 buffer's extra 40 rows above and below. The
+`opengl`, `nyx` and `both` renderer modes use the same model and topic contract.
 
 The real drivers publish JPEG `color/image_raw/compressed` topics through
 the declared `compressed_image_transport` plugin. MuJoCo publishes raw ROS
@@ -109,9 +121,9 @@ records these topics.
 ## Model notes
 
 - The arm is `description/rebot_arm.xml.xacro` and `description/rebot_assets.xml`,
-  transcribed from `rebot.urdf.xacro`. Meshes are the base package's STL files
-  through `package://` URIs. The purple printed covers, the wrist bracket and
-  the D435 body are COLLADA there, which MuJoCo cannot load, so
+  transcribed from the local, driver-free `rebot.urdf.xacro`. Meshes use this
+  package's `package://` URIs. The purple printed covers are COLLADA, which
+  MuJoCo cannot load, so
   `description/assets/` holds STL conversions in the same frame and units, one
   file per embedded material (purple print, white lettering); see
   [`description/assets/NOTICE.md`](description/assets/NOTICE.md).
@@ -141,50 +153,142 @@ records these topics.
 
 - `test/test_scene_model.py` loads the generated scene and checks every MuJoCo
   body and both optical frames against the URDF at three joint configurations,
-  the camera intrinsics, frames and topics, the cubes settling on the mat, the
+  the stock nominal wrist pose, 1280x800 intrinsics and RGB-only mode, renderer
+  remap parity, frames and topics, the cubes settling on the mat, the
   arm holding its keyframe, the axes triad and the keyframe.
-- `test/test_config_inheritance.py` checks the merged configuration through
-  MoveIt Pro's loader, including that the layout, not the base config's bench
-  calibration, places the twin's robot description.
+- `test/test_config.py` loads the standalone configuration through MoveIt
+  Pro's loader and checks local resources, driver-free dependencies, controller
+  declarations and the sim-only launch, with and without the grasp proxy.
+- `test/test_model.py`, `test/test_joint_limits.cpp`, `test/test_jaw_legs.cpp`
+  and `test/test_stack_objectives.cpp` retain the model/FCL, limits and executable
+  pick/stack control-flow regressions.
 - `test/test_sim_grasp_proxy.py` drives the grasp proxy through its topics: it
   welds only at finger contact and releases after a simulation reset.
 - `test/test_sim_compressed_cameras.py` checks a compressed frame decodes back
   to the raw one, header and format included.
-- `test/objectives_integration_test.py` runs every runnable Objective against
-  the twin, as `lab_sim` does, except the SAM3 stack, unstack and cycle entry
-  points, which the CI image cannot run; see
-  [Unstack and cycle twin runs](#unstack-and-cycle-twin-runs) for what was run
-  by hand.
+- `test/objectives_integration_test.py` runs runnable Objectives against the
+  twin, as `lab_sim` does, after checking controller readiness, except the SAM3
+  locate, prepare, pick, stack, unstack, cycle, recording and wall-recovery entry
+  points, which the CI image cannot run; see [Unstack and cycle twin runs](#unstack-and-cycle-twin-runs).
+  Between tests it clears perceived scene geometry and resets the keyframe.
 
 ## SAM3 pick and stack
 
-The shared **Locate reBot Cubes**, **Pick Blue Cube**, **Stack Blue on Red**,
-**Unstack Blue from Red** and **Stack and Unstack Cycle** Objectives live in
-`rebot_bench_base_config`; see its
-[run recipe](../rebot_bench_base_config/README.md#sam3-blue-on-red-stack).
-They locate cubes from calibrated scene RGB and the known mat plane, with no
-simulation state in perception. Locate, pick and standalone stack use RGB only.
-Unstack, the cycle, and stacked wall recovery also require the scene camera's
-aligned point cloud, `/scene_camera/depth/color/points`, which the twin publishes as the real camera
-does. The same XML, waypoints, and `rebot_bench_behaviors` plugin are used on
-hardware.
+**Locate reBot Cubes**, **Pick Blue Cube**, **Stack Blue on Red**, **Unstack
+Blue from Red** and **Stack and Unstack Cycle** live in this package's
+`objectives/` directory and use `rebot_bench_behaviors`. They locate cubes from
+calibrated scene RGB and the known mat plane, with no simulation state in
+perception. Locate, pick and standalone stack use RGB only. Unstack, the cycle,
+and stacked wall recovery also require `/scene_camera/depth/color/points`.
+
+### Build and run
+
+Use a MoveIt Pro workspace with ROS Jazzy and the proprietary overlay sourced:
+
+```sh
+colcon build --packages-up-to rebot_bench_sim
+source install/setup.bash
+colcon test --packages-select rebot_bench_behaviors rebot_bench_sim
+colcon test-result --all --verbose
+```
+
+SAM3 is optional and not a declared dependency: its model files are built only
+after accepting the SAM License through the installed MoveIt Pro configuration
+workflow. For perception Objectives, confirm `moveit_pro_sam3` is installed or
+build that package separately after accepting its license. Restart the backend
+after building. No custom runtime or Direct Motion tools are needed.
+
+Start the named simulation instance above, connect the Desktop App to its
+printed endpoint, and run **Locate reBot Cubes**, **Pick Blue Cube** or **Stack
+Blue on Red** from Objectives. The supported `run_objective` client can run the
+same Objective without the UI:
+
+```json
+{"name":"run_objective","arguments":{"objective_name":"Stack Blue on Red"}}
+```
+
+A pick leaves blue held above its starting point. A stack releases blue onto
+red, retreats and returns to **Zeroed Rest** with the jaw closed. Run **Clear
+reBot Stack Scene** before **Reset MuJoCo Sim** after a pick or failed attempt;
+reset restores the layout's initial cube poses, not MoveIt's added geometry.
+If a pick is still held, run **Open Gripper** before resetting: the simulator's
+proxy latch can otherwise carry the held cube through a teleport before its
+release command arrives. Confirm cube start poses before a subsequent run.
+Stop only this instance with `moveit_pro down --instance rebot-sim`.
+
+The release is planned with a 5-degree tilt; both approach routes and the pick
+are collision-checked before motion. All reach helpers keep the existing
+2.4 rad joint2 bound. Missing perception or an unreachable pose fails before
+motion; post-motion failures attempt home recovery while preserving a possibly
+held cube. The explicit grasp-proxy limitation below still applies.
 
 ### Planning speed
 
-Speed is a separate setting from hardware. The base config's
-`objectives/rebot_stack_motion.yaml` holds the arm's per-leg scale factors,
-which have to fit under the bench's joint speed guard (its README says how to
-size one against the other). Simulation has no guard, so this package ships its
-own [`objectives/rebot_stack_motion.xml`](objectives/rebot_stack_motion.xml),
-which shadows the base **reBot Stack Motion** (when two Objective libraries hold
-the same file name, the later one wins, and this package's library is listed
-last) and loads [`objectives/rebot_stack_motion.yaml`](objectives/rebot_stack_motion.yaml)
-from this package instead: 1.0 velocity and acceleration for the joint,
-Cartesian and gripper legs, the full limits in the base config's
-`config/moveit/joint_limits.yaml`, whatever the arm's values. To run the twin
-at another speed, edit that file and rebuild `rebot_bench_sim`; the arm's
-values are unaffected. `test/test_config_inheritance.py` checks that the
-override wins.
+[`objectives/rebot_stack_motion.yaml`](objectives/rebot_stack_motion.yaml) holds
+velocity and acceleration factors for joint, Cartesian and gripper legs.
+**reBot Stack Motion** loads it before any motion; each factor defaults to 1.0,
+the full limits in `config/moveit/joint_limits.yaml`. Edit that file and rebuild
+to change the twin's speed. Missing factors or values outside (0, 1] refuse the
+run. Close Gripper uses its own full scaling.
+
+### Recorded episodes
+
+The cycle repeats **Recorded Stack Leg** and **Recorded Unstack Leg**, saving
+each episode only after the scene camera confirms the result. It uses the named
+training config [`config/training/rebot_bench_jpeg.json`](config/training/rebot_bench_jpeg.json):
+`/joint_states`, `/joint_trajectory_admittance_controller/controller_state`, and
+both JPEG camera topics at 30 Hz. Install that config once through Trainer's
+`POST /train/configs` endpoint or its `configs/` directory. Set `num_cycles`,
+`dataset_name`, `training_config` and `recorder_start_s` as Objective inputs.
+A failed leg discards its episode and stops the cycle.
+
+### Gemini 305 execution check
+
+Built `rebot_bench_sim` and `rebot_bench_behaviors` against an existing MoveIt
+Pro runtime with MuJoCo 3.13.0. The package tests passed:
+
+```sh
+colcon test --packages-select rebot_bench_behaviors rebot_bench_sim
+colcon test-result --test-result-base build/rebot_bench_behaviors/test_results --all --verbose
+colcon test-result --test-result-base build/rebot_bench_sim/test_results --all --verbose
+```
+
+Package-scoped result summaries
+reported 292 tests, zero failures/errors and 69 expected Objective skips.
+The camera contracts and Nyx remap drift test passed, as did native-resolution
+cube fitting and depth-based stack confirmation without tolerance changes.
+
+In a named OpenGL simulation instance, wrist RGB, CameraInfo and decoded JPEG
+were 1280x800 on `wrist_mounted_camera_color_optical_frame`, with fx/fy
+593.024 px. A 15-second probe received 450 advancing wrist frames at 30.00 Hz;
+scene RGB/depth were also 1280x800 and scene clouds arrived at 5.00 Hz.
+
+At blue XY (0.360, 0.060) m and red XY (0.400, 0.200) m, **Locate reBot Cubes**,
+**Pick Blue Cube** and **Stack Blue on Red** succeeded through `/do_objective`
+in 78.9, 105.8 and 150.4 seconds. SAM3 used CPU inference in this runtime.
+After release, simulator qpos truth showed 2.318 mm horizontal stack error,
+49.892 mm centre-height difference, under 0.029 degrees tilt and under
+0.001 mm motion over the final two seconds. The arm returned home with the
+jaw closed. The **SIM-ONLY contact-triggered grasp proxy was enabled**; this
+checks perception and Objective execution, not physical grip fidelity.
+The default layout was restored after validation.
+
+### Earlier standalone execution check
+
+Before the Gemini 305 change, the standalone package was built and tested with
+MuJoCo 3.13.0 on an existing MoveIt Pro runtime. **Locate reBot Cubes** and
+**Prepare reBot Stack** succeeded at the default placement. The default far pick was refused before motion by
+the unchanged 2.4 rad joint2 reach bound (the selected red-cube plan needed
+2.487 rad). This cleanup does not widen that bound or change the default layout.
+
+For the documented mid-reach placement (blue XY 0.360, 0.060 m; red XY 0.400,
+0.200 m), the same **Pick Blue Cube** and **Stack Blue on Red** completed through
+`/do_objective` in 100.7 s and 118.6 s. After release, simulator truth showed
+1.872 mm horizontal stack error, 49.918 mm centre-height difference, under
+0.043 degrees tilt and under 0.001 mm motion over the final two seconds. The
+arm returned home with the jaw closed. The **SIM-ONLY contact-triggered grasp
+proxy was enabled**; this proves perception and Objective execution, not
+physical gripper fidelity. The default layout was restored afterwards.
 
 ### Simulation grasp proxy and physical fidelity gap
 
@@ -203,15 +307,16 @@ included, so until they are reactivated the latch can still hold a cube that
 was grasped at reset time welded where the keyframe put it; the arm is held still
 throughout, and the release reaches MuJoCo within one 20 ms publish period of
 reactivation. No Objective calls or knows about the proxy, and it never snaps a
-cube to a target pose. The real configuration neither launches the proxy nor
-loads its controller or model.
+cube to a target pose.
 
 This is an execution/perception test aid, **not a validated physical gripper**.
 The unassisted 35 g cube slips in the current contact model at the real 45 mm
 closure. A bounded stiff-coupling trial produced 7.0–7.3 N per pad but 1.49 mm
 penetration and 7.48 mm lateral drift during a 50 mm lift. The physical regression
-`test_45_mm_grip_physically_lifts_a_cube_50_mm` remains a strict expected failure;
-it never enables the weld. Fixing contact fidelity is follow-up work. Set
+`test_45_mm_grip_physically_lifts_a_cube_50_mm` never enables the weld. It is a
+strict expected failure before MuJoCo 3.13.0 and must lift the cube on 3.13.0 and
+later; that single lift does not validate sustained grasps or the full pick/stack
+contact model. Fixing contact fidelity is follow-up work. Set
 `sim_grasp_proxy: false` and rebuild to run the twin without assistance.
 
 ### Unstack and cycle twin runs
@@ -259,7 +364,7 @@ ros2 run rebot_bench_sim record_stack_evidence.py /tmp/stack-run \
 `--video` pipes frames to an `ffmpeg` CLI with libx264, which the MoveIt Pro image
 does not ship: `apt-get install ffmpeg` in the container first. It is not a rosdep
 because the `ffmpeg` key also installs FFmpeg -dev packages that uninstall the
-image's OpenCV, `cv_bridge`, and `realsense2_camera`.
+image's OpenCV and `cv_bridge`.
 
 It saves each live camera frame to a continuous 30 fps H.264 video, raw simulator
 qpos samples, the model schema hash, layout, and before/after camera frames.

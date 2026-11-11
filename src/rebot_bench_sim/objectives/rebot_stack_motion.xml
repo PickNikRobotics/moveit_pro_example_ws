@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="reBot Stack Motion">
   <BehaviorTree
     ID="reBot Stack Motion"
-    _description="Simulation override of the base config's reBot Stack Motion: load the pick-and-stack planning scale factors from rebot_bench_sim's objectives/rebot_stack_motion.yaml (full speed)."
+    _description="Load the pick-and-stack planning scale factors from objectives/rebot_stack_motion.yaml (full speed by default)."
   >
     <Sequence>
       <Action

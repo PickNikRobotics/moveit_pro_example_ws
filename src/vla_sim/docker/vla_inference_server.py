@@ -101,7 +101,13 @@ except Exception:
         RelativeActionsProcessorStep
     )
 
-TESTED_POLICY_TYPES = ("smolvla", "pi05")
+TESTED_POLICY_TYPES = ("smolvla", "pi05", "groot")
+
+# GR00T N1.7 blends the guided steps after the frozen RTC prefix from the previous
+# chunk toward the new prediction with weight (1 - e^(-r t)) / (1 - e^(-r)). Zero or
+# a negative rate freezes or inverts that blend; below this floor the blend is
+# already near-linear, so the floor rules out no useful setting.
+GROOT_RTC_RAMP_RATE_MIN = 0.01
 
 # Generous ceiling over a multi-camera base64 observation; bounds the memory
 # one connection can demand before the body is read.
@@ -391,9 +397,12 @@ class PolicyRunner:
     Loading passes policy_cfg by keyword and overrides the device on both
     processors, which merged pi0.5 checkpoints need: their config declares a
     padded 32-dim state while the saved normalizer stats carry the trained
-    width. A pinned revision resolves to a local snapshot first. It loads on the
-    cpu, trims pi0.5's unused vocabulary heads and quantizes when asked, before
-    moving to the serving device.
+    width. A pinned revision resolves to a local snapshot first. pi0.5 and SmolVLA
+    load on the cpu, where pi0.5's unused vocabulary heads are trimmed and its
+    weights quantized when asked, before moving to the serving device. GR00T N1.7
+    builds on the serving device and runs real-time chunking inside its own
+    predict_action_chunk, so it skips LeRobot's RTC processor; _configure_groot_rtc
+    sets up its carryover handling.
     """
 
     def __init__(
@@ -406,6 +415,8 @@ class PolicyRunner:
         state_dim: int,
         int8: bool = False,
         checkpoint_revision: str = "",
+        *,
+        groot_rtc_ramp_rate: float,
     ):
         self.device = device
         self.state_dim = state_dim
@@ -414,6 +425,16 @@ class PolicyRunner:
 
         # Resolve before the slow checkpoint load so a schedule typo fails fast.
         schedule = resolve_rtc_schedule(rtc_schedule)
+        if (
+            groot_rtc_ramp_rate != 0
+            and not groot_rtc_ramp_rate >= GROOT_RTC_RAMP_RATE_MIN
+        ):
+            raise ValueError(
+                f"groot_rtc_ramp_rate in vla_serving.yaml (or --groot-rtc-ramp-rate) "
+                f"is {groot_rtc_ramp_rate:g}, expected 0 for the checkpoint's own rate "
+                f"or at least {GROOT_RTC_RAMP_RATE_MIN:g}"
+            )
+        self.is_groot = policy_type == "groot"
 
         # LeRobot 0.6.0's pi0.5 loader reads the config at `revision` but
         # downloads the weights without it. A pinned checkpoint is therefore
@@ -424,9 +445,12 @@ class PolicyRunner:
 
         # Loaded on the cpu and moved once the trimming below has run: building on
         # the gpu first would peak at the untrimmed size, which is the size this is
-        # here to stay under.
+        # here to stay under. GR00T has nothing to trim, and building it on the
+        # serving device keeps its host-memory peak lower.
         policy_config = PreTrainedConfig.from_pretrained(checkpoint)
-        policy_config.device = "cpu"
+        policy_config.device = device if self.is_groot else "cpu"
+        if self.is_groot and groot_rtc_ramp_rate:
+            policy_config.rtc_ramp_rate = groot_rtc_ramp_rate
         self.policy = get_policy_class(policy_type).from_pretrained(
             checkpoint, config=policy_config
         )
@@ -458,14 +482,15 @@ class PolicyRunner:
         self.policy.eval()
         self.int8 = int8 and policy_type == "pi05"
 
-        # infer() passes the horizon per call on every RTC request, so the
-        # config's own execution_horizon never applies; only the enable and
-        # schedule matter here.
-        self.policy.config.rtc_config = RTCConfig(
-            enabled=True,
-            prefix_attention_schedule=schedule,
-        )
-        self.policy.init_rtc_processor()
+        if not self.is_groot:
+            # infer() passes the horizon per call on every RTC request, so the
+            # config's own execution_horizon never applies; only the enable and
+            # schedule matter here.
+            self.policy.config.rtc_config = RTCConfig(
+                enabled=True,
+                prefix_attention_schedule=schedule,
+            )
+            self.policy.init_rtc_processor()
 
         self.pre, self.post = make_pre_post_processors(
             policy_cfg=self.policy.config,
@@ -480,6 +505,59 @@ class PolicyRunner:
         self.request_names = request_camera_names(
             self.expected_camera_keys(), native_camera_map(self.pre.steps)
         )
+        if self.is_groot:
+            self._configure_groot_rtc(checkpoint)
+
+    def _configure_groot_rtc(self, checkpoint: str) -> None:
+        import lerobot.policies.groot.processor_groot as processor_groot
+
+        self.groot_pack_step = next(
+            (
+                step
+                for step in self.pre.steps
+                if isinstance(step, processor_groot.GrootN17PackInputsStep)
+            ),
+            None,
+        )
+        if self.groot_pack_step is None:
+            raise ValueError(
+                f"'{checkpoint}' has no GrootN17PackInputsStep in its preprocessor; "
+                "save the checkpoint with lerobot-train, which includes it"
+            )
+        # A relative-action checkpoint predicts deltas from the state of its own call,
+        # and LeRobot drops its RTC carryover. With the checkpoint's per-step
+        # relative-action stats, the server carries the absolute chunk instead and
+        # re-encodes it against the current state (_groot_rtc_prefix). LeRobot's
+        # generic fallback scales deltas with absolute stats, which the re-encoding
+        # cannot reproduce, so such a checkpoint runs without RTC, as LeRobot runs it.
+        relative = self.policy.config.use_relative_actions
+        self.groot_reanchors = (
+            relative and self.groot_pack_step._uses_relative_action_groups()
+        )
+        if self.groot_reanchors:
+            # After the processors are built, predict_action_chunk reads this flag only to
+            # drop a relative-action checkpoint's RTC prefix; clearing it keeps the
+            # re-encoded prefix.
+            self.policy.config.use_relative_actions = False
+        elif relative:
+            log(
+                f"WARNING: '{checkpoint}' predicts relative actions without per-step "
+                "relative-action stats, so GR00T ignores the RTC carryover and "
+                "ExecutePolicy's blending alone joins its chunks"
+            )
+
+    def _groot_rtc_prefix(self, absolute_tail: np.ndarray, state: list) -> torch.Tensor:
+        """Encode the absolute carryover as the model's normalized actions relative to `state`.
+
+        Row i of the tail runs at step i of the new chunk, so it is encoded with that
+        step's relative-action stats.
+        """
+        tail = torch.as_tensor(absolute_tail, dtype=torch.float32).unsqueeze(0)
+        reference = torch.as_tensor(state, dtype=torch.float32).unsqueeze(0)
+        pack = self.groot_pack_step
+        relative = pack._convert_relative_action_groups_for_training(tail, reference)
+        normalized = pack._normalize_action_groups_for_training(relative)
+        return normalized.squeeze(0).to(self.device)
 
     def expected_state_dim(self) -> int:
         # The state width config.json declares is not reliable: a checkpoint
@@ -510,7 +588,12 @@ class PolicyRunner:
         inference_delay: int,
         guidance_horizon: int,
     ) -> tuple[np.ndarray, np.ndarray]:
-        """Run one inference. Returns (absolute_actions, normalized_actions), both (T, A)."""
+        """Run one inference. Returns (absolute_actions, carryover_actions), both (T, A).
+
+        The carryover is what the caller sends back as prev_chunk_left_over: the
+        normalized actions, or the absolute ones for a GR00T checkpoint whose
+        carryover the server re-encodes (groot_reanchors).
+        """
         obs = {
             f"observation.images.{key}": tensor.to(self.device)
             for key, tensor in images.items()
@@ -529,6 +612,27 @@ class PolicyRunner:
             kwargs["execution_horizon"] = resolve_rtc_horizon(
                 inference_delay, guidance_horizon, self.guidance_horizon
             )
+
+        if self.is_groot:
+            # GR00T N1.7 takes its RTC overlap length from the prefix it is given and
+            # aligns the overlap with that prefix's end, so the carryover is cut to the
+            # frozen prefix plus the guidance width.
+            overlap = kwargs.pop("execution_horizon", None)
+            with self.lock:
+                self.policy.reset()
+                batch = self.pre(obs)
+                if overlap is not None:
+                    kwargs["prev_chunk_left_over"] = (
+                        self._groot_rtc_prefix(prev_chunk[:overlap], state)
+                        if self.groot_reanchors
+                        else kwargs["prev_chunk_left_over"][:overlap]
+                    )
+                chunk = self.policy.predict_action_chunk(batch, **kwargs)
+                normalized = chunk.squeeze(0).detach().float().cpu().numpy()
+                # Relative-action decoding needs the whole chunk against the
+                # state cached by this call's preprocessing.
+                absolute = self.post(chunk).squeeze(0).detach().float().cpu().numpy()
+            return absolute, absolute if self.groot_reanchors else normalized
 
         with self.lock:
             self.policy.reset()
@@ -861,6 +965,7 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             args.state_dim,
             args.int8,
             checkpoint_revision=args.checkpoint_revision,
+            groot_rtc_ramp_rate=args.groot_rtc_ramp_rate,
         )
 
         image_features = [
@@ -1004,7 +1109,7 @@ def run_inference(state: ServerState, payload: dict) -> dict:
             "non-negative"
         )
 
-    absolute, normalized = runner.infer(
+    absolute, carryover = runner.infer(
         images,
         robot_state,
         payload["task"],
@@ -1014,7 +1119,7 @@ def run_inference(state: ServerState, payload: dict) -> dict:
     )
     return {
         "action_chunk": absolute.tolist(),
-        "action_chunk_raw": normalized.tolist(),
+        "action_chunk_raw": carryover.tolist(),
         "dt": 1.0 / state.fps,
     }
 
@@ -1253,7 +1358,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--policy-class",
         default=str(resolve_default(config.get("policy_class"), "")),
-        help="lerobot policy family (pi05 | smolvla | ...); "
+        help="lerobot policy family (pi05 | smolvla | groot | ...); "
         "default: the checkpoint's config.json 'type'",
     )
     parser.add_argument(
@@ -1291,6 +1396,14 @@ def parse_args() -> argparse.Namespace:
         help="RTC soft-guidance width in steps past the frozen "
         "prefix, used when a request's guidance_horizon "
         "is zero",
+    )
+    parser.add_argument(
+        "--groot-rtc-ramp-rate",
+        type=float,
+        default=numeric_default("groot_rtc_ramp_rate", float, 0.0),
+        help="how fast GR00T's guided RTC steps leave the previous chunk "
+        "for the new prediction; larger is more abrupt; 0 keeps the "
+        "checkpoint's own rate",
     )
     parser.add_argument(
         "--rtc-schedule",

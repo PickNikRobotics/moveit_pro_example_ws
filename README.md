@@ -52,7 +52,6 @@ This directory is gitignored. The configuration's `runtime.launch.xml` starts Ny
 - `lab_sim`
 - `lunar_sim`
 - `market_sim`
-- `rebot_bench_base_config`
 - `rebot_bench_sim`
 - `so101_base_config`
 - `so101_sim`
@@ -63,6 +62,8 @@ This directory is gitignored. The configuration's `runtime.launch.xml` starts Ny
 - `moveit_pro_ur_configs/mock_sim`
 - `moveit_pro_ur_configs/multi_arm_sim`
 - `moveit_pro_ur_configs/picknik_ur_base_config`
+
+`rebot_bench_sim` is a standalone MuJoCo configuration with local, driver-free description assets, planning config, waypoints and pick/stack Objectives. It does not include motor or camera drivers; see its [README](src/rebot_bench_sim/README.md).
 
 The hardware-only `kinova_gen3_site_config` and `picknik_ur_site_config` configurations are not included. They bring up physical Kinova and Universal Robots hardware, respectively, while the retained base and simulation configurations provide the descriptions and interfaces needed by this workspace.
 

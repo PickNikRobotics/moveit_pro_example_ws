@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  The reBot base description, placed on the bench from the build's snapshot of
+  The driver-free reBot description, placed on the bench from the build's snapshot of
   config/bench_layout.yaml (the one the MuJoCo scene is generated from) and
   driven by MuJoCo.
 -->
@@ -22,22 +22,22 @@
   />
   <xacro:property name="layout" value="${xacro.load_yaml('$(arg layout)')}" />
 
-  <!-- An xacro:arg keeps its first declaration, so these defaults win over
-       the base file's. -->
+  <!-- Only MuJoCo is supported; no physical hardware plugin is included. -->
   <xacro:arg name="hardware_interface" default="mujoco" />
-  <xacro:arg name="wrist_camera_mount_xyz" default="${' '.join(map(str, layout['wrist_camera_mount']['xyz']))}" />
-  <xacro:arg name="wrist_camera_mount_rpy" default="${' '.join(map(str, layout['wrist_camera_mount']['rpy']))}" />
-  <!-- The base file keeps these properties over its placement arguments, so
-       the layout places the twin even though the base config's bench
-       calibration is inherited through urdf_params. -->
+  <xacro:arg name="wrist_camera_color_optical_xyz" default="${' '.join(map(str, layout['wrist_camera']['xyz']))}" />
+  <xacro:arg name="wrist_camera_color_optical_rpy" default="${' '.join(map(str, layout['wrist_camera']['rpy']))}" />
+  <!-- The geometry file keeps these properties over its placement defaults. -->
   <xacro:property name="world_to_base_xyz" value="${' '.join(map(str, layout['robot_base']['xyz']))}" />
   <xacro:property name="world_to_base_rpy" value="${' '.join(map(str, layout['robot_base']['rpy']))}" />
   <xacro:property name="scene_camera_xyz" value="${' '.join(map(str, layout['scene_camera']['xyz']))}" />
   <xacro:property name="scene_camera_rpy" value="${' '.join(map(str, layout['scene_camera']['rpy']))}" />
-  <xacro:include filename="$(find rebot_bench_base_config)/description/rebot.urdf.xacro" />
-  <!-- Any other selector would add a second hardware block for the same joints. -->
+  <xacro:include filename="$(find rebot_bench_sim)/description/rebot.urdf.xacro" />
   <xacro:if value="${'$(arg hardware_interface)' != 'mujoco'}">
     ${xacro.fatal("rebot_bench_sim drives the arm through MuJoCo; set hardware_interface to mujoco, not '$(arg hardware_interface)'")}
+  </xacro:if>
+
+  <xacro:if value="$(arg include_camera_optical_frames)">
+    ${xacro.fatal("rebot_bench_sim leaves camera optical frames to MuJoCo sites")}
   </xacro:if>
 
   <!-- Interfaces come from the MJCF actuators (rebot_assets.xml), one position
@@ -49,6 +49,8 @@
       <param name="mujoco_model_package">rebot_bench_sim</param>
       <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param>
       <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
+      <!-- Shared render rate; no per-camera rate in this simulator. Stock
+           Gemini hardware uses 10 Hz, the twin retains 30 Hz recording. -->
       <param name="render_publish_rate">30</param>
       <!-- The episode cycle confirms a stack from the scene camera's aligned
            point cloud, as on the bench (scene_aligned_depth). -->
@@ -57,7 +59,7 @@
     </hardware>
     <!-- The real cameras' topics. Image frames are the MJCF camera name plus
          "_optical_frame", so the cameras are named after the real frames. -->
-    <sensor name="d435_color">
+    <sensor name="wrist_mounted_camera_color">
       <xacro:if value="${mujoco_color_on_real_topic}">
         <param name="rgb_topic">/wrist_mounted_camera/color/image_raw</param>
         <param name="camera_info_topic">/wrist_mounted_camera/color/camera_info</param>
@@ -70,8 +72,7 @@
       <xacro:unless value="${mujoco_color_on_real_topic or mujoco_color_under_opengl}">
         <param name="color_enabled">false</param>
       </xacro:unless>
-      <param name="depth_topic">/wrist_mounted_camera/depth/image_rect_raw</param>
-      <param name="points_topic">/wrist_mounted_camera/depth/color/points</param>
+      <!-- RGB only in MJCF, matching the stock Gemini 305 driver contract. -->
     </sensor>
     <sensor name="scene_camera_color">
       <xacro:if value="${mujoco_color_on_real_topic}">

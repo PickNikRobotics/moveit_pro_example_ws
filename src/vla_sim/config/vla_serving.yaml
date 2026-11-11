@@ -24,7 +24,7 @@ checkpoint_revision: ""
 # load it unless HF_TOKEN is present in the container environment.
 checkpoint_requires_hf_token: false
 
-# LeRobot policy family (pi05 | smolvla | ...). Empty reads the checkpoint's
+# LeRobot policy family (pi05 | smolvla | groot | ...). Empty reads the checkpoint's
 # config.json "type"; set it only when that field is missing.
 policy_class: ""
 
@@ -61,5 +61,13 @@ guidance_horizon: 8
 
 # Real-time-chunking guidance-weight schedule, a lerobot RTCAttentionSchedule
 # name. An invalid value parks the server in the error state naming the valid
-# ones.
+# ones. GR00T does not use it, but an invalid value still parks the server;
+# groot_rtc_ramp_rate below tunes GR00T instead.
 rtc_schedule: EXP
+
+# GR00T only: how fast the guided steps after the frozen prefix move from the
+# previous chunk to the new prediction, the rate r in (1 - e^(-r t)) / (1 - e^(-r)).
+# Larger is more abrupt; lower it if ExecutePolicy rejects chunk joins for a joint
+# velocity limit. 0 uses the checkpoint's rate, or GR00T's 6 when unset; any
+# other value below 0.01 parks the server in the error state.
+groot_rtc_ramp_rate: 0

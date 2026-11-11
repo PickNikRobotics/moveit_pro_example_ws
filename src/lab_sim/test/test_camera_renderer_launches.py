@@ -53,6 +53,7 @@ class RendererConfig:
     scene: Path | None
     nyx_cameras_override: str | None = None
     direct_sensor_names: bool = False
+    nyx_scene_name: str | None = None
 
 
 CONFIGS = (
@@ -119,6 +120,14 @@ CONFIGS = (
         SOURCE_ROOT / "lunar_sim/description/husky_a300_mujoco.xacro",
         "description/husky_scene.xml",
         SOURCE_ROOT / "lunar_sim/description/husky_scene.xml",
+    ),
+    RendererConfig(
+        "market_sim",
+        SOURCE_ROOT / "market_sim",
+        SOURCE_ROOT / "market_sim/description/mobile_fr3_duo_mujoco.ros2_control.xacro",
+        "mjcf/scene.xml",
+        SOURCE_ROOT / "market_sim/mjcf/scene.xml",
+        nyx_scene_name="market_sim_duo",
     ),
     RendererConfig(
         "kinova_sim",
@@ -253,8 +262,8 @@ def test_runtime_launch_cameras_match_the_renderer_description(
     cameras = {launch["camera"] for launch in launch_args}
     assert cameras == _renderer_sensors(config)
     expected_mjcf = f"$(find-pkg-share {config.package})/{config.scene_relative}"
-    expected_scene_dir = (
-        "$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/" + config.package
+    expected_scene_dir = "$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/" + (
+        config.nyx_scene_name or config.package
     )
     if not config.direct_sensor_names:
         assert [(let.get("name"), let.get("value")) for let in root.findall("let")] == [
