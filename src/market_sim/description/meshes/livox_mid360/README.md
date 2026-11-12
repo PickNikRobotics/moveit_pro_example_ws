@@ -11,7 +11,8 @@ PLA blades bolted directly onto the fixed spine cap, a filleted crown, and a 4 m
   coordinates, **not printer orientations**. `cad/source.json` records hashes,
   dimensions, source revision and material/mass assumptions. The four illustrative
   sensor parts were extracted from the A2 assembly's corresponding facets.
-- `visual/`: **metre-scale** meshes for both URDF and MuJoCo. The three printed
+- `visual/`: **metre-scale** meshes for both URDF and MuJoCo (the optical window
+  is URDF-only; see below). The three printed
   parts retain fillets, sockets and cable-tie slots. The plate retains its holes.
   Only the sensor meshes are rotated back into the native sensor frame.
 - `collision/`: **metre-scale** conservative hulls, one per blade and plate, plus
