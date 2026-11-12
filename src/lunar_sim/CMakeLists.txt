@@ -17,6 +17,13 @@ install(
 )
 
 if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_index_cpp REQUIRED)
+  find_package(nav2_map_server REQUIRED)
+  find_package(nav_msgs REQUIRED)
+  ament_add_gtest(saved_map_test test/test_saved_map.cpp)
+  ament_target_dependencies(saved_map_test ament_index_cpp nav2_map_server nav_msgs)
+
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()

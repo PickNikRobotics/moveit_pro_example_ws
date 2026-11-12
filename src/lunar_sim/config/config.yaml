@@ -37,7 +37,7 @@ hardware:
       - enable_vo: false
       # Map -> odom source; with neither, a static identity and nothing corrects odometry drift. Restart the Runtime after changing.
       - slam: false  # build a map with slam_toolbox; save it with map_saver_cli
-      - localization: false  # beluga_amcl against maps/lunar_map.yaml, which does not exist yet
+      - localization: false  # beluga_amcl against the shipped maps/lunar_map.yaml
 
   # Additional launch file included with the persistent driver process: lidar filters, fuse, and Nav2.
   # [Optional, defaults to a blank launch file if not specified]
