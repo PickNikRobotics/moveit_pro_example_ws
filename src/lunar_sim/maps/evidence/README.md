@@ -20,6 +20,13 @@ directory; `SHA256SUMS.json` records each member's SHA-256.
 - `beluga/`: saved-map validation metrics, matched correction summary,
   costmap comparison and measured trajectory; see the parent README for scope.
 
+[`clicked_point_validation.json`](clicked_point_validation.json) records the
+2026-11-12 bounded real Objective/UI-protocol check, matched-time localization
+and TF measurements, concurrent costmap comparisons and failed return/cold-repeat
+outcomes. Its correction metrics use sampled TF pairs applied to the same odometry
+pose; they are not exact AMCL update intervals. Raw observations and reusable
+observer/driver scripts remain in the task evidence store, not product launch.
+
 The independently retained original report, full raw observations, binary
 identities, scene snapshots and rejected candidates remain in the task evidence
 store. This compact bundle is not a claim that identical timing, trajectories

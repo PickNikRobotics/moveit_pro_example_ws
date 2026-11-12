@@ -86,6 +86,35 @@ broad displaced trails observed. That comparison is not independent obstacle
 truth, and costmap stability during the longer route's large correction was not
 recorded. Do not infer a universal stability or safe-navigation guarantee.
 
+### Clicked-point Objective check
+
+A bounded backend check on 2026-11-12 used the committed raster (live `/map`
+pixels matched exactly), fuse and opt-in Beluga, with SLAM off. A headless UI
+stand-in answered the real `GetPoseFromUser` and path-approval JSON prompts; this
+exercises the Objective, not browser clicking. The `(2, -1)` goal succeeded
+(0.109 m truth miss). After a guarded spin, the return Objective aborted on a
+Nav2 map-to-odom TF extrapolation error (0.458 m truth miss); a cold repeat also
+aborted on that error. Instantaneous path approval failed in an earlier attempt;
+a two-second approval delay did not make navigation reliably succeed.
+
+Across forward travel, spin and return, 669 timestamp-matched samples gave
+0.144 m position RMS / 0.312 m maximum and 1.43° yaw RMS / 3.07° maximum.
+Applying consecutive map corrections to the **same** odom-to-base sample gave a
+largest sampled displacement of 0.0146 m over 0.150 s and largest yaw change of
+0.358° over 0.153 s. These are sampled/interpolated TF corrections, not exact
+AMCL update steps. Latest odom/base and map/base TF ages reached 0.121 s and
+0.199 s; ten matched lookup failures occurred after initialization. The spin
+rotated 314° and translated 1.06 m, so it was not an ideal in-place turn.
+
+In 26 concurrent rolling global-costmap snapshots, the worst 95th-percentile
+lethal-cell separation from saved occupied cells was 0.320 m, with up to eleven
+cells beyond 0.5 m (maximum 1.357 m). This flags sparse displaced/live-only
+marks, not independently proven smear or obstacle truth. The previously measured
+0.213 m / 7.75° correction remains unresolved and was not reproduced here.
+Tilt and padded pad-clearance guards stayed active; no failed goal was skipped
+or localization pose corrected from truth. Navigation/TF repeatability remains
+limited; these checks do **not** establish universal costmap stability.
+
 The executable `saved_map_test` loads the installed YAML and image through Nav2's
 real map loader and checks their occupancy and coordinate contract. It fails when
 the map asset is missing.
