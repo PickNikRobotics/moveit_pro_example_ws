@@ -141,9 +141,9 @@ def test_fixed_attachment_exclusions_reach_fcl(
     source_srdf = PACKAGE / "config/moveit/mobile_fr3_duo.srdf"
     contact_urdf = expanded_urdf
     if "franka_spine" in attachment:
-        # The interim post does not intersect the triangulated spine cap. Plant a
-        # test-only 5 mm contact witness on that cap to verify ACM propagation,
-        # rather than claim that nonexistent production geometry is in contact.
+        # A2's feet merely sit on the triangulated spine cap. Plant a test-only
+        # 5 mm contact witness there to verify exact zero-padding ACM propagation,
+        # rather than rely on coplanar foot/cap facets counting as penetration.
         # Both controls below use this identical URDF; only one SRDF entry changes.
         robot = ET.parse(expanded_urdf)
         contact = ET.SubElement(
@@ -151,10 +151,25 @@ def test_fixed_attachment_exclusions_reach_fcl(
             "collision",
             name="test_only_fixed_contact",
         )
-        # C170 mount is at the cap's measured XY center, 239 mm above its top.
+        # A2 scan O is 0.250 mm forward of cap center and 239 mm above its top.
         ET.SubElement(contact, "origin", xyz="0 0 -0.240")
         ET.SubElement(ET.SubElement(contact, "geometry"), "sphere", radius="0.005")
         contact_urdf = tmp_path / "with_contact_witness.urdf"
+        robot.write(contact_urdf)
+
+    if "livox_frame" in attachment:
+        # The supplier mounting face touches the heat plate without penetration.
+        # Use the same test-only contact witness to make the zero-padding FCL
+        # control unambiguous; do not enlarge production sensor geometry.
+        robot = ET.parse(expanded_urdf)
+        contact = ET.SubElement(
+            robot.getroot().find("link[@name='livox_frame']"),
+            "collision",
+            name="test_only_plate_contact",
+        )
+        ET.SubElement(contact, "origin", xyz="0 0 -0.047")
+        ET.SubElement(ET.SubElement(contact, "geometry"), "sphere", radius="0.005")
+        contact_urdf = tmp_path / "with_plate_contact_witness.urdf"
         robot.write(contact_urdf)
 
     attached = robot_model.RobotModel(str(contact_urdf), str(source_srdf))

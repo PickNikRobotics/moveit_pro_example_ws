@@ -77,6 +77,15 @@ int main(int argc, char** argv)
   std::cout << "config " << config.width << ' ' << config.height << ' ' << config.fov_y << ' ' << lidar.fov_x << ' '
             << lidar.range_min << ' ' << lidar.range_max << ' ' << lidar.noise.range_stddev << ' '
             << lidar.noise.dropout_probability << '\n';
+  for (const auto& camera : cameras)
+  {
+    if (!camera.geom_groups.has_value())
+      continue;
+    std::cout << "groups " << camera.name;
+    for (const auto enabled : camera.geom_groups.value())
+      std::cout << ' ' << static_cast<int>(enabled);
+    std::cout << '\n';
+  }
 
   // A synthetic spherical depth shell at r=3 m. Exercise the installed sweep stitcher
   // and radial noise implementation, rather than looking for parameter strings in XML.

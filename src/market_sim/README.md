@@ -50,24 +50,28 @@ linear-speed bound is 0.35 m/s, including diagonal motion, and yaw-rate bound is
 ## Livox Mid-360
 
 A Mid-360 model is mounted **inverted above the fixed spine cap (C170)**, with scan
-origin `(0.209750, 0, 1.700)` m in `base_link`. Its XY position is the measured cap
-footprint center, not the fixed spine link's origin. It does not move with the spine carriage.
+origin `(0.210, 0, 1.700)` m in `base_link`. X is the selected cap-center position
+rounded forward by 0.250 mm, not the fixed spine link's origin. It does not move with the spine carriage.
 The fixed joint rolls the native sensor frame 180° about X: its X remains forward,
 Y points right and Z points down in `base_link`. The local accessory is declared in
 `description/livox_mid360.urdf.xacro` and `mjcf/livox_mid360.xml`; the vendored
 `franka_description/robots/mobile_fr3_duo_v0_2` macros remain unchanged. Its 65 × 65 × 60 mm,
 265 g envelope adds no joints or keyframe values and fits the stowed navigation footprint.
-The **provisional** 0.432 kg analytic support is isolated in
-`livox_mid360_mount.urdf.xacro` / `livox_mid360_mount.xml` so the printed CAD bracket
-can replace it. Its interim aluminum-solid inertia is not a printed-part material model. The support
-and housing are not fabrication or thermal certifications.
+The **A2 printable reference mount** has two PLA blades bolted directly onto the tower
+top, no base plate, a filleted crown and a flush 4 mm 6061 heat plate. Its assets,
+unit/frame convention, conversion checks and estimated 0.371 kg mount inertia are
+recorded in [the asset README](description/meshes/livox_mid360/README.md).
+Detailed visuals and separate collision hulls preserve the sensor's central clearance;
+no whole-mount convex hull fills it. The print masses are slicer estimates, not weighed
+hardware. Neither the mount nor the illustrative housing is a fabrication, strength or
+thermal certification.
 
 | Contract | Simulated value |
 |---|---|
 | Cloud | `/livox/lidar`, `sensor_msgs/msg/PointCloud2`, XYZ float32 |
 | Message frame | `livox_frame` (robot_state_publisher); optical site TF from MuJoCo only |
 | Horizontal / vertical FOV | 360°; native −7° to +52°, mounted base/world −52° to +7° |
-| Rate | 10 Hz; original wall-clock acquisition stamp, best-effort sensor QoS |
+| Rate | Nominal 10 Hz; original wall-clock acquisition stamp, best-effort sensor QoS |
 | Sampling | 333 azimuths × 60 elevations, 19,980 rays per message; row 7 is horizontal |
 | Range | 0.1–40 m; conservative 10%-reflectivity range, not the 70 m bright-target maximum |
 | Range noise | Gaussian σ = 7 mm, zero mean, applied along each ray by the native plugin |
@@ -83,6 +87,11 @@ not produce the Mid-360's uneven vertical FOV. The intermediate `/livox/mujoco/p
 cloud is not the sensor output. Shared MuJoCo render/cloud rates stay at 20 Hz, leaving
 the SICK navigation scans, maps and AMCL inputs unchanged. Stale or duplicate source
 stamps are not replayed, so an overloaded renderer can reduce the observed rate.
+A 40 s mounted-A2 check on MoveIt Pro 10.2.0 observed **7.58 Hz**, with 303 distinct
+acquisition stamps and a mean of 12,670 valid points per message. The task processes
+were restricted to CPUs 0–5, nice 19 and ordinary non-real-time scheduling; this is
+an observed loaded-runtime rate, not proof of sustained 10 Hz. The model and the
+live `/livox/lidar` cloud were also checked in the installed Desktop App.
 
 The envelope, FOV, 200,000 points/s nominal rate and conservative range come from
 [Livox's Mid-360 specifications](https://www.livoxtech.com/mid-360/specs).
@@ -109,20 +118,28 @@ The B2/stowed study, with its common illustrative support, reported:
 | Centered `(0.209750, 0, 1.600)` | 1.5% / 9.7% | 71.5% (first floor 1.25 m) | 78.5% |
 | **C170** `(0.209750, 0, 1.700)` | 1.5% / 1.8% | 77.8% (first floor 1.33 m) | 80.2% |
 
-Those are deterministic geometric LOS metrics, not detection probabilities; the final
-printed bracket may change support shadows. The extra 100 mm above 1.60 m adds
+Those are deterministic geometric LOS metrics, not detection probabilities; they use
+an illustrative support, not the final A2 bracket. The extra 100 mm above 1.60 m adds
 6.4 percentage points of B2 floor visibility and removes 7.9 points of full-FOV blockage.
 Fore/aft shifts at 1.70 m do not give a material forward-coverage advantage over center.
 At 1.90 m the horizontal ring is above the 1.836 m shelves and loses all shelf-face hits.
-The support post loses a narrow sector, not a broad arm/body wedge at default/Stow.
+Those height-study numbers use the **earlier illustrative single-post support**, not
+A2. In the compiled A2 model, 720 bearings × 60 mounted elevations give **6.94%**
+bracket blockage, with two rear-diagonal sectors of about 12.5° each; horizontal
+side aisle views remain clear. Other robot first hits are retained: 2.52% at the
+initial pose and 0.26% in Stow, rising to 20.97% with the carriage raised. These are
+geometric first-hit counts, not sensor detection probabilities or localization scores.
 Its inverted −52° edge reaches nearby floor instead of looking mostly at the ceiling.
 The low 1.50 m default's cap can be clipped by the image renderer's near plane; native
 floor points leaked behind that cap were not counted as geometric visibility.
 Livox's Mid-360 User Manual explicitly supports upside-down mounting with mounting
 surface at least 0.5 m above the ground; the existing low safety scanners remain necessary.
-The provisional mount is checked for default/stowed navigation poses, **not** arbitrary
-extended arms or the full carriage motion envelope. Native rendered occlusions remain
-in the cloud; no robot self-return is hidden. SRDF excludes only the two fixed
+The A2 mount is collision-checked at ready, Stow and raised-Stow, with zero and
+10 mm self-padding. This is **not** arbitrary extended-arm or full-carriage-motion
+acceptance; raised carriage notably worsens full-FOV visibility. Native rendered occlusions remain
+in the cloud; no opaque robot self-return is hidden. Color cameras show the closed
+optical-window illustration in group 5; lidars ignore only that transmissive-window
+illustration and still see every opaque housing, bracket, arm, tower and store surface. SRDF excludes only the two fixed
 attachment contacts (spine/bracket and bracket/sensor), not sensor contacts with arms
 or world obstacles.
 

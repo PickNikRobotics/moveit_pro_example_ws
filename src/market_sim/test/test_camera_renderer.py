@@ -53,18 +53,24 @@ def test_color_stream_has_one_renderer(renderer: str) -> None:
     control = ET.fromstring(result.stdout).find("ros2_control")
     for camera in ("scene_camera", "camera_front"):
         sensors = control.findall(f"sensor[@name='{camera}']")
-        if renderer in ("", "opengl"):
-            assert not sensors
-            continue
         assert len(sensors) == 1
         params = {p.attrib["name"]: p.text for p in sensors[0]}
-        if renderer == "nyx":
+        assert params.pop("geom_groups") == "0 1 2 5"
+        if renderer in ("", "opengl"):
+            assert not params
+        elif renderer == "nyx":
             assert params == {"color_enabled": "false"}
         else:
             assert params == {
                 "rgb_topic": f"{camera}/opengl/color",
                 "camera_info_topic": f"{camera}/opengl/camera_info",
             }
+    for camera in ("camera_rear", "camera_left", "camera_right"):
+        sensors = control.findall(f"sensor[@name='{camera}']")
+        assert len(sensors) == 1
+        assert {p.attrib["name"]: p.text for p in sensors[0]} == {
+            "geom_groups": "0 1 2 5"
+        }
     for lidar in ("lidar_front", "lidar_rear"):
         assert (
             control.find(f"sensor[@name='{lidar}']/param[@name='points_topic']").text

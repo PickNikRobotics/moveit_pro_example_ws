@@ -1,44 +1,45 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <!-- Interim C170 support; replace this macro with the printed CAD geometry.
-       Aluminum primitive fixture, 0.431769 kg; not printed material or fabrication data. -->
+  <!-- A2 printable reference design: two PLA blades, filleted crown, flush 4 mm
+       6061 heat plate; no base plate. Retained CAD and conversion provenance:
+       description/meshes/livox_mid360/README.md. All meshes below are metres,
+       in base-aligned scan-O axes. No physical/thermal validation is implied. -->
   <xacro:macro name="market_livox_mid360_mount">
-    <xacro:macro name="livox_support_box" params="xyz size">
+    <xacro:macro name="livox_a2_visual" params="part material color">
       <visual>
-        <origin xyz="${xyz}"/>
-        <geometry><box size="${size}"/></geometry>
-        <material name="livox_bracket"><color rgba="0.18 0.20 0.22 1"/></material>
+        <geometry>
+          <mesh filename="package://market_sim/description/meshes/livox_mid360/visual/${part}.stl"/>
+        </geometry>
+        <material name="${material}"><color rgba="${color}"/></material>
       </visual>
-      <collision>
-        <origin xyz="${xyz}"/>
-        <geometry><box size="${size}"/></geometry>
-      </collision>
     </xacro:macro>
-    <xacro:macro name="livox_support_rod" params="xyz rpy length">
-      <visual>
-        <origin xyz="${xyz}" rpy="${rpy}"/>
-        <geometry><cylinder radius="0.008" length="${length}"/></geometry>
-        <material name="livox_bracket"/>
-      </visual>
+    <xacro:macro name="livox_a2_collision" params="part">
       <collision>
-        <origin xyz="${xyz}" rpy="${rpy}"/>
-        <geometry><cylinder radius="0.008" length="${length}"/></geometry>
+        <geometry>
+          <mesh filename="package://market_sim/description/meshes/livox_mid360/collision/${part}.stl"/>
+        </geometry>
       </collision>
     </xacro:macro>
     <link name="livox_mid360_mount">
+      <!-- Uniform-density per-part approximation: 83.4/83.3/69.4 g PLA slicer
+           estimates, solid plate at 2700 kg/m3. Fasteners omitted from dynamics;
+           these are not weighed or infill-resolved physical mass properties. -->
       <inertial>
-        <origin xyz="0 0.075877177 0.004914938"/>
-        <mass value="0.431769164"/>
-        <inertia ixx="0.006101791" ixy="0" ixz="0" iyy="0.003756598" iyz="0.002024248" izz="0.002793063"/>
+        <origin xyz="-0.013573176 0.000013040 -0.042772965"/>
+        <mass value="0.370886979"/>
+        <inertia ixx="0.005363228" ixy="0.000000134" ixz="-0.000777126" iyy="0.005119424" iyz="0.000000521" izz="0.001207779"/>
       </inertial>
-      <!-- Mount frame is at scan O; sensor hangs below the overhead plate. -->
-      <xacro:livox_support_box xyz="0 0 0.0625" size="0.125 0.125 0.004"/>
-      <!-- Pole just outside measured cap's left edge (y=0.1505) by its 8 mm radius.
-           Its bottom is at cap z=1.461; the C170 scan origin is z=1.700. -->
-      <xacro:livox_support_rod xyz="0 0.1585 -0.08825" rpy="0 0 0" length="0.3015"/>
-      <xacro:livox_support_rod xyz="0 0.07925 0.0625" rpy="${-pi/2} 0 0" length="0.1585"/>
-      <!-- Extend to the housing's mounting face for a connected solid support. -->
-      <xacro:livox_support_rod xyz="0 0 0.04825" rpy="0 0 0" length="0.0245"/>
+      <xacro:livox_a2_visual part="P01_blade_1" material="livox_bracket" color="0.78 0.49 0.23 1"/>
+      <xacro:livox_a2_visual part="P01_blade_-1" material="livox_bracket" color="0.78 0.49 0.23 1"/>
+      <xacro:livox_a2_visual part="P02_crown" material="livox_bracket" color="0.78 0.49 0.23 1"/>
+      <xacro:livox_a2_visual part="M02_heat_plate" material="livox_heat_plate" color="0.66 0.70 0.75 1"/>
+      <xacro:livox_a2_collision part="P01_blade_1"/>
+      <xacro:livox_a2_collision part="P01_blade_-1"/>
+      <!-- Separate U-rails preserve the sensor clearance; no full-mount hull. -->
+      <xacro:livox_a2_collision part="crown_front"/>
+      <xacro:livox_a2_collision part="crown_left"/>
+      <xacro:livox_a2_collision part="crown_right"/>
+      <xacro:livox_a2_collision part="M02_heat_plate"/>
     </link>
   </xacro:macro>
 </robot>

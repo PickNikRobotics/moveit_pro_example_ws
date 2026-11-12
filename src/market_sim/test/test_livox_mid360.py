@@ -29,6 +29,7 @@
 """Exercise native lidar/noise, compiled mount rays, cloud shaping and fresh 10 Hz delivery."""
 
 import importlib.util
+import json
 import subprocess
 import sys
 import time
@@ -175,7 +176,7 @@ def test_mount_and_optical_frame_agree_with_expanded_urdf(model, urdf):
         np.testing.assert_allclose(body.quat, expected, atol=1e-6)
     camera = model.camera("livox_mid360").id
     site = model.site("livox_mid360_optical_frame").id
-    np.testing.assert_allclose(data.cam_xpos[camera], [0.209750, 0, 1.700], atol=1e-6)
+    np.testing.assert_allclose(data.cam_xpos[camera], [0.210, 0, 1.700], atol=1e-6)
     np.testing.assert_allclose(
         data.xmat[model.body("livox_frame").id].reshape(3, 3)[:, 2],
         [0, 0, -1],
@@ -218,6 +219,7 @@ def test_horizontal_slice_retains_shelves_and_walls_with_small_bracket_sector(
     groups = np.array([1, 1, 1, 0, 0, 0], np.uint8)
     shelf_hits, wall_hits, bracket_hits = 0, 0, 0
     bracket = model.body("livox_mid360_mount").id
+    heading = base_pose[2]
     for angle in np.radians(np.arange(0, 360, 0.5)):
         geom = np.array([-1], np.int32)
         distance = mujoco.mj_ray(
@@ -234,20 +236,24 @@ def test_horizontal_slice_retains_shelves_and_walls_with_small_bracket_sector(
             continue  # Store doorways are genuinely open, not missing robot occlusion.
         hit = int(geom[0])
         if hit in robot:
-            # C170 accepts the support post's narrow shadow, not a hidden arm/body return.
+            # A2 accepts its two rear-diagonal blade shadows, not hidden arm/body returns.
             assert model.geom_bodyid[hit] == bracket, (
                 pose,
                 base_pose,
                 model.geom(hit).name,
             )
             bracket_hits += 1
+            bearing = (angle - heading + np.pi) % (2 * np.pi) - np.pi
+            assert 115 <= abs(np.degrees(bearing)) <= 155
             continue
         body_name = model.body(int(model.geom_bodyid[hit])).name
         shelf_hits += bool(
             body_name and body_name[0] in "ABCDEFGHI" and "_" in body_name
         )
         wall_hits += "wall" in (model.geom(hit).name or "")
-    assert 0 < bracket_hits <= 20  # At most 10 deg of the 720-bearing horizontal slice.
+    # A2's two nominal ~12.5-degree sectors replace the provisional single post.
+    # Both must remain behind the scanner, preserving the two side aisle views.
+    assert 35 <= bracket_hits <= 60  # 17.5..30 degrees total of 720 bearings.
     assert shelf_hits > 200
     assert wall_hits > 10
 
@@ -270,10 +276,103 @@ def test_centered_sensor_clears_the_measured_cap_over_its_downward_fov(model):
     origin = (
         data.cam_xpos[model.camera("livox_mid360").id] - data.xpos[base]
     ) @ rotation
-    np.testing.assert_allclose(origin[:2], center[:2], atol=1e-6)
+    # Selected CAD pose rounds the measured cap center by +0.250 mm in X.
+    np.testing.assert_allclose(origin[:2] - center[:2], [0.000250, 0], atol=1e-6)
     radial_extent = np.linalg.norm(top[:, :2] - origin[:2], axis=1).max()
     needed_height = top[:, 2].max() + radial_extent * np.tan(np.radians(52))
     assert origin[2] - needed_height > 0.03  # C170 has ~35 mm full-cap FOV clearance.
+
+
+def test_a2_cad_visuals_collisions_and_mass_properties_reach_the_real_consumers(
+    model, urdf
+):
+    """Metric CAD surfaces and separate collision rails agree in URDF and MuJoCo."""
+    assets = PACKAGE / "description/meshes/livox_mid360"
+    meta = json.loads((assets / "cad/source.json").read_text())
+    converted = json.loads((assets / "conversion.json").read_text())
+    root = ET.fromstring(urdf)
+    data = stowed_data(model)
+    names = {
+        "P01_blade_1": "livox_mount_blade_left",
+        "P01_blade_-1": "livox_mount_blade_right",
+        "P02_crown": "livox_mount_crown",
+        "M02_heat_plate": "livox_mount_heat_plate",
+        "sensor_heatsink_body": "livox_housing_base",
+        "sensor_window_ring": "livox_window_lower_rim",
+        "sensor_optical_window_simplified": "livox_optical_window",
+        "sensor_M12_male_port": "livox_connector",
+    }
+    for part in meta["parts"] + meta["sensor_parts"]:
+        native = part["name"].startswith("sensor_")
+        link = "livox_frame" if native else "livox_mid360_mount"
+        mesh_name = f"{part['name']}.stl"
+        visual = next(
+            v
+            for v in root.find(f"link[@name='{link}']").findall("visual")
+            if v.find("geometry/mesh").get("filename").endswith("/" + mesh_name)
+        )
+        assert visual.find("origin") is None
+        assert visual.find("geometry/mesh").get("scale", "1 1 1") == "1 1 1"
+        geom = model.geom(names[part["name"]]).id
+        assert not model.geom_contype[geom] and not model.geom_conaffinity[geom]
+        points = geom_points(model, data, geom)
+        base = model.body("base_link").id
+        local = (points - data.xpos[base]) @ data.xmat[base].reshape(3, 3)
+        local -= meta["scan_origin_base_link_m"]
+        np.testing.assert_allclose(
+            [local.min(axis=0), local.max(axis=0)],
+            np.array(part["bounds_mm"]) * 0.001,
+            atol=0.0002,
+        )
+        # This checks the emitted mesh bounds through MuJoCo's compiler, whose
+        # internal mesh centering/principal axes are not the STL frame.
+        assert model.geom_group[geom] == (5 if "optical_window" in part["name"] else 1)
+    mount = model.body("livox_mid360_mount").id
+    inertial = converted["mount_inertial"]
+    assert model.body_mass[mount] == pytest.approx(inertial["mass_kg"], abs=1e-8)
+    np.testing.assert_allclose(model.body_ipos[mount], inertial["com_m"], atol=1e-8)
+    np.testing.assert_allclose(
+        np.sort(model.body_inertia[mount]),
+        np.linalg.eigvalsh(inertial["inertia_kg_m2"]),
+        atol=1e-8,
+    )
+    tensor = root.find("link[@name='livox_mid360_mount']/inertial/inertia")
+    np.testing.assert_allclose(
+        [float(tensor.get(k)) for k in ("ixx", "iyy", "izz", "ixy", "ixz", "iyz")],
+        [
+            inertial["inertia_kg_m2"][i][j]
+            for i, j in ((0, 0), (1, 1), (2, 2), (0, 1), (0, 2), (1, 2))
+        ],
+        atol=1e-8,
+    )
+    # The central housing must NOT be filled by a single convex bracket hull.
+    groups = np.array([0, 0, 0, 1, 0, 0], np.uint8)
+    sensor = model.body("livox_frame").id
+    for x, y in ((0, 0), (-0.03, 0), (0, 0.03), (0, -0.03)):
+        start = data.xpos[mount] + np.array([x, y, -0.05])
+        geom = np.array([-1], np.int32)
+        distance = mujoco.mj_ray(
+            model, data, start, np.array([0.0, 0.0, 1.0]), groups, 1, sensor, geom
+        )
+        assert distance == pytest.approx(0.097, abs=0.0003)
+        assert model.geom(int(geom[0])).name == "livox_mount_heat_plate_collision"
+
+
+def test_a2_optical_window_is_not_an_opaque_lidar_obstacle(model):
+    data = stowed_data(model)
+    start = data.cam_xpos[model.camera("livox_mid360").id]
+    geom = np.array([-1], np.int32)
+    opaque = np.array([1, 1, 1, 0, 0, 0], np.uint8)
+    distance = mujoco.mj_ray(
+        model, data, start, np.array([1.0, 0, 0]), opaque, 1, -1, geom
+    )
+    assert distance > 1.0
+    color = np.array([1, 1, 1, 0, 0, 1], np.uint8)
+    distance = mujoco.mj_ray(
+        model, data, start, np.array([1.0, 0, 0]), color, 1, -1, geom
+    )
+    assert 0 < distance < 0.03
+    assert model.geom(int(geom[0])).name == "livox_optical_window"
 
 
 def test_added_sensor_has_no_dof_and_stays_inside_existing_navigation_footprint(model):
@@ -288,7 +387,7 @@ def test_added_sensor_has_no_dof_and_stays_inside_existing_navigation_footprint(
             points = geom_points(model, data, geom)
             assert points[:, 0].min() > -0.4 and points[:, 0].max() < 0.8
             assert np.max(np.abs(points[:, 1])) < 0.36
-    # Physics remains finite with the inverted sensor and provisional support.
+    # Physics remains finite with the inverted sensor and estimated A2 dynamics.
     for _ in range(100):
         mujoco.mj_step(model, data)
         assert np.isfinite(data.qpos).all()
@@ -313,6 +412,20 @@ def test_installed_native_consumer_applies_lidar_config_and_range_noise(
         if line.startswith(("config ", "shell ", "dropouts "))
     }
     assert rows["config"] == pytest.approx([333, 141, 140, 360, 0.1, 40, 0.007, 0.35])
+    groups = {
+        line.split()[1]: [int(v) for v in line.split()[2:]]
+        for line in output.splitlines()
+        if line.startswith("groups ")
+    }
+    assert groups["livox_mid360"] == [1, 1, 1, 0, 0, 0]
+    for camera in (
+        "scene_camera",
+        "camera_front",
+        "camera_rear",
+        "camera_left",
+        "camera_right",
+    ):
+        assert groups[camera] == [1, 1, 1, 0, 0, 1]
     finite, mean_error, stddev, low, high = rows["shell"]
     assert finite == 333 * 60
     assert (

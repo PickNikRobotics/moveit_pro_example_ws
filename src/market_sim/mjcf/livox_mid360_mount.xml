@@ -1,38 +1,87 @@
 <mujocoinclude>
-  <!-- Interim replaceable C170 support, matching the URDF's analytic solids.
-       Aluminum primitive fixture, not printed CAD dynamics. No extra joints. -->
+  <!-- A2 printed reference assembly; matching metre meshes/inertia in the URDF.
+       Visuals retain holes/fillets. Collision hulls are separate by part/rail.
+       CAD source, simplification bounds and estimated dynamics are documented
+       in description/meshes/livox_mid360/README.md. No extra joints. -->
   <inertial
-    pos="0 0.075877177 0.004914938"
-    mass="0.431769164"
-    fullinertia="0.006101791 0.003756598 0.002793063 0 0 0.002024248"
+    pos="-0.013573176 0.000013040 -0.042772965"
+    mass="0.370886979"
+    fullinertia="0.005363228 0.005119424 0.001207779 0.000000134 -0.000777126 0.000000521"
   />
   <geom
-    name="livox_mount_plate"
-    type="box"
-    size="0.0625 0.0625 0.002"
-    pos="0 0 0.0625"
-    rgba="0.18 0.20 0.22 1"
+    name="livox_mount_blade_left"
+    type="mesh"
+    mesh="livox_a2_blade_left"
+    contype="0"
+    conaffinity="0"
+    group="1"
+    density="0"
+    rgba="0.78 0.49 0.23 1"
   />
   <geom
-    name="livox_mount_post"
-    type="cylinder"
-    size="0.008 0.15075"
-    pos="0 0.1585 -0.08825"
-    rgba="0.18 0.20 0.22 1"
+    name="livox_mount_blade_right"
+    type="mesh"
+    mesh="livox_a2_blade_right"
+    contype="0"
+    conaffinity="0"
+    group="1"
+    density="0"
+    rgba="0.78 0.49 0.23 1"
   />
   <geom
-    name="livox_mount_boom"
-    type="cylinder"
-    size="0.008 0.07925"
-    pos="0 0.07925 0.0625"
-    quat="0.707106781187 -0.707106781187 0 0"
-    rgba="0.18 0.20 0.22 1"
+    name="livox_mount_crown"
+    type="mesh"
+    mesh="livox_a2_crown"
+    contype="0"
+    conaffinity="0"
+    group="1"
+    density="0"
+    rgba="0.78 0.49 0.23 1"
   />
   <geom
-    name="livox_mount_standoff"
-    type="cylinder"
-    size="0.008 0.01225"
-    pos="0 0 0.04825"
-    rgba="0.18 0.20 0.22 1"
+    name="livox_mount_heat_plate"
+    type="mesh"
+    mesh="livox_a2_heat_plate"
+    contype="0"
+    conaffinity="0"
+    group="1"
+    density="0"
+    rgba="0.66 0.70 0.75 1"
+  />
+  <geom
+    name="livox_mount_blade_left_collision"
+    type="mesh"
+    mesh="livox_a2_blade_left_collision"
+    group="3"
+  />
+  <geom
+    name="livox_mount_blade_right_collision"
+    type="mesh"
+    mesh="livox_a2_blade_right_collision"
+    group="3"
+  />
+  <geom
+    name="livox_mount_crown_front_collision"
+    type="mesh"
+    mesh="livox_a2_crown_front_collision"
+    group="3"
+  />
+  <geom
+    name="livox_mount_crown_left_collision"
+    type="mesh"
+    mesh="livox_a2_crown_left_collision"
+    group="3"
+  />
+  <geom
+    name="livox_mount_crown_right_collision"
+    type="mesh"
+    mesh="livox_a2_crown_right_collision"
+    group="3"
+  />
+  <geom
+    name="livox_mount_heat_plate_collision"
+    type="mesh"
+    mesh="livox_a2_heat_plate_collision"
+    group="3"
   />
 </mujocoinclude>

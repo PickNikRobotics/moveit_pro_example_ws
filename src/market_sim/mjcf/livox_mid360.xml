@@ -1,56 +1,73 @@
 <mujocoinclude>
   <!-- Included inside the fixed franka_spine body, not the moving spine carriage.
-       C170 scan O in base_link: (0.209750, 0, 1.700) m, measured cap center.
-       Printed CAD support pending. -->
-  <body name="livox_mid360_mount" pos="0.071461 0 1.350" gravcomp="1">
+       A2/C170 scan O in base_link: (0.210, 0, 1.700) m, approved +0.250 mm
+       rounding from measured cap center. Bracket meshes are base-aligned; only
+       the sensor-native mesh/link rolls. No double roll of CAD assembly axes. -->
+  <body name="livox_mid360_mount" pos="0.071711 0 1.350" gravcomp="1">
     <include file="livox_mid360_mount.xml" />
     <body name="livox_frame" pos="0 0 0" quat="0 1 0 0" gravcomp="1">
       <inertial
-        pos="0 0 -0.006"
+        pos="0 0 -0.017"
         mass="0.265"
         diaginertia="0.000173 0.000173 0.000187"
       />
-      <!-- Only the opaque caps are rendered. A closed visual shell would blind the
-           image-based lidar. Below: top -0.016 m at radius <=0.046 m stays below -7 deg;
-           above: bottom +0.020 m at radius 0.012 m stays above +52 deg. -->
+      <!-- The closed optical-window illustration is group 5, shown by color
+           cameras but not by lidars. It is optically transmissive, not an opaque
+           obstacle at the scan origin. All actual opaque housing/bracket/robot
+           geometry stays visible to the native lidar in groups 0/1/2. -->
       <geom
         name="livox_housing_base"
-        type="box"
-        size="0.0325 0.0325 0.010"
-        pos="0 0 -0.026"
+        type="mesh"
+        mesh="livox_housing"
         contype="0"
         conaffinity="0"
         group="1"
         density="0"
-        rgba="0.28 0.30 0.32 1"
+        rgba="0.18 0.20 0.22 1"
       />
       <geom
         name="livox_window_lower_rim"
-        type="cylinder"
-        size="0.027 0.002"
-        pos="0 0 -0.014"
+        type="mesh"
+        mesh="livox_window_ring"
         contype="0"
         conaffinity="0"
         group="1"
         density="0"
-        rgba="0.035 0.045 0.055 1"
+        rgba="0.18 0.20 0.22 1"
       />
       <geom
-        name="livox_housing_top"
-        type="cylinder"
-        size="0.012 0.002"
-        pos="0 0 0.022"
+        name="livox_optical_window"
+        type="mesh"
+        mesh="livox_window"
+        contype="0"
+        conaffinity="0"
+        group="5"
+        density="0"
+        rgba="0.10 0.18 0.22 1"
+      />
+      <geom
+        name="livox_connector"
+        type="mesh"
+        mesh="livox_port"
         contype="0"
         conaffinity="0"
         group="1"
         density="0"
-        rgba="0.28 0.30 0.32 1"
+        rgba="0.32 0.36 0.40 1"
       />
       <geom
         name="livox_collision"
         type="box"
         size="0.0325 0.0325 0.030"
-        pos="0 0 -0.006"
+        pos="0 0 -0.017"
+        group="3"
+      />
+      <geom
+        name="livox_port_collision"
+        type="cylinder"
+        size="0.006 0.004"
+        pos="-0.0365 0 -0.0327"
+        quat="0.707106781187 0 0.707106781187 0"
         group="3"
       />
       <!-- Native MuJoCo image-based lidar. Keep its sweep axis vertical: pitching a

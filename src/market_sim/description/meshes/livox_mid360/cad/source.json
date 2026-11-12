@@ -1,0 +1,180 @@
+{
+  "design": "A2-blade-round2",
+  "revision_date": "2026-11-11",
+  "license": "BSD-3-Clause (repository LICENSE)",
+  "units": "millimeters",
+  "frame": "scan-origin O, base_link-aligned assembly axes; inverted sensor geometry is already in its installed pose",
+  "scan_origin_base_link_m": [
+    0.21,
+    0,
+    1.7
+  ],
+  "spine_origin_base_link_m": [
+    0.138289,
+    0,
+    0.35
+  ],
+  "parts": [
+    {
+      "name": "P01_blade_1",
+      "material": "PLA (uniform-density approximation of slicer estimate)",
+      "mass_kg": 0.0834,
+      "cad_volume_mm3": 152783.77277866844,
+      "bounds_mm": [
+        [
+          -62.000000000000014,
+          16.19238815542512,
+          -239.0
+        ],
+        [
+          9.74934292724943,
+          89.99854441555657,
+          42.6
+        ]
+      ],
+      "source_stl_sha256": "4bcbeae5af1df28788c23801d8bcda12d6dabc9f8238b420b71c2d03b8f57632",
+      "source_step_sha256": "2a3bd5af673c17f9000214c935b889505a45e958612eb5949c6e593c5072fc9c",
+      "triangles": 3330
+    },
+    {
+      "name": "P01_blade_-1",
+      "material": "PLA (uniform-density approximation of slicer estimate)",
+      "mass_kg": 0.0833,
+      "cad_volume_mm3": 152783.77277866844,
+      "bounds_mm": [
+        [
+          -62.000000000000014,
+          -89.99854441555657,
+          -239.0
+        ],
+        [
+          9.74934292724943,
+          -16.19238815542512,
+          42.6
+        ]
+      ],
+      "source_stl_sha256": "ed0817fa493c3460fdfe0eafd4e47e668ec2fed406a2d39907afa0ac7ad699b5",
+      "source_step_sha256": "40a43b8dfd1ec8d31d30980e14a578dfedd3f61172d03121af8ab67dd472b29e",
+      "triangles": 3330
+    },
+    {
+      "name": "P02_crown",
+      "material": "PLA (uniform-density approximation of slicer estimate)",
+      "mass_kg": 0.0694,
+      "cad_volume_mm3": 115822.57195003802,
+      "bounds_mm": [
+        [
+          -62.00000000000001,
+          -62.000000000000014,
+          27.0
+        ],
+        [
+          62.00000000000001,
+          62.000000000000014,
+          51.0
+        ]
+      ],
+      "source_stl_sha256": "ca2954b6beb276ce379ca973d0d31b84c435e6f3da114914ae8b23271ae2cf97",
+      "source_step_sha256": "2bc33447cc8abefa50a987c03cecc395bdcc3b5a9fcaa0a28aa6d48819ddfe8d",
+      "triangles": 4400
+    },
+    {
+      "name": "M02_heat_plate",
+      "material": "6061 aluminum, density 2700 kg/m3",
+      "mass_kg": null,
+      "cad_volume_mm3": 49920.94321920843,
+      "bounds_mm": [
+        [
+          -60.336309447890166,
+          -59.0,
+          47.0
+        ],
+        [
+          59.0,
+          59.0,
+          51.0
+        ]
+      ],
+      "source_stl_sha256": "af77eb8dd4e7d4d79045b730e0ff0923da5ef7ecda0a6987d968164c13fc3500",
+      "source_step_sha256": "494271919e6454291a92fd5f8bd5b79ec81395ea997b3059a3ab5912900c6057",
+      "triangles": 9900
+    }
+  ],
+  "sensor_parts": [
+    {
+      "name": "sensor_heatsink_body",
+      "bounds_mm": [
+        [
+          -32.5,
+          -32.5,
+          7.5
+        ],
+        [
+          32.5,
+          32.5,
+          47.0
+        ]
+      ],
+      "triangles": 2764,
+      "source_stl_sha256": "6603e667ef20af5b8cead7bd1bf2818a8e9ac4f6751d999c4c031cd86929fcd2",
+      "assembly_first_facet": 40448
+    },
+    {
+      "name": "sensor_window_ring",
+      "bounds_mm": [
+        [
+          -26.0,
+          -25.99191873202123,
+          5.5
+        ],
+        [
+          26.0,
+          25.991918732021222,
+          7.5
+        ]
+      ],
+      "triangles": 500,
+      "source_stl_sha256": "60bab9847a91a7d0803f63a034f8354a3735dbdf231b1e8938a95365afe85ea6",
+      "assembly_first_facet": 43212
+    },
+    {
+      "name": "sensor_optical_window_simplified",
+      "bounds_mm": [
+        [
+          -26.000000000000004,
+          -25.991918732021233,
+          -13.0
+        ],
+        [
+          26.000000000000004,
+          25.991918732021226,
+          7.499999999999999
+        ]
+      ],
+      "triangles": 2406,
+      "source_stl_sha256": "b2807c3993a204272812d176a2a18e252e71a668e0fbee65916ed6460ca306da",
+      "assembly_first_facet": 43712
+    },
+    {
+      "name": "sensor_M12_male_port",
+      "bounds_mm": [
+        [
+          -40.5,
+          -5.9981350920048975,
+          26.700000000000003
+        ],
+        [
+          -32.5,
+          5.998135092004899,
+          38.7
+        ]
+      ],
+      "triangles": 500,
+      "source_stl_sha256": "daa20e63fb9fea9079f821f5cf26be580c98d82951bc786a44eceb349b92dabc",
+      "assembly_first_facet": 46118
+    }
+  ],
+  "source_assembly_sha256": "3de9bd878835b876c7db788b72901c53f967054745a568cce21d3caf69b1987c",
+  "print_mass_authority": "A2 X1C slicer estimates: four walls, 25% gyroid PLA; not weighed hardware; fasteners omitted from mass model",
+  "sensor_reference": "Livox Mid-360 nominal 65 x 65 x 60 mm, 265 g, scan origin 47 mm above native mounting face; housing/window are illustrative, not vendor CAD"
+}
