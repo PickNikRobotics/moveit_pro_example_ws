@@ -10,6 +10,11 @@ permissions:
   contents: write
   pull-requests: write
 
+# A dispatch overlapping the schedule must not supersede another active run's PR.
+concurrency:
+  group: batch-merge-release-branch
+  cancel-in-progress: false
+
 jobs:
   batch-merge-release-branch:
     runs-on: ubuntu-latest
@@ -47,6 +52,7 @@ jobs:
               echo "# Release branch has no changes to merge into main" >> "$GITHUB_STEP_SUMMARY"
               git checkout main
               git branch -D "$TEMP_BRANCH"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
           else
@@ -93,4 +99,31 @@ jobs:
           # An individual, not the infrastructure-devs team: requesting a team review
           # needs a token with org Members:read, and every permission available to
           # secrets.GITHUB_TOKEN is repository-scoped. Tracked in PickNikRobotics/moveit_pro#21478.
-          gh pr create --title "Merge $RELEASE_BRANCH into main" --body "$PR_BODY" --base main --head "$TEMP_BRANCH" --draft --reviewer JWhitleyWork
+          pr_url=$(gh pr create --repo "$GITHUB_REPOSITORY" --title "Merge $RELEASE_BRANCH into main" --body "$PR_BODY" --base main --head "$TEMP_BRANCH" --draft --reviewer JWhitleyWork)
+          echo "number=${pr_url##*/}" >> "$GITHUB_OUTPUT"
+
+      - name: Close superseded merge pull requests
+        if: steps.merge.outputs.skip != 'true'
+        env:
+          RELEASE_BRANCH: ${{ steps.get_current_release_branch.outputs.branch }}
+          NEW_PR_NUMBER: ${{ steps.merge.outputs.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Match both title variants and the generated head in this repository; a title alone could belong to a manual PR or a fork.
+          # Paginate before closing anything so API failures leave the existing PRs open.
+          prs=$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls?state=open&base=main&per_page=100")
+          superseded=$(printf '%s\n' "$prs" | jq -r \
+            --arg repo "$GITHUB_REPOSITORY" \
+            --arg title "Merge $RELEASE_BRANCH into main" \
+            --arg prefix "merge-$RELEASE_BRANCH-main-" \
+            --argjson new "$NEW_PR_NUMBER" '
+              .[]
+              | select(.state == "open" and .base.ref == "main" and .number < $new)
+              | select(.head.repo.full_name == $repo)
+              | select(.title == $title or .title == ($title + " (conflicts resolved by Claude)"))
+              | select(.head.ref | startswith($prefix))
+              | select(.head.ref | ltrimstr($prefix) | test("^[0-9]+$"))
+              | .number')
+          for number in $superseded; do
+            gh pr close "$number" --repo "$GITHUB_REPOSITORY" --comment "Superseded by #$NEW_PR_NUMBER"
+          done
