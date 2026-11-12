@@ -26,6 +26,7 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Add Hangar to Planning Scene" _collapsed="true" />
       <SubTree
         ID="Move to Waypoint (JTC)"
         _collapsed="true"

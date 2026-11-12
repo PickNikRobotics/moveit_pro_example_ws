@@ -46,6 +46,7 @@ ROBOT_XACRO = PACKAGE / "description" / "ur5e_ridgeback.xacro"
 SRDF = PACKAGE / "config" / "moveit" / "picknik_ur.srdf"
 ADD_HANGAR_OBJECTIVE = PACKAGE / "objectives" / "add_hangar_to_planning_scene.xml"
 PACKAGE_URI = "package://hangar_sim/"
+ADD_HANGAR_ID = "Add Hangar to Planning Scene"
 
 
 def _hangar() -> ET.Element:
@@ -93,11 +94,16 @@ def test_hangar_meshes_exist() -> None:
 
 
 def test_robot_description_does_not_include_the_hangar() -> None:
-    """The robot xacro must not define or include any hangar link."""
+    """Neither the robot xacro nor a hangar_sim xacro it includes defines a hangar link."""
     robot = ROBOT_XACRO.read_text()
     assert "hangar.urdf" not in robot
-    defined = set(re.findall(r'<link\s+name="([^"]+)"', robot))
-    assert not defined & _hangar_links()
+    included = re.findall(
+        r'filename="\$\(find hangar_sim\)/(description/[^"]+\.xacro)"', robot
+    )
+    assert included, "found no hangar_sim includes; the include pattern is stale"
+    for source in [ROBOT_XACRO] + [PACKAGE / path for path in included]:
+        defined = set(re.findall(r'<link\s+name="([^"]+)"', source.read_text()))
+        assert not defined & _hangar_links(), source.name
 
 
 def test_srdf_names_no_hangar_link() -> None:
@@ -111,9 +117,85 @@ def test_srdf_names_no_hangar_link() -> None:
     assert not named & _hangar_links()
 
 
-def test_objective_adds_this_file() -> None:
-    """The Objective must load hangar.urdf from this package."""
-    add_urdf = ET.parse(ADD_HANGAR_OBJECTIVE).find(".//Action[@ID='AddURDF']")
-    assert add_urdf is not None
+def test_objective_adds_this_file_once() -> None:
+    """The Objective loads hangar.urdf, and checks for the same name it adds.
+
+    AddURDF fails when the name is already in the planning scene, so a mismatch
+    would make every second run fail.
+    """
+    objective = ET.parse(ADD_HANGAR_OBJECTIVE)
+    add_urdf = objective.find(".//Action[@ID='AddURDF']")
+    is_in_scene = objective.find(".//Action[@ID='IsCollisionObjectInPlanningScene']")
+    assert add_urdf is not None and is_in_scene is not None
     assert add_urdf.get("package_name") == "hangar_sim"
     assert PACKAGE / add_urdf.get("urdf_file_path") == HANGAR_URDF
+    assert add_urdf.get("urdf_name") == is_in_scene.get("collision_object_name")
+
+
+# Nodes that plan or command motion checked against the planning scene. Nav2 navigation is
+# left out: it plans on its costmaps, not the planning scene.
+MOTION_NODE_IDS = {
+    "DoTeleoperateAction",
+    "ExecuteTrajectory",
+    "PlanCartesianPath",
+    "PlanMTCTask",
+    "PlanToJointGoal",
+}
+MOTION_SUBTREE_PREFIXES = (
+    "Move to ",
+    "Execute MTC Solution",
+    "Interpolate to Joint State",
+)
+
+
+def _objectives() -> dict[str, ET.Element]:
+    trees = {}
+    for path in (PACKAGE / "objectives").glob("*.xml"):
+        root = ET.parse(path).getroot()
+        trees[root.get("main_tree_to_execute")] = root
+    return trees
+
+
+def _is_runnable(root: ET.Element) -> bool:
+    return root.find(".//Metadata[@runnable='true']") is not None
+
+
+def _calls(root: ET.Element) -> set[str]:
+    tree = root.find("BehaviorTree")
+    return {node.get("ID") for node in tree.iter() if node.tag != "BehaviorTree"}
+
+
+def test_motion_objectives_add_the_hangar() -> None:
+    """Each runnable Objective that moves the robot adds the hangar, itself or through a subtree.
+
+    Without it, an Objective run before any other plans through the airplane.
+    """
+    trees = _objectives()
+
+    def adds_hangar(name: str, seen: frozenset[str] = frozenset()) -> bool:
+        calls = _calls(trees[name])
+        return ADD_HANGAR_ID in calls or any(
+            adds_hangar(called, seen | {name})
+            for called in calls
+            if called in trees and called not in seen
+        )
+
+    def moves(name: str, seen: frozenset[str] = frozenset()) -> bool:
+        calls = _calls(trees[name])
+        if calls & MOTION_NODE_IDS or any(
+            call.startswith(MOTION_SUBTREE_PREFIXES) for call in calls
+        ):
+            return True
+        return any(
+            moves(called, seen | {name})
+            for called in calls
+            if called in trees and called not in seen
+        )
+
+    checked = [
+        name
+        for name, root in trees.items()
+        if (_is_runnable(root) or name == "Request Teleoperation") and moves(name)
+    ]
+    assert "Request Teleoperation" in checked
+    assert [name for name in checked if not adds_hangar(name)] == []

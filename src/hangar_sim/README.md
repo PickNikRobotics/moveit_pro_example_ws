@@ -8,9 +8,11 @@ For detailed documentation see: [MoveIt Pro Documentation](https://docs.picknik.
 
 The robot description, `description/ur5e_ridgeback.xacro`, describes only the robot. MuJoCo simulates the hangar from `description/hangar.xml`; its planning-scene geometry is in `description/hangar.urdf`. Keeping the scene out of the robot description keeps every node that loads `robot_description` from also loading the scene's meshes.
 
-**Add Hangar to Planning Scene** adds `description/hangar.urdf` to the planning scene as one collision object, `hangar`, at the world origin. If `hangar` is already there, it does nothing. Each `hangar_sim` Objective that moves the arm or base runs it first, and **ML Move Boxes to Loading Zone** runs it again after clearing the planning scene. A new motion Objective must do the same, or it plans through the airplane.
+**Add Hangar to Planning Scene** adds `description/hangar.urdf` to the planning scene as one collision object, `hangar`, at the world origin. If `hangar` is already there, it does nothing. Each `hangar_sim` Objective that plans arm or whole-body motion runs it first, as does **Request Teleoperation**, and **ML Move Boxes to Loading Zone** runs it right after clearing the planning scene. Navigation through Nav2 does not use the planning scene. A new motion Objective must add the hangar too, or it plans through the airplane.
 
-Core library Objectives, such as **Move to Waypoint**, do not add the hangar. Before running one at startup or after clearing the planning scene, run **Add Hangar to Planning Scene**.
+The hangar is not in the planning scene at startup, and **Reset Planning Scene** removes it. Either way, the next `hangar_sim` motion Objective adds it back. Before running any other Objective that plans motion, run **Add Hangar to Planning Scene**.
+
+The hangar shows in the 3D Visualizer only as planning-scene collision geometry; its visual meshes are not loaded.
 
 ## Base teleoperation
 

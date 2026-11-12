@@ -546,11 +546,19 @@ def _place_two_boxes_xml(hover: str, release: str) -> str:
 def _run_objective_xml(
     resource: ExecuteObjectiveResource, xml: str
 ) -> DoObjectiveSequence.Result:
+    return _run_objective_goal(
+        resource, DoObjectiveSequence.Goal(objective_xml_string=xml)
+    )
+
+
+def _run_objective_goal(
+    resource: ExecuteObjectiveResource, goal: DoObjectiveSequence.Goal
+) -> DoObjectiveSequence.Result:
     client = ActionClient(resource.node, DoObjectiveSequence, "/do_objective")
     try:
         assert client.wait_for_server(timeout_sec=30.0), "/do_objective unavailable"
         handle = resource.spin_until_future_complete(
-            client.send_goal_async(DoObjectiveSequence.Goal(objective_xml_string=xml)),
+            client.send_goal_async(goal),
             timeout_sec=30.0,
         )
         assert handle is not None and handle.accepted, "/do_objective rejected goal"
@@ -675,12 +683,32 @@ HANGAR_OBJECT_ID = "hangar"
 def test_add_hangar_to_planning_scene_is_idempotent(
     execute_objective_resource: ExecuteObjectiveResource,
 ) -> None:
-    """The Objective adds the hangar once, and succeeds again when it is already present."""
+    """The Objective adds the hangar when it is missing, and succeeds again when it is present."""
+    cleared = _run_objective_xml(
+        execute_objective_resource,
+        _objective_xml(ET.Element("Action", ID="ResetPlanningSceneObjects")),
+    )
+    assert cleared.error_code.val == MoveItErrorCodes.SUCCESS, cleared.error_message
+    assert not _test_scene_objects(execute_objective_resource, (HANGAR_OBJECT_ID,))
     for _ in range(2):
         run_objective(ADD_HANGAR_OBJECTIVE, False, execute_objective_resource)
     hangar = _test_scene_objects(execute_objective_resource, (HANGAR_OBJECT_ID,))
     assert HANGAR_OBJECT_ID in hangar, "the hangar is not in the planning scene"
     assert hangar[HANGAR_OBJECT_ID].meshes, "the hangar has no collision meshes"
+
+
+def test_planning_collides_with_the_hangar(
+    execute_objective_resource: ExecuteObjectiveResource,
+) -> None:
+    """The demo path into the airplane is refused because it collides with the hangar."""
+    result = _run_objective_goal(
+        execute_objective_resource,
+        DoObjectiveSequence.Goal(
+            objective_name="Cartesian Path with Collision Checking"
+        ),
+    )
+    assert result.error_code.val != MoveItErrorCodes.SUCCESS
+    assert f"- {HANGAR_OBJECT_ID}" in result.error_message, result.error_message
 
 
 @pytest.mark.parametrize(
