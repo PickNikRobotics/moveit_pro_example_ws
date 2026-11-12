@@ -482,7 +482,7 @@ With `enable_vo` on, `picknik_mujoco_ros` publishes the pair as rectified stereo
 
 This is layer 2 (procedural crater heightfield + scattered rocks) of a lunar-environment stack,
 built on layer 1's MuJoCo migration, with [moon base structures](#moon-base) and [landmark rocks](#landmark-rocks) for lidar localization, on a [30x30 m drivable area](#drivable-band).
-Nav2 runs without a map for now (see [Navigation](#navigation)); a saved map and map-based localization are the next layer.
+For the shipped saved map and opt-in map-based localization, see [Navigation](#navigation).
 
 ## Moon base
 
@@ -523,7 +523,7 @@ The 3D Visualizer's fixed frame is `map`, set by `config/frontend_settings.yaml`
 
 The `slam` and `localization` values in `config/config.yaml` select the `map` -> `odom` source after rebuilding and restarting the Runtime. Both default to `false`, which publishes a static identity and leaves odometry drift uncorrected. `slam: true` starts `slam_toolbox` and `map_saver`; save its map with `ros2 run nav2_map_server map_saver_cli -f lunar_map`. Set `slam: false` and `localization: true` to start `beluga_amcl` against the shipped `maps/lunar_map.yaml` and PNG. A missing replacement map fails at startup with an actionable error. If both switches are true, SLAM takes precedence.
 
-The saved map is a **slam_toolbox map from a MuJoCo-ground-truth-navigated run**. Mapping used measured front lidar and wheel/IMU fuse odometry; only the isolated experimental navigation used ground truth. No truth-navigation adapter is needed by this configuration. See [map provenance and validation](maps/README.md) for measured accuracy, coverage, and limitations. Low rocks, pad edges and terrain below the scan planes still need separate keep-out treatment; localization does not make those obstacles visible.
+The product launch does not need experimental truth-navigation scripts. See [map provenance and validation](maps/README.md) for the saved map's measured accuracy, coverage, navigation results and safety limitations.
 
 The IMU is a Phidgets Spatial at the mount [NASA-JSC-Robotics/togo_ws](https://github.com/NASA-JSC-Robotics/togo_ws) uses on its A300 (`base_link` + `0.059 0 0.161275`), modelled with MuJoCo `framequat`, `gyro`, and `accelerometer` sensors on `imu_site` and published by `imu_sensor_broadcaster` on `/imu_sensor_broadcaster/imu` in `imu_link`. fuse (`config/fuse/fuse.yaml`, a 2D unicycle model) takes x, y and forward velocity from wheel odometry and yaw rate and forward acceleration from the IMU, the IMU inputs togo's own estimator uses. It does not fuse the IMU's absolute orientation, which is exact in MuJoCo where a real IMU's heading drifts; it reads it only to remove gravity from the acceleration.
 

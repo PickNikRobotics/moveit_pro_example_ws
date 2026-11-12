@@ -159,10 +159,8 @@ the map asset is missing.
 
 ## Scope and use
 
-Set `slam: false` and `localization: true` in `config/config.yaml`, rebuild, and
-restart the Runtime. Both switches remain off by default; SLAM takes precedence
-if both are enabled. The ordinary product launch does not need the experimental
-truth-navigation scripts.
+See [Navigation](../README.md#navigation) for map-mode selection, defaults and
+Runtime restart instructions.
 
 The global and local costmaps still use live lidar obstacle layers. This map is
 not a static costmap or a keep-out mask. Low rocks, pad edges and sloped terrain

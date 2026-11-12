@@ -87,11 +87,13 @@ def map_mode_launch(monkeypatch):
         return action
 
     monkeypatch.setattr(
-        MODULE, "get_package_share_directory",
+        MODULE,
+        "get_package_share_directory",
         lambda _: str(LAUNCH_FILE.parent.parent.parent),
     )
     monkeypatch.setattr(
-        MODULE, "_urdf_param",
+        MODULE,
+        "_urdf_param",
         lambda name: False if name in ("slam", "localization") else "default",
     )
     monkeypatch.setattr(MODULE, "_spawn_pose", lambda *_: (0.0, 0.0, 0.0))
@@ -135,7 +137,9 @@ def test_map_mode_has_exactly_one_tf_owner(map_mode_launch, slam, localization):
 
 @pytest.mark.parametrize("argument", ["slam", "localization"])
 @pytest.mark.parametrize("invalid", ["", "yes", "2", "'true'", "true or false"])
-def test_invalid_map_switch_fails_before_nodes_start(map_mode_launch, argument, invalid):
+def test_invalid_map_switch_fails_before_nodes_start(
+    map_mode_launch, argument, invalid
+):
     """Invalid overrides are rejected even when SLAM would take precedence."""
     from launch import LaunchContext
     from launch.actions import DeclareLaunchArgument, OpaqueFunction

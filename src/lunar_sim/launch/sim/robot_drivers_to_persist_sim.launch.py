@@ -29,8 +29,8 @@
 # Lidar scan filtering, fuse state estimation, and Nav2 for lunar_sim, launched with the persistent
 # drivers (config.yaml additional_driver_launch_file).
 #
-# TF: mj_world -> map (static, at the spawn pose) -> odom (slam_toolbox with slam: true, beluga_amcl with
-# localization: true, otherwise a static identity) -> footprint (fuse) -> base_link ... (robot_state_publisher).
+# TF: mj_world -> map (static, at the spawn pose) -> odom (source selected below)
+# -> footprint (fuse) -> base_link ... (robot_state_publisher).
 
 import math
 import os
@@ -40,13 +40,16 @@ from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
 from launch.actions import (
-    DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction, SetLaunchConfiguration
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    OpaqueFunction,
+    SetLaunchConfiguration,
 )
 from launch.conditions import IfCondition, LaunchConfigurationEquals
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from moveit_studio_utils_py.launch_common import NodeWithAnsiLogging
 from launch_ros.descriptions import ParameterFile
+from moveit_studio_utils_py.launch_common import NodeWithAnsiLogging
 from moveit_studio_utils_py.system_config import SystemConfigParser
 from nav2_common.launch import RewrittenYaml
 
@@ -78,7 +81,7 @@ def _select_map_mode(context):
 
 
 def _spawn_pose(scene_path, keyframe):
-    """Return the chassis (x, y, yaw) in mj_world from the scene's keyframe qpos (freejoint first)."""
+    """Return chassis (x, y, yaw) in mj_world from keyframe qpos (freejoint first)."""
     key = ET.parse(scene_path).getroot().find(f"keyframe/key[@name='{keyframe}']")
     if key is None:
         raise RuntimeError(f"Keyframe '{keyframe}' not found in {scene_path}.")
@@ -117,7 +120,10 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "localization",
             default_value=_launch_bool(_urdf_param("localization")),
-            description="Run beluga_amcl against the map. With neither this nor slam, map -> odom is a static identity and nothing corrects odometry drift.",
+            description=(
+                "Run beluga_amcl against the map. With neither this nor slam, map -> odom "
+                "is a static identity and nothing corrects odometry drift."
+            ),
         ),
         DeclareLaunchArgument(
             "map",
@@ -148,7 +154,7 @@ def generate_launch_description():
             remappings=[("/tf", "tf"), ("/tf_static", "tf_static")],
         )
 
-    # Localization runs in its own container so a crash in a navigation node cannot take map -> odom down with it.
+    # Localization has its own container so a navigation crash cannot take map -> odom down.
     nav2_container = container("nav2_container")
     localization_container = container("localization_container", run_amcl)
 
@@ -193,7 +199,7 @@ def generate_launch_description():
         }.items(),
     )
 
-    # Puts the map origin at the spawn pose, where odometry starts, so map poses match MuJoCo ground truth.
+    # Anchor map at the spawn pose, where odometry starts, for comparison with MuJoCo truth.
     spawn_x, spawn_y, spawn_yaw = _spawn_pose(
         os.path.join(config_dir, _urdf_param("mujoco_model")),
         _urdf_param("mujoco_keyframe"),
@@ -217,7 +223,7 @@ def generate_launch_description():
         ],
     )
 
-    # With neither SLAM nor AMCL nothing corrects odometry drift, so map -> odom is a static identity.
+    # With neither SLAM nor AMCL, static map -> odom leaves odometry drift uncorrected.
     static_tf_map_to_odom = NodeWithAnsiLogging(
         package="tf2_ros",
         executable="static_transform_publisher",

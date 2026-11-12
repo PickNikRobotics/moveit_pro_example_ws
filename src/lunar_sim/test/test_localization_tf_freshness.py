@@ -39,14 +39,14 @@ import os
 import threading
 import time
 
+from geometry_msgs.msg import PoseStamped
 import pytest
 import rclpy
-from geometry_msgs.msg import PoseStamped
 from rclpy.duration import Duration
 from rclpy.executors import ExternalShutdownException, SingleThreadedExecutor
 from rclpy.time import Time
+import tf2_geometry_msgs  # noqa: F401 - Registers PoseStamped's TF transform implementation.
 from tf2_ros import Buffer, TransformException, TransformListener
-import tf2_geometry_msgs  # Registers PoseStamped's real TF transform implementation.
 
 
 @pytest.mark.skipif(
@@ -74,7 +74,9 @@ def test_localization_tf_covers_controller_pose_timestamps():
         deadline = time.monotonic() + 120.0
         while True:
             if buffer.can_transform("odom", "footprint", Time()):
-                stamp = buffer.lookup_transform("odom", "footprint", Time()).header.stamp
+                stamp = buffer.lookup_transform(
+                    "odom", "footprint", Time()
+                ).header.stamp
                 if buffer.can_transform("map", "odom", Time.from_msg(stamp)):
                     break
             assert time.monotonic() < deadline, "Localization TF did not initialize"
@@ -96,7 +98,9 @@ def test_localization_tf_covers_controller_pose_timestamps():
             goal.header.stamp = odom_pose.header.stamp
             goal.pose.orientation.w = 1.0
             try:
-                transformed = buffer.transform(goal, "odom", timeout=Duration(seconds=0.1))
+                transformed = buffer.transform(
+                    goal, "odom", timeout=Duration(seconds=0.1)
+                )
                 assert transformed.header.frame_id == "odom"
             except TransformException as exc:
                 failures.append(str(exc))
