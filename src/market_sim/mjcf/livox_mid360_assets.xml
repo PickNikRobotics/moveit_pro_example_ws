@@ -51,10 +51,6 @@
       file="../../description/meshes/livox_mid360/visual/sensor_window_ring.stl"
     />
     <mesh
-      name="livox_window"
-      file="../../description/meshes/livox_mid360/visual/sensor_optical_window_simplified.stl"
-    />
-    <mesh
       name="livox_port"
       file="../../description/meshes/livox_mid360/visual/sensor_M12_male_port.stl"
     />

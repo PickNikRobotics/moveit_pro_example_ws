@@ -58,10 +58,10 @@ excluded from self-collision checking.
 
 ## Rendering and dynamics
 
-The closed optical-window illustration is MuJoCo group 5. Color cameras render
-it; lidars render only groups 0/1/2, which still include every opaque housing,
-blade, crown, arm, tower and store surface. The transmissive window is not an
-opaque depth obstacle inside its own scanner. Physics uses separate group-3
+The closed optical-window illustration is a URDF visual shown in the Desktop
+only; MuJoCo has no geom for it, so the transmissive window is not an opaque
+depth obstacle inside its own scanner. Lidars render groups 0/1/2, which still
+include every opaque housing, blade, crown, arm, tower and store surface. Physics uses separate group-3
 collision envelopes. This does not remove real robot self-returns from the cloud.
 
 Mount mass is **0.370887 kg**: 83.4/83.3/69.4 g PLA print estimates plus 134.787 g

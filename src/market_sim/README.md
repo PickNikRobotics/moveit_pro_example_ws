@@ -137,9 +137,10 @@ surface at least 0.5 m above the ground; the existing low safety scanners remain
 The A2 mount is collision-checked at ready, Stow and raised-Stow, with zero and
 10 mm self-padding. This is **not** arbitrary extended-arm or full-carriage-motion
 acceptance; raised carriage notably worsens full-FOV visibility. Native rendered occlusions remain
-in the cloud; no opaque robot self-return is hidden. Color cameras show the closed
-optical-window illustration in group 5; lidars ignore only that transmissive-window
-illustration and still see every opaque housing, bracket, arm, tower and store surface. SRDF excludes only the two fixed
+in the cloud; no opaque robot self-return is hidden. The closed optical-window
+illustration is a URDF visual shown in the Desktop only; MuJoCo has no geom for that
+transmissive window, so lidars and color cameras still see every opaque housing, bracket,
+arm, tower and store surface but no obstacle at the scan origin. SRDF excludes only the two fixed
 attachment contacts (spine/bracket and bracket/sensor), not sensor contacts with arms
 or world obstacles.
 

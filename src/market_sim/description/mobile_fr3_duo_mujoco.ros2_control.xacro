@@ -9,27 +9,8 @@
     params="mujoco_model mujoco_model_package mujoco_keyframe mujoco_viewer publish_object_tf
             ground_truth_odom_topic ground_truth_odom_frame base_link_name">
     <ros2_control name="mobile_fr3_duo" type="system">
-      <!-- Only scene/front are selectable renderers. Merge color ownership and
-           the optical-window visualization into ONE sensor block per camera. -->
-      <xacro:macro name="market_color_sensor" params="camera selectable:=false">
-        <sensor name="${camera}">
-          <!-- Default opaque groups plus the Livox optical-window illustration.
-               Lidars keep 0/1/2, so no real robot or bracket return is masked. -->
-          <param name="geom_groups">0 1 2 5</param>
-          <xacro:if value="${selectable and camera_renderer == 'nyx'}">
-            <param name="color_enabled">false</param>
-          </xacro:if>
-          <xacro:if value="${selectable and camera_renderer == 'both'}">
-            <param name="rgb_topic">${camera}/opengl/color</param>
-            <param name="camera_info_topic">${camera}/opengl/camera_info</param>
-          </xacro:if>
-        </sensor>
-      </xacro:macro>
-      <xacro:market_color_sensor camera="scene_camera" selectable="${True}"/>
-      <xacro:market_color_sensor camera="camera_front" selectable="${True}"/>
-      <xacro:market_color_sensor camera="camera_rear"/>
-      <xacro:market_color_sensor camera="camera_left"/>
-      <xacro:market_color_sensor camera="camera_right"/>
+      <!-- The cameras MOVEIT_PRO_CAMERA_RENDERER applies to; runtime.launch.xml starts one Nyx node each. -->
+      <xacro:camera_renderer_sensors cameras="scene_camera camera_front" />
       <sensor name="lidar_front">
         <param name="points_topic">/lidar_front/points</param>
       </sensor>
@@ -41,8 +22,7 @@
              The adapter crops the asymmetric FOV, changes optical XYZ to livox_frame
              and retains one fresh cloud per 0.1 s without changing the SICK rate. -->
         <param name="points_topic">/livox/mujoco/points</param>
-        <!-- Ignore only the optically transmissive window illustration (group 5),
-             not any opaque housing, support, arms, tower or store geometry. -->
+        <!-- Render every opaque housing, support, arm, tower and store group. -->
         <param name="geom_groups">0 1 2</param>
         <param name="range_noise_stddev">0.007</param>
         <!-- Real steady scans have ~64% nonzero returns. This approximates that

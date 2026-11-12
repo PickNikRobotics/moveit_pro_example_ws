@@ -299,7 +299,6 @@ def test_a2_cad_visuals_collisions_and_mass_properties_reach_the_real_consumers(
         "M02_heat_plate": "livox_mount_heat_plate",
         "sensor_heatsink_body": "livox_housing_base",
         "sensor_window_ring": "livox_window_lower_rim",
-        "sensor_optical_window_simplified": "livox_optical_window",
         "sensor_M12_male_port": "livox_connector",
     }
     for part in meta["parts"] + meta["sensor_parts"]:
@@ -313,6 +312,8 @@ def test_a2_cad_visuals_collisions_and_mass_properties_reach_the_real_consumers(
         )
         assert visual.find("origin") is None
         assert visual.find("geometry/mesh").get("scale", "1 1 1") == "1 1 1"
+        if part["name"] not in names:
+            continue
         geom = model.geom(names[part["name"]]).id
         assert not model.geom_contype[geom] and not model.geom_conaffinity[geom]
         points = geom_points(model, data, geom)
@@ -326,7 +327,7 @@ def test_a2_cad_visuals_collisions_and_mass_properties_reach_the_real_consumers(
         )
         # This checks the emitted mesh bounds through MuJoCo's compiler, whose
         # internal mesh centering/principal axes are not the STL frame.
-        assert model.geom_group[geom] == (5 if "optical_window" in part["name"] else 1)
+        assert model.geom_group[geom] == 1
     mount = model.body("livox_mid360_mount").id
     inertial = converted["mount_inertial"]
     assert model.body_mass[mount] == pytest.approx(inertial["mass_kg"], abs=1e-8)
@@ -362,17 +363,11 @@ def test_a2_optical_window_is_not_an_opaque_lidar_obstacle(model):
     data = stowed_data(model)
     start = data.cam_xpos[model.camera("livox_mid360").id]
     geom = np.array([-1], np.int32)
-    opaque = np.array([1, 1, 1, 0, 0, 0], np.uint8)
+    rendered = np.array([1, 1, 1, 0, 1, 1], np.uint8)
     distance = mujoco.mj_ray(
-        model, data, start, np.array([1.0, 0, 0]), opaque, 1, -1, geom
+        model, data, start, np.array([1.0, 0, 0]), rendered, 1, -1, geom
     )
     assert distance > 1.0
-    color = np.array([1, 1, 1, 0, 0, 1], np.uint8)
-    distance = mujoco.mj_ray(
-        model, data, start, np.array([1.0, 0, 0]), color, 1, -1, geom
-    )
-    assert 0 < distance < 0.03
-    assert model.geom(int(geom[0])).name == "livox_optical_window"
 
 
 def test_added_sensor_has_no_dof_and_stays_inside_existing_navigation_footprint(model):
@@ -417,15 +412,7 @@ def test_installed_native_consumer_applies_lidar_config_and_range_noise(
         for line in output.splitlines()
         if line.startswith("groups ")
     }
-    assert groups["livox_mid360"] == [1, 1, 1, 0, 0, 0]
-    for camera in (
-        "scene_camera",
-        "camera_front",
-        "camera_rear",
-        "camera_left",
-        "camera_right",
-    ):
-        assert groups[camera] == [1, 1, 1, 0, 0, 1]
+    assert groups == {"livox_mid360": [1, 1, 1, 0, 0, 0]}
     finite, mean_error, stddev, low, high = rows["shell"]
     assert finite == 333 * 60
     assert (

@@ -11,10 +11,9 @@
         mass="0.265"
         diaginertia="0.000173 0.000173 0.000187"
       />
-      <!-- The closed optical-window illustration is group 5, shown by color
-           cameras but not by lidars. It is optically transmissive, not an opaque
-           obstacle at the scan origin. All actual opaque housing/bracket/robot
-           geometry stays visible to the native lidar in groups 0/1/2. -->
+      <!-- The URDF's optical-window illustration has no MuJoCo geom: the window
+           is transmissive, not an opaque obstacle at the scan origin. All opaque
+           housing/bracket/robot geometry stays visible to the lidar in groups 0/1/2. -->
       <geom
         name="livox_housing_base"
         type="mesh"
@@ -34,16 +33,6 @@
         group="1"
         density="0"
         rgba="0.18 0.20 0.22 1"
-      />
-      <geom
-        name="livox_optical_window"
-        type="mesh"
-        mesh="livox_window"
-        contype="0"
-        conaffinity="0"
-        group="5"
-        density="0"
-        rgba="0.10 0.18 0.22 1"
       />
       <geom
         name="livox_connector"

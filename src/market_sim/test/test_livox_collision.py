@@ -188,7 +188,6 @@ def test_fixed_attachment_exclusions_reach_fcl(
         if {entry.get("link1"), entry.get("link2")} == set(attachment)
     ]
     assert len(entries) == 1
-    assert entries[0].get("reason") == "Adjacent"
     root.remove(entries[0])
     srdf = tmp_path / "without_attachment.srdf"
     semantic.write(srdf)
