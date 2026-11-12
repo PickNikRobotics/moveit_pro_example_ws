@@ -44,6 +44,11 @@ if(BUILD_TESTING)
           map_mode_config_test test/test_map_mode_config.py
           TIMEOUT 30
           ENV ${LUNAR_SIM_UNIT_TEST_ENV})
+  # Opt-in check against an already-running, isolated Beluga backend; skipped by default.
+  ament_add_pytest_test(
+          localization_tf_freshness_test test/test_localization_tf_freshness.py
+          TIMEOUT 150
+          ENV ${LUNAR_SIM_UNIT_TEST_ENV})
   # Redirect ROS node logs into the test_results tree so the test-results CI artifact ships them back too.
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py

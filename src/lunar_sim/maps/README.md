@@ -115,6 +115,44 @@ Tilt and padded pad-clearance guards stayed active; no failed goal was skipped
 or localization pose corrected from truth. Navigation/TF repeatability remains
 limited; these checks do **not** establish universal costmap stability.
 
+#### Reproduced renderer setup failure and corrected repeat
+
+The failing test container selected Mesa llvmpipe, even with `--gpus all`:
+NVIDIA's EGL library was present but its GLVND discovery JSON was missing.
+Render ticks took 0.55–0.80 s, delaying both measured lidar streams. In the
+captured return failure, Beluga correctly stamped its correction at scan time
+plus 1 s, but the controller requested `1794512933.537911` while the newest
+map-to-odom TF covered only `1794512933.502297`; the next scan-driven correction
+arrived after MPPI's 0.1 s lookup deadline. Hangar uses the same 1 s Beluga /
+0.1 s MPPI contract, not a separate TF freshness workaround.
+
+A repeat with NVIDIA hardware EGL, **unchanged product parameters**, completed
+outbound, guarded spin and return: truth goal misses 0.134 / 0.363 m. The live
+map matched the committed raster; fuse supplied odometry and SLAM stayed off.
+Across 796 matched samples, position RMS / maximum was 0.181 / 0.527 m and yaw
+RMS / maximum 1.44° / 3.25°. The largest sampled same-odom correction was
+0.0271 m over 0.150 s; largest yaw change 0.466° over 0.150 s. TF ages reached
+0.121 s, correction-source age 0.223 s, with zero matched lookup failures.
+Thirty costmap snapshots had worst p95 occupied-cell separation 0.352 m, with
+up to three cells beyond 0.5 m (maximum 0.916 m): sparse displaced/live-only
+marks remain, not a universal no-smear guarantee. The spin translated 0.559 m
+while rotating 350°. Earlier failures and large-correction evidence remain valid.
+
+For direct-container tests, expose the GPU and verify the startup renderer is
+hardware. If its NVIDIA GLVND JSON is absent, pass an explicit discovery file
+containing `{"file_format_version":"1.0.0","ICD":{"library_path":"libEGL_nvidia.so.0"}}`
+through `__EGL_VENDOR_LIBRARY_FILENAMES`; GPU visibility alone is insufficient.
+Do not extend TF tolerances or delay path approval to conceal stale lidar.
+The opt-in `test/test_localization_tf_freshness.py` exercises real TF lookups at
+the latest odom robot-pose timestamp with MPPI's deadline, against an isolated
+running localization backend (`LUNAR_LOCALIZATION_LIVE_TEST=true`). Run it with
+`python3 -m pytest -p no:cacheprovider src/lunar_sim/test/test_localization_tf_freshness.py`
+and the same ROS domain as that backend. It tests freshness without publishing
+motion, truth or pose corrections. After valid initialization, the regression
+failed on 30/353 controller-time lookups with llvmpipe and passed with hardware
+EGL. The bounded Objective/UI outbound/spin/return check remains necessary for
+navigation.
+
 The executable `saved_map_test` loads the installed YAML and image through Nav2's
 real map loader and checks their occupancy and coordinate contract. It fails when
 the map asset is missing.
