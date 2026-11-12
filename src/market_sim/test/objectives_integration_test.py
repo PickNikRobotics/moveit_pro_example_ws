@@ -125,8 +125,9 @@ skip_objectives: set[str] = {
     "Navigate to Clicked Point",  # Waits for a clicked goal.
     "Localize Robot",  # Waits for an interactive marker.
     "Request Teleoperation",  # Waits on UI teleoperation input.
-    # Core-library objectives aggregated into every config; both need a
-    # primary UI and cannot run in headless CI.
+    # Core-library objectives require operator input unavailable in headless CI.
+    "Collect Planar Waypoints",  # Confirmed planar selection needs an operator.
+    "Navigate Planar Waypoints",  # Confirmed selection and per-leg path approval.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     # Hand-eye calibration Objectives from moveit_pro_objectives: they generate or

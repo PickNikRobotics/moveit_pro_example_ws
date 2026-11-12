@@ -22,7 +22,7 @@
         <Action
           ID="LogMessage"
           log_level="warn"
-          message="Robot not localized. Set its position with the marker."
+          message="Robot not localized. Use Localize Robot to set position and forward direction, then confirm the pose."
         />
         <SubTree ID="Localize Robot" />
       </Control>

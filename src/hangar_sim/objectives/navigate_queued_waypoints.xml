@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Navigate Queued Waypoints">
+  <BehaviorTree
+    ID="Navigate Queued Waypoints"
+    _description="Select a queue of planar map goals, then approve and execute each planned leg in order. Refine localization first. Confirm Pose only queues a waypoint; approve each computed path before the base moves. Cancellation, rejection, or any error prevents later legs."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="RefineCollectNavigate">
+      <SubTree ID="Refine Localization In Place" _collapsed="true" />
+      <Control ID="Fallback" name="Navigate queue or restore controllers">
+        <Control ID="Sequence" name="Collect and navigate">
+          <Action
+            ID="SwitchController"
+            activate_controllers="platform_velocity_controller_nav2"
+            deactivate_controllers="velocity_force_controller;joint_trajectory_controller;platform_velocity_controller"
+          />
+          <SubTree
+            ID="Navigate Planar Waypoints"
+            _collapsed="true"
+            reference_frame="map"
+            waypoint_count="{waypoint_count}"
+            planner_action_name="/compute_path_to_pose"
+            controller_action_name="/follow_path"
+            planner_id="GridBased"
+            controller_id="FollowPath"
+            goal_checker_id="general_goal_checker"
+            timeout_sec="{timeout_sec}"
+            max_pose_age_sec="1.0"
+          />
+          <Action
+            ID="SwitchController"
+            activate_controllers="joint_trajectory_controller"
+          />
+        </Control>
+        <Control ID="Sequence" name="Restore controllers and fail">
+          <Action
+            ID="SwitchController"
+            activate_controllers="joint_trajectory_controller"
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Navigate Queued Waypoints">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+      <input_port name="waypoint_count" default="2" type="int">
+        Number of map goals to confirm before navigation, from 1 to 50.
+      </input_port>
+      <input_port name="timeout_sec" default="-1" type="double">
+        Seconds to wait for each planning or execution result. Negative values
+        wait until completion or cancellation; positive values bound each
+        leg. Zero is refused.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
