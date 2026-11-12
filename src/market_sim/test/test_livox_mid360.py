@@ -301,6 +301,13 @@ def test_a2_cad_visuals_collisions_and_mass_properties_reach_the_real_consumers(
         "sensor_window_ring": "livox_window_lower_rim",
         "sensor_M12_male_port": "livox_connector",
     }
+    window = "sensor_optical_window_simplified"
+    sensor = model.body("livox_frame").id
+    assert {
+        model.geom(g).name
+        for g in range(model.ngeom)
+        if model.geom_bodyid[g] == sensor and model.geom_group[g] != 3
+    } == {names[p["name"]] for p in meta["sensor_parts"] if p["name"] != window}
     for part in meta["parts"] + meta["sensor_parts"]:
         native = part["name"].startswith("sensor_")
         link = "livox_frame" if native else "livox_mid360_mount"
@@ -312,7 +319,7 @@ def test_a2_cad_visuals_collisions_and_mass_properties_reach_the_real_consumers(
         )
         assert visual.find("origin") is None
         assert visual.find("geometry/mesh").get("scale", "1 1 1") == "1 1 1"
-        if part["name"] not in names:
+        if part["name"] == window:
             continue
         geom = model.geom(names[part["name"]]).id
         assert not model.geom_contype[geom] and not model.geom_conaffinity[geom]
@@ -348,7 +355,6 @@ def test_a2_cad_visuals_collisions_and_mass_properties_reach_the_real_consumers(
     )
     # The central housing must NOT be filled by a single convex bracket hull.
     groups = np.array([0, 0, 0, 1, 0, 0], np.uint8)
-    sensor = model.body("livox_frame").id
     for x, y in ((0, 0), (-0.03, 0), (0, 0.03), (0, -0.03)):
         start = data.xpos[mount] + np.array([x, y, -0.05])
         geom = np.array([-1], np.int32)
