@@ -39,10 +39,12 @@ import xml.etree.ElementTree as ET
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.conditions import IfCondition
+from launch.actions import (
+    DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction, SetLaunchConfiguration
+)
+from launch.conditions import IfCondition, LaunchConfigurationEquals
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.substitutions import LaunchConfiguration
 from moveit_studio_utils_py.launch_common import NodeWithAnsiLogging
 from launch_ros.descriptions import ParameterFile
 from moveit_studio_utils_py.system_config import SystemConfigParser
@@ -67,6 +69,14 @@ def _launch_bool(value):
     return "true" if value else "false"
 
 
+def _select_map_mode(context):
+    """Validate both switches with ROS launch semantics before selecting one TF owner."""
+    slam = IfCondition(LaunchConfiguration("slam")).evaluate(context)
+    localization = IfCondition(LaunchConfiguration("localization")).evaluate(context)
+    mode = "slam" if slam else "localization" if localization else "static"
+    return [SetLaunchConfiguration("lunar_map_mode", mode)]
+
+
 def _spawn_pose(scene_path, keyframe):
     """Return the chassis (x, y, yaw) in mj_world from the scene's keyframe qpos (freejoint first)."""
     key = ET.parse(scene_path).getroot().find(f"keyframe/key[@name='{keyframe}']")
@@ -86,19 +96,7 @@ def generate_launch_description():
     autostart = LaunchConfiguration("autostart")
     use_respawn = LaunchConfiguration("use_respawn")
     log_level = LaunchConfiguration("log_level")
-    slam = LaunchConfiguration("slam")
-    localization = LaunchConfiguration("localization")
-    run_amcl = IfCondition(
-        PythonExpression(
-            [
-                "'",
-                localization,
-                "'.lower() == 'true' and '",
-                slam,
-                "'.lower() != 'true'",
-            ]
-        )
-    )
+    run_amcl = LaunchConfigurationEquals("lunar_map_mode", "localization")
 
     declare_args = [
         DeclareLaunchArgument("use_sim_time", default_value="false"),
@@ -160,7 +158,7 @@ def generate_launch_description():
                 get_package_share_directory("nav2_bringup"), "launch", "slam_launch.py"
             )
         ),
-        condition=IfCondition(slam),
+        condition=LaunchConfigurationEquals("lunar_map_mode", "slam"),
         launch_arguments={
             "use_sim_time": use_sim_time,
             "autostart": autostart,
@@ -226,17 +224,7 @@ def generate_launch_description():
         name="static_tf_map_to_odom",
         output="log",
         arguments=["--frame-id", "map", "--child-frame-id", "odom"],
-        condition=IfCondition(
-            PythonExpression(
-                [
-                    "'",
-                    slam,
-                    "'.lower() == 'false' and '",
-                    localization,
-                    "'.lower() == 'false'",
-                ]
-            )
-        ),
+        condition=LaunchConfigurationEquals("lunar_map_mode", "static"),
     )
 
     laser_filter_params = os.path.join(config_dir, "params", "laser_filter_params.yaml")
@@ -290,6 +278,7 @@ def generate_launch_description():
     return LaunchDescription(
         declare_args
         + [
+            OpaqueFunction(function=_select_map_mode),
             nav2_container,
             localization_container,
             slam_cmd,

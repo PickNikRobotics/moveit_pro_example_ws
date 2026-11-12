@@ -9,6 +9,9 @@ map, not a manually drawn obstacle mask.
 
 ![The actual saved slam_toolbox map loaded by Beluga](lunar_map.png)
 
+[Original annotated mapping image](lunar_map_annotated.png) ·
+[Retained PGM/YAML, pose graph, trajectory and reproducibility evidence](evidence/README.md)
+
 ## Mapping provenance
 
 The completed 11-goal mapping run used measured front lidar and wheel/IMU fuse
