@@ -26,6 +26,7 @@ if(BUILD_TESTING)
 
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
+  set(ament_cmake_flake8_CONFIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ament_flake8.ini")
   ament_lint_auto_find_test_dependencies()
   # Pytest discovers the Objective integration module from this directory too. Give the
   # geometry and base-jog tests the same config selection and workspace root as that module.
