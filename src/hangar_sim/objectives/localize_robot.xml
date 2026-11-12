@@ -29,7 +29,7 @@
         view_name="Visualization"
         user_pose="{clicked_pose}"
       />
-      <!--Sim only: world coincides with map, so the placed pose is read as map coordinates. On hardware, place the marker against the map instead.-->
+      <!--Sim only: world coincides with map, so the placed pose is read as map coordinates. On hardware, select the pose against the map instead.-->
       <Action
         ID="ReinterpretPoseFrame"
         name="Read the placed pose as map coordinates"
