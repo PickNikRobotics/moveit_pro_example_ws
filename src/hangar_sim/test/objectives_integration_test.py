@@ -107,9 +107,10 @@ skip_objectives = {
     # User input required: no primary UI is attached in headless CI, so these
     # block on a pose-from-user prompt or an MTC-solution/path approval that
     # never arrives.
-    "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
-    "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
-    "Localize Robot",  # AdjustPoseWithIMarker needs an operator to place the marker.
+    "Navigate to Clicked Point",  # GetPlanarPoseFromUser + WaitForUserPathApproval.
+    "Navigate to Clicked Point with Replanning",  # GetPlanarPoseFromUser.
+    "Navigate Queued Waypoints",  # Confirmed planar collection + per-leg path approval require an operator.
+    "Localize Robot",  # GetPlanarPoseFromUser requires the operator to confirm the pose.
     # AMCL can lose track during the earlier "Plan Path Along Surface - Loop", and the scan check then rejects.
     "Refine Localization In Place",
     "Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
@@ -120,8 +121,9 @@ skip_objectives = {
     "Solution - Draw Square",
     "Cartesian Plan Simple Square",
     # Core-library objectives (moveit_pro_objectives) aggregated into every
-    # config. Both need a primary UI and are skipped by lab_sim for the same
-    # reasons.
+    # config. These require operator input or approval unavailable in this sweep.
+    "Collect Planar Waypoints",  # GetPlanarPoseFromUser requires confirmed selections.
+    "Navigate Planar Waypoints",  # Confirmed collection + per-leg path approval.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     # A 121 m drive for scoring odometry against ground truth, not a smoke test;

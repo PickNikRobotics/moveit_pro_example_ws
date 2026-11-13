@@ -68,8 +68,9 @@ skip_objectives: set[str] = {
     # Not yet validated headless; shares the pick subtree with the covered
     # "Pick and Place Brackets from Left Bin" but lacks its jig/place coverage.
     "Pick Brackets from Left Bin",
-    # Core-library objectives aggregated into every config; both need a
-    # primary UI and cannot run in headless CI.
+    # Core-library objectives require operator input unavailable in headless CI.
+    "Collect Planar Waypoints",  # Confirmed planar selection needs an operator.
+    "Navigate Planar Waypoints",  # Confirmed selection and per-leg path approval.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     # Factory demos are not deterministic as standalone success checks in
