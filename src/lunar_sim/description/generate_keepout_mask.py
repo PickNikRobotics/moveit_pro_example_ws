@@ -185,13 +185,13 @@ def _inside_polygon(x, y, polygon):
 
 def _dilate(mask, radius_m):
     """Conservatively grow occupied cells by a circular radius."""
-    radius = math.ceil((radius_m + RESOLUTION_M / math.sqrt(2.0)) / RESOLUTION_M)
+    limit_m = radius_m + RESOLUTION_M / math.sqrt(2.0)
+    radius = math.ceil(limit_m / RESOLUTION_M)
     out = np.zeros_like(mask)
     for dx in range(-radius, radius + 1):
         for dy in range(-radius, radius + 1):
-            if math.hypot(dx, dy) * RESOLUTION_M <= radius_m + RESOLUTION_M / math.sqrt(
-                2.0
-            ):
+            distance_m = math.hypot(dx, dy) * RESOLUTION_M
+            if distance_m <= limit_m or math.isclose(distance_m, limit_m, rel_tol=1e-12):
                 src_x = slice(max(0, -dx), min(mask.shape[1], mask.shape[1] - dx))
                 src_y = slice(max(0, -dy), min(mask.shape[0], mask.shape[0] - dy))
                 dst_x = slice(max(0, dx), min(mask.shape[1], mask.shape[1] + dx))

@@ -123,6 +123,16 @@ def test_each_fixed_structure_polygon_is_covered() -> None:
         assert _is_keepout(image, metadata, *center)
 
 
+def test_isolated_cell_raster_margin_includes_diagonal_neighbors() -> None:
+    """A cell-sized raster margin covers all eight neighbors and no farther cells."""
+    mask = np.zeros((5, 5), dtype=bool)
+    mask[2, 2] = True
+    expected = np.zeros_like(mask)
+    expected[1:4, 1:4] = True
+    actual = GENERATOR._dilate(mask, GENERATOR.RESOLUTION_M / math.sqrt(2.0))
+    np.testing.assert_array_equal(actual, expected)
+
+
 def test_structure_raster_margin_is_bounded() -> None:
     """The mast mask includes a raster margin, not robot-center clearance."""
     image, metadata = _committed()
