@@ -5,6 +5,12 @@
   <include file="robotiq_2f85/robotiq2f85_globals.xml" />
 
   <compiler angle="radian" autolimits="true" />
+  <!-- Lights the Nyx scene with the aircraft_workshop_01 HDRI from Poly Haven (CC0), the source of this
+       scene's skybox, rather than with the 8-bit skybox. MuJoCo stores <custom> text but does not render from it,
+       so its own renderer is unaffected. -->
+  <custom>
+    <text name="nyx_env_map" data="assets/aircraft_workshop_01_2k.hdr" />
+  </custom>
 
   <option integrator="implicitfast" timestep="0.003" />
 
@@ -17,6 +23,14 @@
   </visual>
 
   <asset>
+    <!-- The aircraft_workshop_01 HDRI from Poly Haven (CC0), tone-mapped to 8 bits as six faces stacked right, left, up, down, front, back. MuJoCo draws it as the background; the nyx_env_map HDRI above lights the Nyx scene. -->
+    <texture
+      type="skybox"
+      name="environment"
+      file="assets/aircraft_workshop_01_skybox.png"
+      gridsize="6 1"
+      gridlayout="RLUDFB"
+    />
     <mesh name="cube" file="assets/Cube.stl" />
   </asset>
 
