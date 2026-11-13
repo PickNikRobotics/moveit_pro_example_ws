@@ -28,6 +28,7 @@
 
 """The live slice must retain the h170 survey's frame, gates, binning and map wiring."""
 
+import argparse
 import hashlib
 import importlib.util
 import math
@@ -47,6 +48,8 @@ from ament_index_python.packages import (
     get_package_share_directory,
 )
 from launch import LaunchContext
+from launch.utilities import perform_substitutions
+from launch_ros.actions import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import LaserScan, PointCloud2, PointField
 
@@ -264,7 +267,10 @@ def test_installed_map_is_the_verified_partial_survey_not_the_geometry_control()
     assert digest == "4434bfc188506534226b1ee9b5893ff2b2736e98cfd6c1b43f5219ef291abb7a"
 
 
-def test_launch_localizer_mapper_and_refinement_use_the_same_slice():
+@pytest.mark.parametrize("slam", ["false", "true"])
+def test_launch_localizer_mapper_and_refinement_use_the_same_slice(monkeypatch, slam):
+    monkeypatch.setenv("MARKET_SIM_SLAM", slam)
+    monkeypatch.setenv("MARKET_SIM_GROUND_TRUTH_NAV", "false")
     spec = importlib.util.spec_from_file_location(
         "market_driver_launch",
         PACKAGE / "launch/sim/robot_drivers_to_persist_sim.launch.py",
@@ -274,13 +280,50 @@ def test_launch_localizer_mapper_and_refinement_use_the_same_slice():
     description = module.generate_launch_description()
     context = LaunchContext()
     arguments = {a.name: a for a in description.entities if hasattr(a, "default_value")}
-    default_map = "".join(
-        s.perform(context) for s in arguments["localization_map"].default_value
+    for argument in arguments.values():
+        argument.execute(context)
+    assert (
+        Path(context.launch_configurations["localization_map"]).name
+        == "market_livox_h170.yaml"
     )
-    assert Path(default_map).name == "market_livox_h170.yaml"
-    text = (PACKAGE / "launch/sim/robot_drivers_to_persist_sim.launch.py").read_text()
-    assert 'executable="livox_localization_scan.py"' in text
-    assert 'static_transform("base_link", "livox_slice", x=0.210)' in text
+    nodes = [
+        action
+        for action in description.entities
+        if isinstance(action, Node)
+        and (action.condition is None or action.condition.evaluate(context))
+    ]
+    scan_nodes = [
+        node
+        for node in nodes
+        if (node.node_package, node.node_executable)
+        == ("market_sim", "livox_localization_scan.py")
+    ]
+    assert len(scan_nodes) == 1
+    parser = argparse.ArgumentParser()
+    for axis in ("x", "y", "z", "roll", "pitch", "yaw"):
+        parser.add_argument(f"--{axis}", type=float, default=0.0)
+    parser.add_argument("--frame-id", required=True)
+    parser.add_argument("--child-frame-id", required=True)
+    transforms = []
+    for node in nodes:
+        if (node.node_package, node.node_executable) != (
+            "tf2_ros",
+            "static_transform_publisher",
+        ):
+            continue
+        argv = []
+        for substitutions in node.cmd[1:]:
+            value = perform_substitutions(context, substitutions)
+            if value == "--ros-args":
+                break
+            argv.append(value)
+        transforms.append(parser.parse_args(argv))
+    slice_transforms = [tf for tf in transforms if tf.child_frame_id == "livox_slice"]
+    assert len(slice_transforms) == 1
+    transform = slice_transforms[0]
+    assert transform.frame_id == "base_link"
+    assert (transform.x, transform.y, transform.z) == pytest.approx((0.210, 0, 0))
+    assert (transform.roll, transform.pitch, transform.yaw) == pytest.approx((0, 0, 0))
     params = yaml.safe_load((PACKAGE / "params/nav2_params.yaml").read_text())
     assert params["amcl"]["ros__parameters"]["scan_topic"] == "/livox/scan"
     assert params["slam_toolbox"]["ros__parameters"]["scan_topic"] == "/livox/scan"
