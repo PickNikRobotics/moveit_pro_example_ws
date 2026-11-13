@@ -33,11 +33,16 @@ hardware:
       - mujoco_model: "description/husky_scene.xml"
       - mujoco_viewer: false  # set to true locally to open the MuJoCo viewer window
       - mujoco_keyframe: "default"  # the MoveIt Pro UI's built-in "Reset Simulation" control needs this
-      # Publishes the OAK-D stereo pair and /ground_truth/odom for visual odometry. Rebuild after changing.
+      # Publishes the OAK-D stereo pair and /ground_truth/odom, and loads native VO. Rebuild after changing.
       - enable_vo: false
       # Map -> odom source; with neither, a static identity and nothing corrects odometry drift. Restart the Runtime after changing.
       - slam: false  # build a map with slam_toolbox; save it with map_saver_cli
       - localization: true  # beluga_amcl against the shipped maps/lunar_map.yaml
+      # Native VO inference provider. Keep CPU available; set cuda only on a qualified GPU Runtime.
+      - vo_device: "cpu"
+      # User-supplied 1024x576 ALIKED/LightGlue bundle manifest, visible inside the Runtime.
+      # Required only when enable_vo is true; the workspace does not download models.
+      - vo_bundle_manifest: ""
 
   # Additional launch file included with the persistent driver process: lidar filters, fuse, and Nav2.
   # [Optional, defaults to a blank launch file if not specified]

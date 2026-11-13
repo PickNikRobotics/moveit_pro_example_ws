@@ -33,6 +33,7 @@
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_studio_utils_py</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
+  <exec_depend>moveit_pro_nav_ros</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>nav2_bringup</exec_depend>
   <exec_depend>nav2_common</exec_depend>
@@ -50,19 +51,26 @@
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>ament_cmake_ros</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>geometry_msgs</test_depend>
   <test_depend>moveit_pro_test_utils</test_depend>
+  <test_depend>moveit_pro_nav_msgs</test_depend>
+  <test_depend>moveit_msgs</test_depend>
+  <test_depend>moveit_studio_sdk_msgs</test_depend>
   <test_depend>nav2_msgs</test_depend>
+  <test_depend>nav_msgs</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>python3-numpy</test_depend>
   <test_depend>python3-pil</test_depend>
+  <test_depend>python3-scipy</test_depend>
   <test_depend>python3-yaml</test_depend>
   <test_depend>rcl_interfaces</test_depend>
   <test_depend>rclpy</test_depend>
   <test_depend>tf2_msgs</test_depend>
   <test_depend>tf2_ros</test_depend>
+  <test_depend>xacro</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

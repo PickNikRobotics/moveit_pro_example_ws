@@ -82,12 +82,17 @@
        default - same pattern as moveit_pro_kinova_configs' space_satellite_sim.xacro. -->
   <xacro:arg name="mujoco_keyframe" default="default" />
   <!-- Renders and publishes the OAK-D's stereo pair. Off unless a visual odometry consumer is
-       running; see the <sensor> blocks below. -->
+       running; see the <sensor> blocks below. The dedicated integration lane sets the environment
+       override before the Runtime expands this xacro. -->
   <xacro:arg name="enable_vo" default="false" />
+  <xacro:property
+    name="vo_enabled"
+    value="${('$(arg enable_vo)' if '$(optenv LUNAR_SIM_ENABLE_VO __unset__)' == '__unset__' else '$(optenv LUNAR_SIM_ENABLE_VO __unset__)') in ['true', 'True', '1']}"
+  />
   <ros2_control name="husky_a300_hardware" type="system">
     <!-- The stereo pair is for visual odometry and has no consumer yet; MuJoCo would render it
          every tick regardless. camera_enabled drops it. oakd_color is never gated. -->
-    <xacro:unless value="$(arg enable_vo)">
+    <xacro:unless value="${vo_enabled}">
       <sensor name="oakd_left">
         <param name="camera_enabled">false</param>
       </sensor>
@@ -100,7 +105,7 @@
          takes the baseline from the MJCF camera positions and puts it in the right camera_info's
          P[3]. MuJoCo cameras are distortion-free and the pair is rectified, so the renders are
          already image_rect. -->
-    <xacro:if value="$(arg enable_vo)">
+    <xacro:if value="${vo_enabled}">
       <sensor name="oakd_left">
         <param name="rgb_topic">/oakd/left/image_rect</param>
         <param name="camera_info_topic">/oakd/left/camera_info</param>
@@ -124,7 +129,6 @@
       <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param>
       <!-- TF ownership: robot_state_publisher owns every link below footprint, fuse owns odom -> footprint, and robot_drivers_to_persist_sim.launch.py publishes mj_world -> map -> odom. publish_mj_world_tf is off so MuJoCo does not give odom a second parent; base_link_name stops the site TF fill-in at the chassis body. -->
       <param name="publish_mj_world_tf">false</param>
-      <param name="odom_frame">odom</param>
       <param name="base_link_name">chassis_link</param>
       <param name="tf_publish_rate">60</param>
       <!-- Cadence the operator sees. Raised from 10, which render cost capped the camera panes
@@ -132,8 +136,16 @@
            two sweeping lidars add several offscreen renders per tick. -->
       <param name="render_publish_rate">30</param>
       <param name="point_cloud_publish_rate">10</param>
-      <!-- Visual odometry ground truth: MuJoCo's world-frame chassis_link pose, with no TF so it cannot compete with the wheel controller's odom. Align trajectories before scoring, and ignore the twist, which is on world axes. -->
-      <xacro:if value="$(arg enable_vo)">
+      <!-- Visual odometry ground truth: odom_publisher copies MuJoCo's raw mj_world chassis pose.
+           Label that numeric pose truthfully; this publisher must not reuse the control stack's odom
+           frame. No TF is published, so authoritative control/TF paths remain unchanged. Twist is
+           intentionally not scored because the native publisher reports it on world axes while
+           nav_msgs/Odometry defines twist in the child frame. -->
+      <xacro:unless value="${vo_enabled}">
+        <param name="odom_frame">odom</param>
+      </xacro:unless>
+      <xacro:if value="${vo_enabled}">
+        <param name="odom_frame">mj_world</param>
         <param name="publish_odom">true</param>
         <param name="odom_topic">/ground_truth/odom</param>
         <param name="odom_child_frame">chassis_link</param>
