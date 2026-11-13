@@ -69,7 +69,8 @@ def generate_launch_description():
         allow_substs=True,
     )
 
-    # The controller and the recovery behaviors publish cmd_vel_nav; the velocity smoother alone commands platform_velocity_controller on /cmd_vel (remapped in config.yaml).
+    # The controller and recovery behaviors publish cmd_vel_nav; only the velocity smoother
+    # commands platform_velocity_controller on /cmd_vel (remapped in config.yaml).
     load_composable_nodes = LoadComposableNodes(
         target_container=container_name,
         composable_node_descriptions=[
