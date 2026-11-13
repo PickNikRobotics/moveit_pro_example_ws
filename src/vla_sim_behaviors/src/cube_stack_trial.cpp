@@ -28,10 +28,14 @@
 
 #include <vla_sim_behaviors/cube_stack_trial.hpp>
 
+#include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <random>
 #include <string_view>
+#include <tuple>
 
 #include <fmt/format.h>
 
@@ -49,6 +53,9 @@ constexpr double kMinYawDeg = 0.0;
 constexpr double kMaxYawDeg = 90.0;
 constexpr double kMinCenterSpacing = 0.07;
 
+// The cube of each entry of CubeStackTrial::placements, in order.
+constexpr std::array<std::string_view, 3> kCubeColors{ "red", "green", "blue" };
+
 struct CubePair
 {
   std::string_view top_color;
@@ -61,6 +68,8 @@ constexpr std::array<CubePair, 6> kCubePairs{ { { "blue", "green" },
                                                 { "green", "red" },
                                                 { "red", "blue" },
                                                 { "blue", "red" } } };
+static_assert(kCubeColors.size() == std::tuple_size_v<decltype(CubeStackTrial::placements)>,
+              "kCubeColors names every placement.");
 
 constexpr double kTwoToThe26 = 67108864.0;
 constexpr double kTwoToThe53 = 9007199254740992.0;
@@ -106,6 +115,8 @@ tl::expected<CubeStackTrial, std::string> sampleCubeStackTrial(const int trial_i
   CubeStackTrial trial;
   const CubePair& pair = kCubePairs[static_cast<std::size_t>(trial_index) % kCubePairs.size()];
   trial.top_color = pair.top_color;
+  trial.top_index =
+      static_cast<std::size_t>(std::distance(kCubeColors.begin(), std::ranges::find(kCubeColors, pair.top_color)));
   trial.bottom_color = pair.bottom_color;
   trial.prompt = fmt::format("stack the {} cube on the {} cube", trial.top_color, trial.bottom_color);
 

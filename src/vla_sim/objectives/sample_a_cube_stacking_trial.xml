@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Sample a Cube Stacking Trial">
   <!--
-    The reset Objective, the task Objective, and the scoring Objective for evaluating the cube-stacking policy all call this Subtree with the same trial_index, so they agree on each trial's layout and cube pair. Only this Subtree sets the seed. Another seed gives another set of layouts.
+    The reset Objective, the task Objective, the scoring Objective, and the milestone Objective for evaluating the cube-stacking policy all call this Subtree with the same trial_index, so they agree on each trial's layout and cube pair. Only this Subtree sets the seed. Another seed gives another set of layouts.
   -->
   <BehaviorTree
     ID="Sample a Cube Stacking Trial"
@@ -15,6 +15,7 @@
         seed="0"
         cube_poses="{cube_poses}"
         top_color="{top_color}"
+        top_start_pose="{top_start_pose}"
         bottom_color="{bottom_color}"
         prompt="{prompt}"
       />
@@ -38,6 +39,13 @@
       </output_port>
       <output_port name="top_color" default="{top_color}" type="std::string">
         The cube to pick: red, green, or blue.
+      </output_port>
+      <output_port
+        name="top_start_pose"
+        default="{top_start_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      >
+        Where the top_color cube starts the trial, in mj_world.
       </output_port>
       <output_port
         name="bottom_color"

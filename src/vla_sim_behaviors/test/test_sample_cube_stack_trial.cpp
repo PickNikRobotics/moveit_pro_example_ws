@@ -81,7 +81,8 @@ TEST(SampleCubeStackTrialBehavior, WritesTheSampledTrialToItsOutputs)
         <Action ID="SampleCubeStackTrial" trial_index=")" +
                                              std::to_string(kTrialIndex) + R"(" seed=")" + std::to_string(kSeed) +
                                              R"("
-                cube_poses="{cube_poses}" top_color="{top_color}" bottom_color="{bottom_color}" prompt="{prompt}" />
+                cube_poses="{cube_poses}" top_color="{top_color}" top_start_pose="{top_start_pose}"
+                bottom_color="{bottom_color}" prompt="{prompt}" />
       </BehaviorTree>
     </root>)");
   const auto expected = sampleCubeStackTrial(kTrialIndex, kSeed);
@@ -121,6 +122,10 @@ TEST(SampleCubeStackTrialBehavior, WritesTheSampledTrialToItsOutputs)
     const double yaw_deg = 2.0 * std::atan2(orientation.z, orientation.w) * 180.0 / std::numbers::pi;
     EXPECT_NEAR(yaw_deg, placement.yaw_deg, 1e-9);
   }
+
+  // AND top_start_pose is the top_color cube's pose
+  const auto top_start_pose = blackboard->get<geometry_msgs::msg::PoseStamped>("top_start_pose");
+  EXPECT_EQ(top_start_pose, cube_poses[expected->top_index]);
 }
 }  // namespace
 }  // namespace vla_sim_behaviors

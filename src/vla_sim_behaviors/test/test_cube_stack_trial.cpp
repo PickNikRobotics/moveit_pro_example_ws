@@ -199,5 +199,23 @@ TEST(SampleCubeStackTrial, AnySixTrialsInARowAskForEachPairOnce)
     EXPECT_EQ(pairs, all_pairs) << "six trials from " << first_index;
   }
 }
+
+TEST(SampleCubeStackTrial, TopIndexPointsAtTheTopColorsPlacement)
+{
+  // The placements are the red, green, and blue cubes, in that order.
+  const std::array<std::string, 3> placement_colors{ "red", "green", "blue" };
+
+  for (int trial_index = 0; trial_index < 6; ++trial_index)
+  {
+    // GIVEN each of the six cube pairs
+    // WHEN sampling its trial
+    const auto trial = sampleCubeStackTrial(trial_index, 0);
+    ASSERT_TRUE(trial.has_value()) << "trial " << trial_index << ": " << trial.error();
+
+    // THEN top_index is the position of top_color among the placements
+    ASSERT_LT(trial->top_index, placement_colors.size());
+    EXPECT_EQ(placement_colors[trial->top_index], trial->top_color) << "trial " << trial_index;
+  }
+}
 }  // namespace
 }  // namespace vla_sim_behaviors
