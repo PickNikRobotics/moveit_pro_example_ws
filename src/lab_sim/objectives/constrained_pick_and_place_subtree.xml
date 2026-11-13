@@ -84,8 +84,9 @@
             task="{pre_pick_task}"
           />
           <Action ID="SetupMTCCurrentState" task="{pre_pick_task}" />
-          <Action
-            ID="SetupMTCPlanToPose"
+          <SubTree
+            ID="Setup MTC Move To Pose"
+            _collapsed="true"
             ik_frame="grasp_link"
             planning_group_name="manipulator"
             target_pose="{pre_pick_pose}"
@@ -147,8 +148,9 @@
             task="{pre_place_task}"
           />
           <Action ID="SetupMTCCurrentState" task="{pre_place_task}" />
-          <Action
-            ID="SetupMTCPlanToPose"
+          <SubTree
+            ID="Setup MTC Move To Pose"
+            _collapsed="true"
             ik_frame="grasp_link"
             planning_group_name="manipulator"
             target_pose="{pre_place_pose}"

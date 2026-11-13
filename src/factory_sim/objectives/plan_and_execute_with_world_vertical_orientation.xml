@@ -23,8 +23,9 @@
         timeout="-1.000000"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-      <Action
-        ID="SetupMTCPlanToPose"
+      <SubTree
+        ID="Setup MTC Move To Pose"
+        _collapsed="true"
         acceleration_scale_factor="1.000000"
         ik_frame="{ik_frame}"
         collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"
@@ -36,8 +37,9 @@
         velocity_scale_factor="1.000000"
         task="{mtc_task}"
       />
-      <Action
-        ID="SetupMTCPlanToPose"
+      <SubTree
+        ID="Setup MTC Move To Pose"
+        _collapsed="true"
         acceleration_scale_factor="1.000000"
         ik_frame="{ik_frame}"
         orientation_constraint="{orientation_constraint}"

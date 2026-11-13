@@ -69,8 +69,9 @@
             task_id="reach_test"
           />
           <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-          <Action
-            ID="SetupMTCPlanToPose"
+          <SubTree
+            ID="Setup MTC Move To Pose"
+            _collapsed="true"
             planning_group_name="manipulator"
             ik_frame="grasp_link"
             target_pose="{reachable_pose}"
@@ -101,8 +102,9 @@
           <!--Move to inspection point-->
           <Action ID="InitializeMTCTask" task="{move_task}" task_id="inspect" />
           <Action ID="SetupMTCCurrentState" task="{move_task}" />
-          <Action
-            ID="SetupMTCPlanToPose"
+          <SubTree
+            ID="Setup MTC Move To Pose"
+            _collapsed="true"
             planning_group_name="manipulator"
             ik_frame="grasp_link"
             target_pose="{current_pose}"
