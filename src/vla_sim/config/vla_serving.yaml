@@ -54,6 +54,17 @@ int8: false
 # architecture width instead of the real one.
 state_dim: 8
 
+# The joint each observation.state and action value belongs to, in training
+# order, for a checkpoint without a moveit_pro_policy.json. The server builds
+# the policy's state from the robot_state by name and labels each action
+# column, so the Objective's joint order does not matter. Set both or neither.
+# The server ignores these for a MoveIt Pro Trainer checkpoint, which carries
+# its own names, and MoveIt Pro Trainer clears them when it selects one.
+# Without names, the server matches values to joints in list order; a future
+# release removes that fallback.
+state_names: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7, robotiq_85_left_knuckle_joint]
+action_names: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7, robotiq_85_left_knuckle_joint]
+
 # Real-time-chunking soft guidance, in steps past the frozen prefix. Only used
 # for requests that leave guidance_horizon at 0; the shipped objective sets its
 # own on the ExecutePolicy port, so tune it there.
