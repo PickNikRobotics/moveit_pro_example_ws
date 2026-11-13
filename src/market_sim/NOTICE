@@ -6,6 +6,14 @@ mjcf/sensors.xml, mjcf/market/ and market_assets/ are PickNik's own
 (market_assets/LICENSE repeats that license); mjcf/sensors.xml is copied from
 moveit_pro_franka_ws.
 
+The A2 printable reference mount and illustrative Livox sensor CAD in
+description/meshes/livox_mid360/cad/, their derived visual/collision meshes,
+and scripts/convert_livox_assets.py are PickNik files under BSD-3-Clause.
+The asset README and cad/source.json retain the design revision, original input
+hashes, assembly-frame convention, conversion checks and mass assumptions.
+The illustrative housing is not vendor CAD, and the reference design is not
+validated production hardware.
+
 Third-party files. Every source named in this section is under the Apache License,
 Version 2.0; its text is in mjcf/LICENSE-franka_description, which is
 franka_description's own licence file (the Apache License followed by a BSD license

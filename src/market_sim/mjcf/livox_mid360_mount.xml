@@ -1,0 +1,87 @@
+<mujocoinclude>
+  <!-- A2 printed reference assembly; matching metre meshes/inertia in the URDF.
+       Visuals retain holes/fillets. Collision hulls are separate by part/rail.
+       CAD source, simplification bounds and estimated dynamics are documented
+       in description/meshes/livox_mid360/README.md. No extra joints. -->
+  <inertial
+    pos="-0.013573176 0.000013040 -0.042772965"
+    mass="0.370886979"
+    fullinertia="0.005363228 0.005119424 0.001207779 0.000000134 -0.000777126 0.000000521"
+  />
+  <geom
+    name="livox_mount_blade_left"
+    type="mesh"
+    mesh="livox_a2_blade_left"
+    contype="0"
+    conaffinity="0"
+    group="1"
+    density="0"
+    rgba="0.78 0.49 0.23 1"
+  />
+  <geom
+    name="livox_mount_blade_right"
+    type="mesh"
+    mesh="livox_a2_blade_right"
+    contype="0"
+    conaffinity="0"
+    group="1"
+    density="0"
+    rgba="0.78 0.49 0.23 1"
+  />
+  <geom
+    name="livox_mount_crown"
+    type="mesh"
+    mesh="livox_a2_crown"
+    contype="0"
+    conaffinity="0"
+    group="1"
+    density="0"
+    rgba="0.78 0.49 0.23 1"
+  />
+  <geom
+    name="livox_mount_heat_plate"
+    type="mesh"
+    mesh="livox_a2_heat_plate"
+    contype="0"
+    conaffinity="0"
+    group="1"
+    density="0"
+    rgba="0.66 0.70 0.75 1"
+  />
+  <geom
+    name="livox_mount_blade_left_collision"
+    type="mesh"
+    mesh="livox_a2_blade_left_collision"
+    group="3"
+  />
+  <geom
+    name="livox_mount_blade_right_collision"
+    type="mesh"
+    mesh="livox_a2_blade_right_collision"
+    group="3"
+  />
+  <geom
+    name="livox_mount_crown_front_collision"
+    type="mesh"
+    mesh="livox_a2_crown_front_collision"
+    group="3"
+  />
+  <geom
+    name="livox_mount_crown_left_collision"
+    type="mesh"
+    mesh="livox_a2_crown_left_collision"
+    group="3"
+  />
+  <geom
+    name="livox_mount_crown_right_collision"
+    type="mesh"
+    mesh="livox_a2_crown_right_collision"
+    group="3"
+  />
+  <geom
+    name="livox_mount_heat_plate_collision"
+    type="mesh"
+    mesh="livox_a2_heat_plate_collision"
+    group="3"
+  />
+</mujocoinclude>

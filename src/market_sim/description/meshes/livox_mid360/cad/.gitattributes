@@ -1,0 +1,3 @@
+# Preserve the original Open CASCADE STEP bytes recorded in source.json.
+# Its formatted entity records contain trailing spaces, not handwritten code.
+*.step -whitespace

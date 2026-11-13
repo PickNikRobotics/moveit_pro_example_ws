@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- A2 printable reference design: two PLA blades, filleted crown, flush 4 mm
+       6061 heat plate; no base plate. Retained CAD and conversion provenance:
+       description/meshes/livox_mid360/README.md. All meshes below are metres,
+       in base-aligned scan-O axes. No physical/thermal validation is implied. -->
+  <xacro:macro name="market_livox_mid360_mount">
+    <xacro:macro name="livox_a2_visual" params="part material color">
+      <visual>
+        <geometry>
+          <mesh filename="package://market_sim/description/meshes/livox_mid360/visual/${part}.stl"/>
+        </geometry>
+        <material name="${material}"><color rgba="${color}"/></material>
+      </visual>
+    </xacro:macro>
+    <xacro:macro name="livox_a2_collision" params="part">
+      <collision>
+        <geometry>
+          <mesh filename="package://market_sim/description/meshes/livox_mid360/collision/${part}.stl"/>
+        </geometry>
+      </collision>
+    </xacro:macro>
+    <link name="livox_mid360_mount">
+      <!-- Uniform-density per-part approximation: 83.4/83.3/69.4 g PLA slicer
+           estimates, solid plate at 2700 kg/m3. Fasteners omitted from dynamics;
+           these are not weighed or infill-resolved physical mass properties. -->
+      <inertial>
+        <origin xyz="-0.013573176 0.000013040 -0.042772965"/>
+        <mass value="0.370886979"/>
+        <inertia ixx="0.005363228" ixy="0.000000134" ixz="-0.000777126" iyy="0.005119424" iyz="0.000000521" izz="0.001207779"/>
+      </inertial>
+      <xacro:livox_a2_visual part="P01_blade_1" material="livox_bracket" color="0.78 0.49 0.23 1"/>
+      <xacro:livox_a2_visual part="P01_blade_-1" material="livox_bracket" color="0.78 0.49 0.23 1"/>
+      <xacro:livox_a2_visual part="P02_crown" material="livox_bracket" color="0.78 0.49 0.23 1"/>
+      <xacro:livox_a2_visual part="M02_heat_plate" material="livox_heat_plate" color="0.66 0.70 0.75 1"/>
+      <xacro:livox_a2_collision part="P01_blade_1"/>
+      <xacro:livox_a2_collision part="P01_blade_-1"/>
+      <!-- Separate U-rails preserve the sensor clearance; no full-mount hull. -->
+      <xacro:livox_a2_collision part="crown_front"/>
+      <xacro:livox_a2_collision part="crown_left"/>
+      <xacro:livox_a2_collision part="crown_right"/>
+      <xacro:livox_a2_collision part="M02_heat_plate"/>
+    </link>
+  </xacro:macro>
+</robot>

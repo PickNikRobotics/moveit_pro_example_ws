@@ -1,6 +1,7 @@
 <mujoco model="market_sim scene">
   <!-- The robot comes first, so its joints lead every keyframe's qpos. -->
   <include file="mobile_fr3_duo.xml" />
+  <include file="livox_mid360_assets.xml" />
   <include file="market/market_assets.xml" />
   <include file="../market_assets/visuals/cart_materials.xml" />
   <size nuser_cam="4" />

@@ -36,6 +36,8 @@ the package share.
 """
 
 import re
+import subprocess
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
@@ -64,7 +66,17 @@ def referenced_files():
             for raw in ASSET.findall(text):
                 yield path, raw, "asset"
             for raw in PACKAGE_URI.findall(text):
-                yield path, raw, "package"
+                if "${" not in raw:
+                    yield path, raw, "package"
+    # A Xacro macro's parameterized mesh URI is not a runtime filename. Execute
+    # the installed top-level description and check its concrete mesh references,
+    # so new parameterized accessories cannot evade installed-resource checks.
+    description = SHARE / "description/mobile_fr3_duo.urdf.xacro"
+    robot = ET.fromstring(
+        subprocess.check_output(["xacro", str(description)], text=True)
+    )
+    for mesh in robot.iter("mesh"):
+        yield description, mesh.get("filename"), "package"
 
 
 def resolve(naming_file, raw, kind):

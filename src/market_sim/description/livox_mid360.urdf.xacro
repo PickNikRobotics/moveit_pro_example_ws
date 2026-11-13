@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Local accessory on the vendored Mobile FR3 Duo's fixed spine. Do not change
+       franka_description's byte-identical robot macros to add a simulation sensor. -->
+  <xacro:macro name="market_livox_mid360" params="parent">
+    <!-- A2 printable reference mount in base-aligned scan-origin axes. -->
+    <xacro:include filename="$(find market_sim)/description/livox_mid360_mount.urdf.xacro"/>
+    <xacro:market_livox_mid360_mount/>
+    <joint name="livox_mid360_mount_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="livox_mid360_mount"/>
+      <!-- Scan O: base_link (0.210, 0, 1.700), selected C170 rounded +0.250 mm
+           from cap center. Subtract OEM fixed spine (0.138289, 0, 0.350);
+           do not independently round the resulting 0.071711 m offset. -->
+      <origin xyz="0.071711 0 1.350"/>
+    </joint>
+    <link name="livox_frame">
+      <!-- Supplier-sized 65 x 65 x 60 mm body, 265 g, not vendor CAD. Native
+           mounting face is 47 mm below scan O. Visuals were rotated back from
+           the CAD's installed/base-aligned pose; the joint below rolls once.
+           Box inertia is approximate, not measured sensor mass distribution. -->
+      <inertial>
+        <origin xyz="0 0 -0.017"/>
+        <mass value="0.265"/>
+        <inertia ixx="0.000173" ixy="0" ixz="0" iyy="0.000173" iyz="0" izz="0.000187"/>
+      </inertial>
+      <visual>
+        <geometry><mesh filename="package://market_sim/description/meshes/livox_mid360/visual/sensor_heatsink_body.stl"/></geometry>
+        <material name="livox_housing"><color rgba="0.18 0.20 0.22 1"/></material>
+      </visual>
+      <visual>
+        <geometry><mesh filename="package://market_sim/description/meshes/livox_mid360/visual/sensor_window_ring.stl"/></geometry>
+        <material name="livox_housing"/>
+      </visual>
+      <visual>
+        <geometry><mesh filename="package://market_sim/description/meshes/livox_mid360/visual/sensor_optical_window_simplified.stl"/></geometry>
+        <material name="livox_window"><color rgba="0.10 0.18 0.22 1"/></material>
+      </visual>
+      <visual>
+        <geometry><mesh filename="package://market_sim/description/meshes/livox_mid360/visual/sensor_M12_male_port.stl"/></geometry>
+        <material name="livox_port"><color rgba="0.32 0.36 0.40 1"/></material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 -0.017"/>
+        <geometry><box size="0.065 0.065 0.060"/></geometry>
+      </collision>
+      <collision>
+        <origin xyz="-0.0365 0 -0.0327" rpy="0 ${pi/2} 0"/>
+        <geometry><cylinder radius="0.006" length="0.008"/></geometry>
+      </collision>
+    </link>
+    <joint name="livox_frame_joint" type="fixed">
+      <parent link="livox_mid360_mount"/>
+      <child link="livox_frame"/>
+      <origin xyz="0 0 0" rpy="${pi} 0 0"/>
+    </joint>
+    <!-- The plugin alone broadcasts livox_mid360_optical_frame from its MJCF site.
+         It is deliberately not a URDF link, avoiding two TF authorities. -->
+  </xacro:macro>
+</robot>

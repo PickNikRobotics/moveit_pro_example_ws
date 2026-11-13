@@ -1,0 +1,87 @@
+<mujocoinclude>
+  <!-- Included inside the fixed franka_spine body, not the moving spine carriage.
+       A2/C170 scan O in base_link: (0.210, 0, 1.700) m, approved +0.250 mm
+       rounding from measured cap center. Bracket meshes are base-aligned; only
+       the sensor-native mesh/link rolls. No double roll of CAD assembly axes. -->
+  <body name="livox_mid360_mount" pos="0.071711 0 1.350" gravcomp="1">
+    <include file="livox_mid360_mount.xml" />
+    <body name="livox_frame" pos="0 0 0" quat="0 1 0 0" gravcomp="1">
+      <inertial
+        pos="0 0 -0.017"
+        mass="0.265"
+        diaginertia="0.000173 0.000173 0.000187"
+      />
+      <!-- The URDF's optical-window illustration has no MuJoCo geom: the window
+           is transmissive, not an opaque obstacle at the scan origin. All opaque
+           housing/bracket/robot geometry stays visible to the lidar in groups 0/1/2. -->
+      <geom
+        name="livox_housing_base"
+        type="mesh"
+        mesh="livox_housing"
+        contype="0"
+        conaffinity="0"
+        group="1"
+        density="0"
+        rgba="0.18 0.20 0.22 1"
+      />
+      <geom
+        name="livox_window_lower_rim"
+        type="mesh"
+        mesh="livox_window_ring"
+        contype="0"
+        conaffinity="0"
+        group="1"
+        density="0"
+        rgba="0.18 0.20 0.22 1"
+      />
+      <geom
+        name="livox_connector"
+        type="mesh"
+        mesh="livox_port"
+        contype="0"
+        conaffinity="0"
+        group="1"
+        density="0"
+        rgba="0.32 0.36 0.40 1"
+      />
+      <geom
+        name="livox_collision"
+        type="box"
+        size="0.0325 0.0325 0.030"
+        pos="0 0 -0.017"
+        group="3"
+      />
+      <geom
+        name="livox_port_collision"
+        type="cylinder"
+        size="0.006 0.004"
+        pos="-0.0365 0 -0.0327"
+        quat="0.707106781187 0 0.707106781187 0"
+        group="3"
+      />
+      <!-- Native MuJoCo image-based lidar. Keep its sweep axis vertical: pitching a
+           360-deg camera tilts the whole scan cone, not every azimuth up by 22.5 deg.
+           Render symmetric -70..+70 at 1-deg pitch, then livox_mid360_cloud.py keeps
+           rows 63..122 (-7..+52). Overscan keeps even +52-deg rays inside the offscreen
+           tiles on MoveIt Pro 10.2 (whose tile edges clip the outermost rings).
+           The sensor body's 180-deg roll maps native -7..+52 to base -52..+7.
+           333 columns x 60 kept rows = 19,980 points/sweep. -->
+      <camera
+        name="livox_mid360"
+        mode="fixed"
+        pos="0 0 0"
+        xyaxes="0 -1 0 0 0 1"
+        fovy="140"
+        resolution="333 141"
+        user="2 360 0.1 40"
+      />
+      <site
+        name="livox_mid360_optical_frame"
+        pos="0 0 0"
+        xyaxes="0 -1 0 0 0 -1"
+        size="0.001"
+        group="3"
+      />
+    </body>
+  </body>
+</mujocoinclude>
