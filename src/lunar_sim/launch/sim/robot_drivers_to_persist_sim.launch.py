@@ -29,8 +29,8 @@
 # Lidar scan filtering, fuse state estimation, and Nav2 for lunar_sim, launched with the persistent
 # drivers (config.yaml additional_driver_launch_file).
 #
-# TF: mj_world -> map (static, at the spawn pose) -> odom (static identity until map-based
-# localization lands) -> footprint (fuse) -> base_link ... (robot_state_publisher).
+# TF: mj_world -> map (static, at the spawn pose) -> odom (source selected below)
+# -> footprint (fuse) -> base_link ... (robot_state_publisher).
 
 import math
 import os
@@ -39,11 +39,17 @@ import xml.etree.ElementTree as ET
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    OpaqueFunction,
+    SetLaunchConfiguration,
+)
+from launch.conditions import IfCondition, LaunchConfigurationEquals
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
 from launch_ros.descriptions import ParameterFile
+from moveit_studio_utils_py.launch_common import NodeWithAnsiLogging
 from moveit_studio_utils_py.system_config import SystemConfigParser
 from nav2_common.launch import RewrittenYaml
 
@@ -59,8 +65,23 @@ def _urdf_param(name):
     raise RuntimeError(f"config.yaml urdf_params has no '{name}'.")
 
 
+def _launch_bool(value):
+    """Return a ROS launch boolean string for a config.yaml value."""
+    if not isinstance(value, bool):
+        raise TypeError(f"Expected a boolean config.yaml value, got {value!r}.")
+    return "true" if value else "false"
+
+
+def _select_map_mode(context):
+    """Validate both switches with ROS launch semantics before selecting one TF owner."""
+    slam = IfCondition(LaunchConfiguration("slam")).evaluate(context)
+    localization = IfCondition(LaunchConfiguration("localization")).evaluate(context)
+    mode = "slam" if slam else "localization" if localization else "static"
+    return [SetLaunchConfiguration("lunar_map_mode", mode)]
+
+
 def _spawn_pose(scene_path, keyframe):
-    """Return the chassis (x, y, yaw) in mj_world from the scene's keyframe qpos (freejoint first)."""
+    """Return chassis (x, y, yaw) in mj_world from keyframe qpos (freejoint first)."""
     key = ET.parse(scene_path).getroot().find(f"keyframe/key[@name='{keyframe}']")
     if key is None:
         raise RuntimeError(f"Keyframe '{keyframe}' not found in {scene_path}.")
@@ -71,12 +92,14 @@ def _spawn_pose(scene_path, keyframe):
 
 def generate_launch_description():
     config_dir = get_package_share_directory("lunar_sim")
+    launch_dir = os.path.join(config_dir, "launch", "sim")
 
     use_sim_time = LaunchConfiguration("use_sim_time")
     params_file = LaunchConfiguration("params_file")
     autostart = LaunchConfiguration("autostart")
     use_respawn = LaunchConfiguration("use_respawn")
     log_level = LaunchConfiguration("log_level")
+    run_amcl = LaunchConfigurationEquals("lunar_map_mode", "localization")
 
     declare_args = [
         DeclareLaunchArgument("use_sim_time", default_value="false"),
@@ -88,6 +111,25 @@ def generate_launch_description():
         DeclareLaunchArgument("autostart", default_value="true"),
         DeclareLaunchArgument("use_respawn", default_value="False"),
         DeclareLaunchArgument("log_level", default_value="info"),
+        # Defaults come from config.yaml urdf_params, so the operator switches them there.
+        DeclareLaunchArgument(
+            "slam",
+            default_value=_launch_bool(_urdf_param("slam")),
+            description="Build a map with slam_toolbox. Takes precedence over localization.",
+        ),
+        DeclareLaunchArgument(
+            "localization",
+            default_value=_launch_bool(_urdf_param("localization")),
+            description=(
+                "Run beluga_amcl against the map. With neither this nor slam, map -> odom "
+                "is a static identity and nothing corrects odometry drift."
+            ),
+        ),
+        DeclareLaunchArgument(
+            "map",
+            default_value=os.path.join(config_dir, "maps", "lunar_map.yaml"),
+            description="Full path to the map yaml file to load",
+        ),
     ]
 
     configured_params = ParameterFile(
@@ -99,16 +141,50 @@ def generate_launch_description():
         allow_substs=True,
     )
 
-    # The container takes the whole params file: nodes a component creates internally, such as the
+    # The containers take the whole params file: nodes a component creates internally, such as the
     # costmaps inside controller_server and planner_server, read their parameters from it.
-    nav2_container = Node(
-        name="nav2_container",
-        package="rclcpp_components",
-        executable="component_container_isolated",
-        parameters=[configured_params, {"autostart": autostart}],
-        arguments=["--ros-args", "--log-level", log_level],
-        remappings=[("/tf", "tf"), ("/tf_static", "tf_static")],
-        output="screen",
+    def container(name, condition=None):
+        return NodeWithAnsiLogging(
+            name=name,
+            condition=condition,
+            package="rclcpp_components",
+            executable="component_container_isolated",
+            parameters=[configured_params, {"autostart": autostart}],
+            arguments=["--ros-args", "--log-level", log_level],
+            remappings=[("/tf", "tf"), ("/tf_static", "tf_static")],
+        )
+
+    # Localization has its own container so a navigation crash cannot take map -> odom down.
+    nav2_container = container("nav2_container")
+    localization_container = container("localization_container", run_amcl)
+
+    slam_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("nav2_bringup"), "launch", "slam_launch.py"
+            )
+        ),
+        condition=LaunchConfigurationEquals("lunar_map_mode", "slam"),
+        launch_arguments={
+            "use_sim_time": use_sim_time,
+            "autostart": autostart,
+            "use_respawn": use_respawn,
+            "params_file": params_file,
+        }.items(),
+    )
+
+    localization_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(launch_dir, "localization_launch.py")
+        ),
+        condition=run_amcl,
+        launch_arguments={
+            "map": LaunchConfiguration("map"),
+            "use_sim_time": use_sim_time,
+            "autostart": autostart,
+            "params_file": params_file,
+            "container_name": "localization_container",
+        }.items(),
     )
 
     navigation_cmd = IncludeLaunchDescription(
@@ -123,12 +199,12 @@ def generate_launch_description():
         }.items(),
     )
 
-    # Puts the map origin at the spawn pose, where odometry starts, so map poses match MuJoCo ground truth.
+    # Anchor map at the spawn pose, where odometry starts, for comparison with MuJoCo truth.
     spawn_x, spawn_y, spawn_yaw = _spawn_pose(
         os.path.join(config_dir, _urdf_param("mujoco_model")),
         _urdf_param("mujoco_keyframe"),
     )
-    static_tf_world_to_map = Node(
+    static_tf_world_to_map = NodeWithAnsiLogging(
         package="tf2_ros",
         executable="static_transform_publisher",
         name="static_tf_world_to_map",
@@ -147,19 +223,20 @@ def generate_launch_description():
         ],
     )
 
-    # No localizer corrects odometry drift yet, so map -> odom is a static identity.
-    static_tf_map_to_odom = Node(
+    # With neither SLAM nor AMCL, static map -> odom leaves odometry drift uncorrected.
+    static_tf_map_to_odom = NodeWithAnsiLogging(
         package="tf2_ros",
         executable="static_transform_publisher",
         name="static_tf_map_to_odom",
         output="log",
         arguments=["--frame-id", "map", "--child-frame-id", "odom"],
+        condition=LaunchConfigurationEquals("lunar_map_mode", "static"),
     )
 
     laser_filter_params = os.path.join(config_dir, "params", "laser_filter_params.yaml")
 
     def laser_filter(side):
-        return Node(
+        return NodeWithAnsiLogging(
             package="laser_filters",
             executable="scan_to_scan_filter_chain",
             name=f"laser_filter_{side}",
@@ -175,7 +252,24 @@ def generate_launch_description():
             output="log",
         )
 
-    fuse_state_estimator = Node(
+    # Both filtered scans on one topic, a scan at a time, for beluga_amcl's single scan input.
+    def scan_relay(side):
+        return NodeWithAnsiLogging(
+            condition=run_amcl,
+            package="topic_tools",
+            executable="relay",
+            name=f"scan_{side}_relay",
+            parameters=[
+                {
+                    "use_sim_time": use_sim_time,
+                    "input_topic": f"/scan_{side}_filtered",
+                    "output_topic": "/scan_interleaved",
+                }
+            ],
+            output="log",
+        )
+
+    fuse_state_estimator = NodeWithAnsiLogging(
         package="fuse_optimizers",
         executable="fixed_lag_smoother_node",
         name="state_estimator",
@@ -185,18 +279,23 @@ def generate_launch_description():
             os.path.join(config_dir, "config", "fuse", "fuse.yaml"),
             {"use_sim_time": use_sim_time},
         ],
-        output="screen",
     )
 
     return LaunchDescription(
         declare_args
         + [
+            OpaqueFunction(function=_select_map_mode),
             nav2_container,
+            localization_container,
+            slam_cmd,
+            localization_cmd,
             navigation_cmd,
             static_tf_world_to_map,
             static_tf_map_to_odom,
             laser_filter("front"),
             laser_filter("rear"),
+            scan_relay("front"),
+            scan_relay("rear"),
             fuse_state_estimator,
         ]
     )
