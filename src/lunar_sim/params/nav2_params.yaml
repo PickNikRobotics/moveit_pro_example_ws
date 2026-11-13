@@ -180,7 +180,7 @@ local_costmap:
       # Measured from husky_a300.xml: bumpers reach x = +-0.495 m, wheels and arch y = +-0.35 m.
       footprint: "[[0.50, 0.35], [0.50, -0.35], [-0.50, -0.35], [-0.50, 0.35]]"
       footprint_padding: 0.025
-      plugins: ["keepout_bounds_layer", "front_obstacle_layer", "rear_obstacle_layer"]
+      plugins: ["keepout_bounds_layer", "front_obstacle_layer", "rear_obstacle_layer", "inflation_layer"]
       keepout_bounds_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_topic: /keepout_filter_mask
@@ -188,13 +188,13 @@ local_costmap:
         subscribe_to_updates: false
         use_maximum: true
         footprint_clearing_enabled: false
-      filters: ["keepout_filter", "keepout_inflation"]
+      filters: ["keepout_filter"]
       keepout_filter:
         plugin: "nav2_costmap_2d::KeepoutFilter"
         enabled: True
         filter_info_topic: /keepout_costmap_filter_info
         transform_tolerance: 0.3
-      keepout_inflation:
+      inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
         inflation_radius: 0.75
@@ -257,7 +257,7 @@ global_costmap:
       footprint_padding: 0.025
       resolution: 0.05
       track_unknown_space: false
-      plugins: ["keepout_bounds_layer", "front_obstacle_layer", "rear_obstacle_layer"]
+      plugins: ["keepout_bounds_layer", "front_obstacle_layer", "rear_obstacle_layer", "inflation_layer"]
       keepout_bounds_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_topic: /keepout_filter_mask
@@ -265,13 +265,13 @@ global_costmap:
         subscribe_to_updates: false
         use_maximum: true
         footprint_clearing_enabled: false
-      filters: ["keepout_filter", "keepout_inflation"]
+      filters: ["keepout_filter"]
       keepout_filter:
         plugin: "nav2_costmap_2d::KeepoutFilter"
         enabled: True
         filter_info_topic: /keepout_costmap_filter_info
         transform_tolerance: 0.3
-      keepout_inflation:
+      inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 4.0
         inflation_radius: 0.75

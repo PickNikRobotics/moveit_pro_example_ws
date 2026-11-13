@@ -37,6 +37,8 @@
 #include <nav2_costmap_2d/footprint_collision_checker.hpp>
 #include <nav2_costmap_2d/costmap_filters/keepout_filter.hpp>
 #include <nav2_costmap_2d/obstacle_layer.hpp>
+#include <nav2_costmap_2d/static_layer.hpp>
+#include <nav2_costmap_2d/inflation_layer.hpp>
 #include <nav2_map_server/map_io.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <pluginlib/class_loader.hpp>
@@ -77,6 +79,7 @@ TEST(KeepoutCollision, GarageRecoveriesAndHazards)
     identity.transform.rotation.w = 1.0;
     ASSERT_TRUE(tf.setTransform(identity, "test", true));
     auto group = node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+    std::shared_ptr<nav2_costmap_2d::StaticLayer> static_layer;
     std::shared_ptr<nav2_costmap_2d::ObstacleLayer> obstacle;
     const auto plugin_names = node->get_parameter("plugins").as_string_array();
     for (const auto & plugin_name : plugin_names) {
@@ -85,6 +88,9 @@ TEST(KeepoutCollision, GarageRecoveriesAndHazards)
       layered.addPlugin(plugin);
       plugin->initialize(&layered, plugin_name, &tf, node, group);
       plugin->activate();
+      if (auto candidate = std::dynamic_pointer_cast<nav2_costmap_2d::StaticLayer>(plugin)) {
+        static_layer = candidate;
+      }
       if (auto candidate = std::dynamic_pointer_cast<nav2_costmap_2d::ObstacleLayer>(plugin)) {
         obstacle = candidate;
       }
@@ -119,11 +125,20 @@ TEST(KeepoutCollision, GarageRecoveriesAndHazards)
     executor.add_node(publisher_node);
     info_publisher->publish(info);
     mask_publisher->publish(mask);
+    ASSERT_NE(static_layer, nullptr);
+    const auto map_loaded = [&]() {
+        return static_layer->getSizeInCellsX() == mask.info.width &&
+               static_layer->getSizeInCellsY() == mask.info.height;
+      };
     const auto deadline = std::chrono::steady_clock::now() + 3s;
-    while (!keepout->isActive() && std::chrono::steady_clock::now() < deadline) {
+    while ((!keepout->isActive() || !map_loaded()) &&
+      std::chrono::steady_clock::now() < deadline)
+    {
       executor.spin_once(10ms);
+      layered.updateMap(0.0, 0.0, 0.0);
     }
     ASSERT_TRUE(keepout->isActive());
+    ASSERT_TRUE(map_loaded());
     layered.updateMap(0.0, 0.0, 0.0);
     auto * costmap = layered.getCostmap();
     nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *> checker(costmap);
@@ -199,6 +214,25 @@ TEST(KeepoutCollision, GarageRecoveriesAndHazards)
     EXPECT_LT(cell_cost(5.525, -4.975), nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
     executor.remove_node(node->get_node_base_interface());
     executor.remove_node(publisher_node);
+  }
+}
+
+TEST(KeepoutCollision, InflationDiscoverableByCostCritic)
+{
+  const std::string package = LUNAR_SIM_SOURCE_DIR;
+  for (const auto & name : {std::string("local_costmap"), std::string("global_costmap")}) {
+    auto costmap = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
+      rclcpp::NodeOptions().arguments({"--ros-args", "-r", "__node:=" + name,
+        "-r", "__ns:=/" + name, "--params-file", package + "/params/nav2_params.yaml"}));
+    ASSERT_EQ(costmap->on_configure(rclcpp_lifecycle::State()), nav2_util::CallbackReturn::SUCCESS);
+    auto inflation = nav2_costmap_2d::InflationLayer::getInflationLayer(costmap);
+    ASSERT_NE(inflation, nullptr);
+    const auto layered = costmap->getLayeredCostmap();
+    const auto threshold = inflation->computeCost(
+      layered->getCircumscribedRadius() / costmap->getCostmap()->getResolution());
+    EXPECT_GT(threshold, nav2_costmap_2d::FREE_SPACE);
+    EXPECT_LT(threshold, nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
+    ASSERT_EQ(costmap->on_cleanup(rclcpp_lifecycle::State()), nav2_util::CallbackReturn::SUCCESS);
   }
 }
 
