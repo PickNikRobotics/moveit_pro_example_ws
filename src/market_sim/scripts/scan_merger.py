@@ -33,15 +33,9 @@
 
 """Merges /scan_front + /scan_rear (each a 275 deg sweep trimmed by 6 deg at
 each end, blind notch in opposite corners) into a single 360 deg /scan in
-base_link, so AMCL has one scan topic to localize against. AMCL has no
-multi-source observation model like the costmap's obstacle_layer does, so
-this merge has to happen upstream.
-slam_toolbox takes one scan topic too, so mapping mode reads the same output.
-
-The merged scan is what both localization and mapping register against, so a
-fault here shows up as a map that will not build and a pose that jumps rather
-than as an obvious sensor error. See _lookup_transform for the startup race
-that used to do exactly that.
+base_link, with timestamp-matched /scan_mapping as a diagnostic output.
+AMCL and slam_toolbox now use /livox/scan; Nav2 still consumes the individual
+SICK scans. These merged SICK outputs remain available for inspection.
 
 The sources are produced by this package's lidar_flattener from the MuJoCo 3D
 lidars' point clouds, 1651 beams each, the figure the real nanoScan3 reports.

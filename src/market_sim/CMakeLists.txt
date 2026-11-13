@@ -34,6 +34,7 @@ install(
     scripts/base_twist_to_planar.py
     scripts/lidar_flattener.py
     scripts/livox_mid360_cloud.py
+    scripts/livox_localization_scan.py
     scripts/navigation_scan_relay.py
     scripts/odometry_joint_state_publisher.py
     scripts/reset_controller_guard.py
@@ -134,6 +135,9 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           livox_mid360_test test/test_livox_mid360.py
           TIMEOUT 60)
+  ament_add_pytest_test(
+          livox_localization_scan_test test/test_livox_localization_scan.py
+          TIMEOUT 30)
   ament_add_pytest_test(
           livox_collision_test test/test_livox_collision.py
           TIMEOUT 60)

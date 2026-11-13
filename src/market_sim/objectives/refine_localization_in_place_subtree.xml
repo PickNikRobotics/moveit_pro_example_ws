@@ -53,7 +53,7 @@
             transform_stamped="{refined_transform}"
             pose_stamped="{refined_pose}"
           />
-          <!--Each lidar must fit the map. max_range mirrors amcl laser_max_range.-->
+          <!--Check the same Mid-360 slice AMCL uses. max_range mirrors amcl laser_max_range.-->
           <Action
             ID="GetOccupancyGrid"
             topic_name="/localization_map"
@@ -61,30 +61,14 @@
           />
           <Action
             ID="GetLaserScan"
-            topic_name="/scan_front"
-            message_out="{front_scan}"
+            topic_name="/livox/scan"
+            message_out="{slice_scan}"
           />
           <Action
             ID="ScanMatchResidual"
-            name="Check the front lidar against the map"
+            name="Check the Mid-360 slice against the survey map"
             pose="{refined_pose}"
-            scan="{front_scan}"
-            map="{map}"
-            base_frame_id="base_link"
-            max_range="40.000000"
-            inlier_distance="{inlier_distance}"
-            min_inlier_fraction="{min_inlier_fraction}"
-          />
-          <Action
-            ID="GetLaserScan"
-            topic_name="/scan_rear"
-            message_out="{rear_scan}"
-          />
-          <Action
-            ID="ScanMatchResidual"
-            name="Check the rear lidar against the map"
-            pose="{refined_pose}"
-            scan="{rear_scan}"
+            scan="{slice_scan}"
             map="{map}"
             base_frame_id="base_link"
             max_range="40.000000"
@@ -152,8 +136,7 @@
         A beam fits if it lands within this distance of a wall, metres.
       </input_port>
       <input_port name="min_inlier_fraction" default="0.9" type="double">
-        Min fraction of beams that fit, per lidar. Measured in aisle A1 and
-        at the start: true pose 0.99+, 0.25 m or 2.5 deg off 0.82 or less.
+        Min fraction of valid Mid-360 slice beams that fit the survey map.
       </input_port>
     </SubTree>
   </TreeNodesModel>

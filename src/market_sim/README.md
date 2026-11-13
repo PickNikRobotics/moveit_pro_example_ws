@@ -42,8 +42,8 @@ actuator model does not establish hardware wheel-odometry accuracy.
 The Duo carries front and rear SICK nanoScan3 lidar models at `(0.3275, 0.2175, 0.19065)` and
 `(-0.3275, -0.2175, 0.19065)` metres in `base_link`, each with a 275-degree sweep and 0.10–40 m
 range. RGB cameras include `camera_front`, `camera_rear`, `camera_left` and `camera_right`. Scans
-pass through a self-return filter sized from the stowed footprint, then enter synchronized
-localization and live costmaps. `base_twist_to_planar.py` converts body-frame commands to actuator
+pass through a self-return filter sized from the stowed footprint, then enter the live costmaps.
+Localization uses the Mid-360 slice below, not the low SICK scan plane. `base_twist_to_planar.py` converts body-frame commands to actuator
 axes using private encoder heading; missing, invalid or stale commands/feedback produce zero. The
 linear-speed bound is 0.35 m/s, including diagonal motion, and yaw-rate bound is 0.5 rad/s.
 
@@ -85,7 +85,7 @@ acquisitions are at least 95 ms apart (100 ms target with 5 ms jitter tolerance)
 edges on MoveIt Pro 10.2. Simply pitching a 360° camera would tilt its entire scan cone,
 not produce the Mid-360's uneven vertical FOV. The intermediate `/livox/mujoco/points`
 cloud is not the sensor output. Shared MuJoCo render/cloud rates stay at 20 Hz, leaving
-the SICK navigation scans, maps and AMCL inputs unchanged. Stale or duplicate source
+the SICK navigation scans unchanged. AMCL consumes the separate Mid-360 slice described below. Stale or duplicate source
 stamps are not replayed, so an overloaded renderer can reduce the observed rate.
 A 40 s mounted-A2 check on MoveIt Pro 10.2.0 observed **7.58 Hz**, with 303 distinct
 acquisition stamps and a mean of 12,670 valid points per message. The task processes
@@ -149,8 +149,8 @@ non-repeating rosette/time-per-point pattern. Dropouts approximate one capture's
 budget, not a reflectivity-dependent return model. No intensity, tag, line or per-point
 timestamp fields are synthesized, and no additional Livox IMU is emulated. The Duo's
 existing IMU is unchanged; a lidar-inertial consumer expecting `/livox/imu` therefore
-has no simulated Livox IMU input. This sensor is not connected to AMCL or a new 2D scan;
-that integration is separate work.
+has no simulated Livox IMU input. AMCL uses the 2D projection described below; this does not
+establish real-Livox or lidar-inertial localization support.
 
 Run normally with `moveit_pro run -w "$PWD" -c market_sim` (use the repository's
 worktree-specific config/image/instance procedure when validating from a worktree).
@@ -160,8 +160,9 @@ source. Use `ros2 topic info -v /livox/lidar` and a bounded `ros2 topic hz /livo
 inside the selected runtime graph to verify publishing. `test/test_livox_mid360.py`
 checks the compiled mount, horizontal first hits, full kept-ring coverage through the
 installed native stitcher, range noise/dropouts, frame/schema conversion and fresh 10 Hz
-ROS delivery. To revert the accessory, revert its model, xacro and launch additions;
-no navigation configuration or external driver changes need undoing.
+ROS delivery. To revert just the slice integration, restore the previous AMCL/SLAM scan and map
+selection, refinement scan checks and launch additions together. Removing the accessory also
+requires reverting its model and xacro additions; no external Livox driver is installed.
 
 ## Teleoperation
 
@@ -172,21 +173,20 @@ The `spine` group joint-jogs the spine through `spine_jvc`.
 ## Localization and navigation Objectives
 
 - **Localize Robot**: place an interactive marker where the robot really is; the Objective seeds
-  Beluga AMCL there, asks it for in-place updates, and keeps the result only if both lidar scans fit
-  the map (ScanMatchResidual), otherwise it restores the previous estimate. **Refine Localization
+  Beluga AMCL there, asks it for in-place updates, and keeps the result only if the Mid-360 slice fits
+  its survey map (ScanMatchResidual), otherwise it restores the previous estimate. **Refine Localization
   In Place** does the same from the current estimate, without the marker. **Localize Robot If
   Needed** and **Refine Localization In Place Subtree** are their building blocks. They follow
   `hangar_sim`'s Objectives of the same names.
-- **Two maps.** Both lidars scan a plane just above the shelves' bottom deck, so they see past
-  the deck to the uprights and back panel. AMCL and Refine Localization In Place use
-  `maps/market_localization.png`, which holds only what crosses that plane (the uprights, the back
-  panels, the registers, the D4 dock and the walls); against the full footprint, AMCL could slide
-  the base by the deck's depth. Nav2's costmaps use `maps/market.png`, every gondola's full
-  footprint, so the base never plans onto the deck. A test casts the lidar plane in the scene and
-  checks it against the localization map.
-- AMCL consumes `/scan_mapping`, the merger's timestamp-matched 360-degree stream from both lidars,
-  so each observation represents one acquisition instant and unobserved bins remain invalid ranges.
-  Neither map uses live ground truth during navigation.
+- **Two active maps.** AMCL and Refine Localization In Place use the surveyed
+  `maps/market_livox_h170.yaml` / PNG on `/localization_map`. Nav2's costmaps still use the generated
+  `maps/market.yaml` / PNG on `/map`, every gondola's full footprint, so the base never plans onto
+  a shelf deck. The old generated SICK-plane `market_localization` map is retained as a geometry
+  reference, not selected for AMCL.
+- AMCL consumes `/livox/scan`, a 360-degree Mid-360 projection at **1.70 ±0.02 m in `base_link`**
+  with a **0.50 m sensor-XY self gate**. Nav2 still reads `/scan_front` and `/scan_rear` for obstacle
+  detection. `/scan` and `/scan_mapping` remain merged SICK diagnostics only. Neither localization
+  nor ordinary navigation uses live ground truth; the slice projection reads no odometry or truth.
 - **Navigate with NavFn** and **Navigate with SMAC**: click a goal on the map. They differ only in
   the planner. NavFn plans for the robot's centre point; the Smac State Lattice planner checks the
   whole footprint along the plan. The Navigate to Aisle Objectives use NavFn.
@@ -220,8 +220,8 @@ If the agent crashes mid-undock and Nav2 or `/cmd_vel` stays ignored, recover wi
 
 In-place refinement samples a 10 cm / 0.1 rad standard deviation around the current estimate. A
 broader global localization seed can lose the correct mode in the repetitive store geometry; the
-general localization subtree retains its broader defaults. Each lidar must still pass the 90%
-scan-fit check.
+general localization subtree retains its broader defaults. The Mid-360 slice must still pass the
+90% scan-fit check against its survey map.
 
 ## The store
 
@@ -243,8 +243,8 @@ The store uses Poly Haven anti-skid floor tiles, generated plaster textures, a c
 panels and two fixed stocking carts from PickNik simulation assets. Asset attribution and retained
 licenses are in `mjcf/assets/store_visuals/NOTICE.md`. Cart templates live in
 `market_assets/visuals/`; `generate_market.py` writes their physical world geometry while omitting
-them from both maps. Both lidars and the live costmaps still detect the carts as unmapped
-obstacles. **Add Racks to Planning Scene** loads `description/market_racks.urdf`, one collision box
+them from both generated maps. The survey map records whatever crosses its 1.70 m band. Both
+SICK lidars and the live costmaps still detect the carts as unmapped navigation obstacles. **Add Racks to Planning Scene** loads `description/market_racks.urdf`, one collision box
 per rack, wall, register, the D4 dock and each cart, plus a floor slab.
 
 The shared MuJoCo render buffer and color cameras use 1280×721 pixels. An odd render height places
@@ -284,10 +284,11 @@ collision detection and MuJoCo sleeping for objects at rest.
 python3 src/market_sim/scripts/generate_market.py
 ```
 
-It needs numpy. It writes `mjcf/market/`, `mjcf/assets/market/`, both maps in `maps/`,
-`description/market_racks.urdf` and the `Navigate to Aisle` objectives. Never edit those files by
-hand: a test fails when they differ from what the script writes. Regenerate after changing the
-scene geometry or the lidar mounts.
+It needs numpy. It writes `mjcf/market/`, `mjcf/assets/market/`, the generated `market` and
+`market_localization` maps in `maps/`, `description/market_racks.urdf` and the `Navigate to Aisle`
+objectives. Never edit those generated files by hand: a test fails when they differ from what the
+script writes. Regenerate after changing the scene geometry or the lidar mounts. It does **not**
+regenerate or overwrite the survey-built `market_livox_h170` map; re-survey after a scene change.
 
 ## Asset source
 
@@ -316,12 +317,101 @@ streams under `opengl/` and `nyx/` for comparison; consumers of their usual `col
 
 Set `MARKET_SIM_SLAM=true` before starting the Runtime, or pass `slam:=true` directly to the
 additional driver launch file. The workspace Compose file forwards this flag to the drivers.
-Mapping replaces both generated-map servers and AMCL with slam_toolbox and a map saver; only
+Mapping replaces both map servers and AMCL with slam_toolbox and a map saver; only
 slam_toolbox publishes `map -> odom`. Fuse remains the planar-encoder/IMU odometry source and
-receives no live truth corrections. The two lidars are combined on `/scan_mapping` only when their
-acquisition timestamps match; empty bins are invalid rather than free-space rays. Scan matching and
+receives no live truth corrections. slam_toolbox consumes the same `/livox/scan` h170 projection as
+AMCL; unobserved bins are infinity, not fabricated free-space endpoints. Scan matching and
 loop closure are enabled. The local search and odometry penalties constrain matching in repetitive
 shelving; the separate loop search can correct accumulated position drift.
+
+### Shipped Mid-360 localization map
+
+`maps/market_livox_h170.png` is the verified **h170-pm02 survey-built** map, not a rasterized
+geometry control. It came from a **partial whole-store survey: 52 of 56 ordered waypoints,
+1,205.52 m over 7,006.67 s**. The survey timed out before the final four waypoints; unknown cells
+and gaps are retained, so this is not a claim of complete store coverage. `slam_toolbox` 2.8.5 used
+49,514 native `/livox/lidar` clouds and recorded Fuse odometry, with scan matching and loop closures.
+Ground truth guided only the survey vehicle, never the mapper's odometry or scan projection.
+The map is 1838×1431 cells at 0.05 m, origin `[-46.132, -7.747, 0]`. Its PNG SHA256 is
+`4434bfc188506534226b1ee9b5893ff2b2736e98cfd6c1b43f5219ef291abb7a`; only the YAML image basename
+was changed when installing it here.
+
+`scripts/livox_localization_scan.py` reproduces the study's projection exactly:
+
+| Projection contract | Value |
+|---|---|
+| Input / output | `/livox/lidar` PointCloud2 → `/livox/scan` LaserScan |
+| Height band | 1.70 ±0.02 m in `base_link`, including both boundaries |
+| Self gate | sensor-centred XY range ≥0.50 m; not distance from `base_link` |
+| Source / planar range | finite 3D source range 0.1–40 m; nearest planar hit per bin |
+| Bearings | 333 circular nearest-centre bins; first centre `-π + π/333`, spacing `2π/333` |
+| Scan frame | `livox_slice`, X forward/Y left, origin `(0.210, 0, 0)` m in `base_link` |
+| Timing / empty bins | original acquisition stamp, 0.1 s scan time; infinity for unobserved bins |
+
+The original inverted `livox_frame` is unchanged. The scan origin projects its XY onto base Z=0,
+matching the mapper; using `base_link` as the scan origin or forgetting the inverted Y/Z would
+change the studied measurement. The small adapter is necessary because `pointcloud_to_laserscan`
+uses edge-floor bins and a planar-only range gate rather than the study's nearest-centre circular
+bins and separate 3D-source/self gates. The original cloud remains untouched for other consumers.
+
+Installed Beluga AMCL settings are unchanged except for `scan_topic`; the existing 1,440 maximum
+beams setting naturally uses all 333 available rays. Normal startup seeds the known default pose
+at the origin, and reset retains the existing explicit known-pose synchronization. This is
+**known-start tracking only**, not cold-start/global localization or real Livox acceptance. In
+five held-out known-start replays on this map the study reported median 99.4% correct-and-narrow
+tracking and 0.152 m route p95 error, with all five ending locked; those study scores are not a
+new runtime measurement for every host or route.
+
+A live MoveIt Pro 10.2.0 known-origin check navigated to B2 with AMCL, refined from the current
+estimate, then tracked a 16.0 m aisle out-and-back: all goals succeeded, 100% of sampled poses were
+correct-and-narrow, XY p95 error was 0.145 m, and it ended locked. Truth was scorer-only; no
+parameters changed. An earlier 25.3 m open-floor loop also completed and ended locked (0.132 m XY
+p95), but longitudinal covariance widened for part of the route: 83.1% correct-and-narrow samples.
+Here “correct-and-narrow” means XY error ≤0.20 m, yaw error ≤0.10 rad, XY standard deviations
+≤0.20 m and yaw standard deviation ≤0.10 rad, sustained for two seconds to confirm lock.
+These are short known-start checks, not a new whole-store or cold-start acceptance claim.
+
+The separate post-route reset check hit `reset_relocalizer`'s `amcl_pose_and_tf` timeout: Fuse
+returned to the origin, but AMCL's post-teleport update converged incorrectly. The existing guard
+kept controllers inactive. A fresh stationary origin seed after odometry settled converged
+correctly; it did not release the guard. Do not bypass a failed reset's controller hold—restore
+localization inputs and retry **Reset MuJoCo Sim**, or restart the simulation at its known default
+pose. This change does not repair reset/odometry discontinuity handling.
+
+### Rebuilding a slice map
+
+1. Rebuild the workspace, then launch `market_sim` with `MARKET_SIM_SLAM=true` and, for the
+   simulation-only survey, `MARKET_SIM_GROUND_TRUTH_NAV=true`. Use the worktree-specific
+   config/image/instance procedure if applicable. Confirm `/slam_toolbox` uses `/livox/scan`,
+   `/livox/scan` has a publisher, and AMCL is absent. Do not change the projection above.
+2. Drive a survey through the aisles and distinctive endcaps, recording `/livox/lidar`,
+   `/odom_filtered`, `/tf` and `/tf_static` if a replayable capture is wanted. The supplied survey
+   Objectives below cover a smaller area than the historical 52-waypoint whole-store prefix;
+   collect additional aisle passes for wider coverage. Check for dropped scans/TF and retain
+   uncovered cells as unknown rather than filling them from the generated footprint map.
+3. Save outside the source tree (the directory must already exist), for example:
+
+   ```bash
+   ros2 run nav2_map_server map_saver_cli -t /map -f /tmp/market_livox_h170 \
+     --fmt png --free 0.196 --occ 0.65 \
+     --ros-args -p map_subscribe_transient_local:=true
+   ros2 service call /slam_toolbox/serialize_map slam_toolbox/srv/SerializePoseGraph \
+     '{filename: /tmp/market_livox_h170_posegraph}'
+   ```
+
+   Verify successful responses, both image/YAML and pose-graph files, and map/scan alignment.
+   A fresh survey will not be byte-identical to this stochastic historical map. The retained
+   study capture is identified by MCAP SHA256
+   `20f8a6e5da6fb9813f923d5d96821d6b20444fa5fe34832cd7ca5cad431f8fd1`; exact study replay additionally
+   used original-stamp fused-odometry interpolation and offline-only queue/cache controls
+   (`scan_queue_size: 128`, `tf_buffer_duration: 7200.0`), not changes to matching or raster settings.
+4. Install the replacement PNG/YAML together in `maps/` and update the launch file's
+   `localization_map` default (or pass `localization_map:=/absolute/path/to/map.yaml` when launching
+   the driver file directly). Keep `/map` on the full-footprint navigation map. Restart with both
+   survey flags **false**, provide a known pose, and verify localization against the slice before
+   navigating. Saving a map alone never switches AMCL to it.
+
+### Survey Objectives
 
 Run `Build Market Map` from the Desktop App to survey D4, the full B2 run and the aisles
 immediately north and south, with two closed survey loops at the normal configured speed. It
