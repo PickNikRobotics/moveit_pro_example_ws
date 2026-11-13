@@ -36,7 +36,9 @@
 #include <nav2_costmap_2d/footprint.hpp>
 #include <nav2_costmap_2d/footprint_collision_checker.hpp>
 #include <nav2_costmap_2d/costmap_filters/keepout_filter.hpp>
+#include <nav2_costmap_2d/obstacle_layer.hpp>
 #include <nav2_map_server/map_io.hpp>
+#include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <pluginlib/class_loader.hpp>
 #include <tf2_ros/buffer.h>
 
@@ -53,13 +55,16 @@ TEST(KeepoutCollision, GarageRecoveriesAndHazards)
     pluginlib::ClassLoader<nav2_costmap_2d::Layer> loader(
       "nav2_costmap_2d", "nav2_costmap_2d::Layer");
     nav2_costmap_2d::LayeredCostmap layered(
-      node->get_parameter("global_frame").as_string(), false, false);
+      node->get_parameter("global_frame").as_string(),
+      node->get_parameter("rolling_window").as_bool(), false);
     nav_msgs::msg::OccupancyGrid mask;
     ASSERT_EQ(nav2_map_server::loadMapFromYaml(
       package + "/maps/lunar_keepout_mask.yaml", mask), nav2_map_server::LOAD_MAP_SUCCESS);
     mask.header.frame_id = "map";
-    layered.resizeMap(mask.info.width, mask.info.height, mask.info.resolution,
-      mask.info.origin.position.x, mask.info.origin.position.y);
+    const double width = node->get_parameter("width").as_int();
+    const double height = node->get_parameter("height").as_int();
+    layered.resizeMap(std::lround(width / mask.info.resolution),
+      std::lround(height / mask.info.resolution), mask.info.resolution, -width / 2, -height / 2);
     nav2_costmap_2d::Footprint footprint;
     ASSERT_TRUE(nav2_costmap_2d::makeFootprintFromString(
       node->get_parameter("footprint").as_string(), footprint));
@@ -72,6 +77,18 @@ TEST(KeepoutCollision, GarageRecoveriesAndHazards)
     identity.transform.rotation.w = 1.0;
     ASSERT_TRUE(tf.setTransform(identity, "test", true));
     auto group = node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+    std::shared_ptr<nav2_costmap_2d::ObstacleLayer> obstacle;
+    const auto plugin_names = node->get_parameter("plugins").as_string_array();
+    for (const auto & plugin_name : plugin_names) {
+      auto plugin = loader.createSharedInstance(
+        node->get_parameter(plugin_name + ".plugin").as_string());
+      layered.addPlugin(plugin);
+      plugin->initialize(&layered, plugin_name, &tf, node, group);
+      plugin->activate();
+      if (auto candidate = std::dynamic_pointer_cast<nav2_costmap_2d::ObstacleLayer>(plugin)) {
+        obstacle = candidate;
+      }
+    }
     std::shared_ptr<nav2_costmap_2d::KeepoutFilter> keepout;
     const auto filter_names = node->get_parameter("filters").as_string_array();
     for (const auto & filter_name : filter_names) {
@@ -113,6 +130,15 @@ TEST(KeepoutCollision, GarageRecoveriesAndHazards)
     const auto cost = [&](double wx, double wy, double yaw) {
         return checker.footprintCostAtPose(wx + 0.30, wy - 0.50, yaw, footprint);
       };
+    const auto move = [&](double wx, double wy) {
+        layered.updateMap(wx + 0.30, wy - 0.50, 0.0);
+      };
+    const auto cell_cost = [&](double wx, double wy) {
+        unsigned int mx, my;
+        EXPECT_TRUE(costmap->worldToMap(wx + 0.30, wy - 0.50, mx, my));
+        return costmap->getCost(mx, my);
+      };
+    move(10.54, -9.5);
     const double garage_yaw = 3.4416;
     for (int step = 0; step <= 72; ++step) {
       EXPECT_LT(cost(10.54, -9.5, garage_yaw + step * M_PI / 36.0),
@@ -128,16 +154,49 @@ TEST(KeepoutCollision, GarageRecoveriesAndHazards)
       }
     }
     for (double heading : {0.0, M_PI / 4.0, M_PI / 2.0}) {
+      move(-0.50, -5.25);
       EXPECT_EQ(cost(-0.50, -5.25, heading), nav2_costmap_2d::LETHAL_OBSTACLE) << name;
+      move(12.45, 0.0);
       EXPECT_EQ(cost(12.45, 0.0, heading), nav2_costmap_2d::LETHAL_OBSTACLE) << name;
+      move(-3.55, 17.0);
       EXPECT_EQ(cost(-3.55, 17.0, heading), nav2_costmap_2d::LETHAL_OBSTACLE) << name;
     }
+    move(-0.50, -5.25);
     unsigned int mx, my;
     ASSERT_TRUE(costmap->worldToMap(-0.50 + 0.30, -5.25 - 0.50, mx, my));
     EXPECT_EQ(costmap->getCost(mx, my), nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
     ASSERT_TRUE(costmap->worldToMap(0.0 + 0.30, -5.25 - 0.50, mx, my));
     EXPECT_GT(costmap->getCost(mx, my), nav2_costmap_2d::FREE_SPACE);
     EXPECT_LT(costmap->getCost(mx, my), nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
+    for (int step = 0; step <= 4; ++step) {
+      const double edge = 12.7 + step * 0.15;
+      move(edge - width / 2 - 0.20, 0.0);
+      move(edge - width / 2 + 0.20, 0.0);
+      EXPECT_EQ(cell_cost(edge, 0.0), nav2_costmap_2d::LETHAL_OBSTACLE) << name << " east " << step;
+      move(-edge + width / 2 + 0.20, 0.0);
+      move(-edge + width / 2 - 0.20, 0.0);
+      EXPECT_EQ(cell_cost(-edge, 0.0), nav2_costmap_2d::LETHAL_OBSTACLE) << name << " west " << step;
+    }
+    ASSERT_NE(obstacle, nullptr);
+    move(5.0, -5.0);
+    sensor_msgs::msg::PointCloud2 cloud;
+    sensor_msgs::PointCloud2Modifier modifier(cloud);
+    modifier.setPointCloud2FieldsByString(1, "xyz");
+    modifier.resize(1);
+    sensor_msgs::PointCloud2Iterator<float> x(cloud, "x"), y(cloud, "y"), z(cloud, "z");
+    *x = 6.325;
+    *y = -5.475;
+    *z = 0.50;
+    geometry_msgs::msg::Point origin;
+    origin.x = 5.30;
+    origin.y = -5.50;
+    nav2_costmap_2d::Observation observation(origin, cloud, 3.0, 0.0, 3.0, 0.0);
+    obstacle->addStaticObservation(observation, true, false);
+    move(5.0, -5.0);
+    EXPECT_EQ(cell_cost(6.025, -4.975), nav2_costmap_2d::LETHAL_OBSTACLE);
+    EXPECT_EQ(cell_cost(5.825, -4.975), nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
+    EXPECT_GT(cell_cost(5.525, -4.975), nav2_costmap_2d::FREE_SPACE);
+    EXPECT_LT(cell_cost(5.525, -4.975), nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE);
     executor.remove_node(node->get_node_base_interface());
     executor.remove_node(publisher_node);
   }
