@@ -27,15 +27,30 @@
         target_frame_id="{top_frame}"
         output_pose="{start_in_cube_frame}"
       />
-      <!--A rotation_tolerance above pi accepts every rotation, so only the position counts.-->
-      <Decorator ID="Inverter">
-        <Action
-          ID="IsPoseNearIdentity"
-          pose="{start_in_cube_frame}"
-          position_tolerance="0.015"
-          rotation_tolerance="3.15"
-        />
-      </Decorator>
+      <Control ID="Fallback">
+        <!--A rotation_tolerance above pi accepts every rotation, so only the position counts.-->
+        <Decorator ID="Inverter">
+          <Action
+            ID="IsPoseNearIdentity"
+            pose="{start_in_cube_frame}"
+            position_tolerance="0.015"
+            rotation_tolerance="3.15"
+          />
+        </Decorator>
+        <!--Runs only when the cube did not move, so the evaluation shows why the milestone failed.-->
+        <Control ID="Sequence">
+          <Action
+            ID="Script"
+            code="failure_reason := 'The ' .. top_color .. ' cube is still within 1.5 cm of where the reset Objective placed it.'"
+          />
+          <Action
+            ID="LogMessage"
+            message="{failure_reason}"
+            log_level="error"
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
