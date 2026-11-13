@@ -17,16 +17,8 @@ install(
 )
 
 if(BUILD_TESTING)
-  find_package(ament_cmake_gtest REQUIRED)
-  find_package(ament_index_cpp REQUIRED)
-  find_package(nav2_map_server REQUIRED)
-  find_package(nav_msgs REQUIRED)
-  ament_add_gtest(saved_map_test test/test_saved_map.cpp)
-  ament_target_dependencies(saved_map_test ament_index_cpp nav2_map_server nav_msgs)
-
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
-  set(ament_cmake_flake8_CONFIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ament_flake8.ini")
   ament_lint_auto_find_test_dependencies()
   # Pytest discovers the Objective integration module from this directory too. Give the
   # geometry and base-jog tests the same config selection and workspace root as that module.

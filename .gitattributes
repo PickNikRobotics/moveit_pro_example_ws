@@ -19,5 +19,3 @@ src/external_dependencies/** -whitespace
 *.jpeg filter=lfs diff=lfs merge=lfs -text
 *.mp4 filter=lfs diff=lfs merge=lfs -text
 src/rebot_bench_sim/docs/stack_validation/**/*.jsonl.gz filter=lfs diff=lfs merge=lfs -text
-
-src/lunar_sim/maps/evidence/*.tar.gz filter=lfs diff=lfs merge=lfs -text
