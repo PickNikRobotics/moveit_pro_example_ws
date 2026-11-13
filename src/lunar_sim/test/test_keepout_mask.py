@@ -137,6 +137,67 @@ def test_each_fixed_structure_polygon_is_covered() -> None:
         assert _is_keepout(image, metadata, *center)
 
 
+def test_rolled_box_projection_includes_height() -> None:
+    """A rolled box projects its Z extent onto world Y."""
+    roll = 0.6
+    body = ET.fromstring(
+        f'<body><geom type="box" size="0.2 0.3 1" euler="{roll} 0 0"/></body>'
+    )
+    polygon = GENERATOR._body_geom_polygons(body)[0]
+    extent_y = 0.3 * math.cos(roll) + math.sin(roll)
+    np.testing.assert_allclose(polygon.min(axis=0), [-0.2, -extent_y])
+    np.testing.assert_allclose(polygon.max(axis=0), [0.2, extent_y])
+
+
+def test_body_rotation_transforms_box_offsets_and_corners() -> None:
+    """A body's roll rotates both its box's center offset and full dimensions."""
+    roll = 0.6
+    body = ET.fromstring(
+        f'<body pos="1 2 3" euler="{roll} 0 0">'
+        '<geom type="box" pos="0.4 0.5 2" size="0.2 0.3 1"/></body>'
+    )
+    polygon = GENERATOR._body_geom_polygons(body)[0]
+    center_y = 2 + 0.5 * math.cos(roll) - 2 * math.sin(roll)
+    extent_y = 0.3 * math.cos(roll) + math.sin(roll)
+    np.testing.assert_allclose(polygon.min(axis=0), [1.2, center_y - extent_y])
+    np.testing.assert_allclose(polygon.max(axis=0), [1.6, center_y + extent_y])
+
+
+@pytest.mark.parametrize("element", ["body", "geom"])
+@pytest.mark.parametrize(
+    "orientation",
+    [
+        'quat="1 0 0 0"',
+        'axisangle="0 1 0 1"',
+        'xyaxes="1 0 0 0 1 0"',
+        'zaxis="1 0 0"',
+    ],
+)
+def test_box_rejects_unsupported_transforms(element, orientation) -> None:
+    """Unsupported body and box orientations cannot silently become identity."""
+    body_orientation = orientation if element == "body" else ""
+    geom_orientation = orientation if element == "geom" else ""
+    body = ET.fromstring(
+        f'<body name="structure" {body_orientation}>'
+        f'<geom name="hazard" type="box" size="0.2 0.3 1" {geom_orientation}/></body>'
+    )
+    with pytest.raises(ValueError, match="unsupported orientation"):
+        GENERATOR._body_geom_polygons(body)
+
+
+def test_subcell_width_box_survives_rasterization(monkeypatch) -> None:
+    """A thin hazard between grid centers occupies both intersecting cell columns."""
+    body = ET.fromstring(
+        '<body><geom type="box" pos="0.05 0.5 0" size="0.02 0.3 1"/></body>'
+    )
+    polygons = GENERATOR._body_geom_polygons(body)
+    monkeypatch.setattr(GENERATOR, "fixed_structure_polygons", lambda: polygons)
+    image, metadata = GENERATOR.generate()
+    assert _is_keepout(image, metadata, 0.025, 0.525)
+    assert _is_keepout(image, metadata, 0.075, 0.525)
+    assert not _is_keepout(image, metadata, 0.225, 0.525)
+
+
 def test_isolated_cell_raster_margin_includes_diagonal_neighbors() -> None:
     """A cell-sized raster margin covers all eight neighbors and no farther cells."""
     mask = np.zeros((5, 5), dtype=bool)

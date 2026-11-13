@@ -61,24 +61,44 @@ def _values(element, attribute, default):
     return np.array([float(value) for value in element.get(attribute, default).split()])
 
 
-def _yaw(element):
-    """Return yaw; roll about local X does not change a box's XY axes."""
-    if element.get("euler"):
-        _, pitch, yaw = _values(element, "euler", "0 0 0")
-        if abs(pitch) > 1e-9:
-            raise ValueError(f"{element.get('name')}: geom pitch is unsupported")
-        return yaw
-    return 0.0
-
-
-def _rotate(points, yaw):
-    rotation = np.array(
-        [[math.cos(yaw), -math.sin(yaw)], [math.sin(yaw), math.cos(yaw)]]
+def _rotation(element):
+    """Return the rotation for the scene's intrinsic xyz Euler convention."""
+    if any(
+        element.get(attribute)
+        for attribute in ("quat", "axisangle", "xyaxes", "zaxis")
+    ):
+        raise ValueError(f"{element.get('name')}: unsupported orientation; use euler")
+    roll, pitch, yaw = _values(element, "euler", "0 0 0")
+    cr, sr = math.cos(roll), math.sin(roll)
+    cp, sp = math.cos(pitch), math.sin(pitch)
+    cy, sy = math.cos(yaw), math.sin(yaw)
+    return (
+        np.array([[1, 0, 0], [0, cr, -sr], [0, sr, cr]])
+        @ np.array([[cp, 0, sp], [0, 1, 0], [-sp, 0, cp]])
+        @ np.array([[cy, -sy, 0], [sy, cy, 0], [0, 0, 1]])
     )
-    return points @ rotation.T
 
 
-def _round_geom_polygon(geom, kind, size):
+def _convex_hull(points):
+    """Return the boundary of projected box corners in counterclockwise order."""
+    points = sorted(set(map(tuple, points)))
+
+    def half_hull(ordered):
+        hull = []
+        for point in ordered:
+            while len(hull) >= 2:
+                a, b = np.array(hull[-2:])
+                edge, offset = b - a, np.array(point) - b
+                if edge[0] * offset[1] - edge[1] * offset[0] > 0:
+                    break
+                hull.pop()
+            hull.append(point)
+        return hull
+
+    return np.array(half_hull(points)[:-1] + half_hull(reversed(points))[:-1])
+
+
+def _round_geom_polygon(geom, kind, size, body_rotation, body_pos):
     """Conservatively project a cylinder or capsule using supporting tangents."""
     if geom.get("fromto"):
         endpoints = _values(geom, "fromto", "0 0 0 0 0 0").reshape(2, 3)
@@ -88,26 +108,13 @@ def _round_geom_polygon(geom, kind, size):
             raise ValueError(f"{geom.get('name')}: fromto endpoints must differ")
         axis = direction / length
     else:
-        roll, pitch, _ = _values(geom, "euler", "0 0 0")
-        # MuJoCo's default intrinsic xyz Euler sequence is Rx @ Ry @ Rz.
-        axis = np.array(
-            [
-                math.sin(pitch),
-                -math.sin(roll) * math.cos(pitch),
-                math.cos(roll) * math.cos(pitch),
-            ]
-        )
+        axis = _rotation(geom)[:, 2]
         endpoints = (
             _values(geom, "pos", "0 0 0")
             + np.array([-size[1], size[1]])[:, None] * axis
         )
-        if any(
-            geom.get(attribute)
-            for attribute in ("quat", "axisangle", "xyaxes", "zaxis")
-        ):
-            raise ValueError(
-                f"{geom.get('name')}: round geom requires euler or fromto orientation"
-            )
+    endpoints = endpoints @ body_rotation.T + body_pos
+    axis = body_rotation @ axis
     angles = np.linspace(0.0, 2.0 * math.pi, 96, endpoint=False)
     normals = np.column_stack((np.cos(angles), np.sin(angles)))
     support = (normals @ endpoints[:, :2].T).max(axis=1)
@@ -124,28 +131,33 @@ def _round_geom_polygon(geom, kind, size):
 
 def _body_geom_polygons(body, selected=None):
     """Project a fixed body's selected primitive geoms into world XY."""
-    body_pos = _values(body, "pos", "0 0 0")[:2]
-    body_yaw = _yaw(body)
+    body_pos = _values(body, "pos", "0 0 0")
+    body_rotation = _rotation(body)
     polygons = []
     for geom in body.findall("geom"):
         if selected is not None and geom.get("name") not in selected:
             continue
-        geom_pos = _values(geom, "pos", "0 0 0")[:2]
+        geom_pos = _values(geom, "pos", "0 0 0")
+        geom_rotation = _rotation(geom)
         kind = geom.get("type", "sphere")
         size = _values(geom, "size", "0")
         if kind == "box":
-            hx, hy = size[:2]
-            polygon = np.array([[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]])
-            polygon = _rotate(polygon, _yaw(geom))
+            corners = np.array(
+                [[x, y, z] for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)]
+            ) * size
+            world_corners = (
+                (corners @ geom_rotation.T + geom_pos) @ body_rotation.T + body_pos
+            )
+            polygon = _convex_hull(world_corners[:, :2])
         elif kind in {"cylinder", "capsule"}:
-            polygon = _round_geom_polygon(geom, kind, size)
-            geom_pos = np.zeros(2)
+            polygon = _round_geom_polygon(geom, kind, size, body_rotation, body_pos)
         elif kind == "sphere":
             angles = np.linspace(0.0, 2.0 * math.pi, 96, endpoint=False)
             polygon = np.column_stack((np.cos(angles), np.sin(angles))) * size[0]
+            polygon += (body_rotation @ geom_pos + body_pos)[:2]
         else:
             raise ValueError(f"{geom.get('name')}: unsupported fixed geom type {kind}")
-        polygons.append(_rotate(polygon + geom_pos, body_yaw) + body_pos)
+        polygons.append(polygon)
     return polygons
 
 
@@ -183,18 +195,25 @@ def _world_grid():
     return xs, ys
 
 
-def _inside_polygon(x, y, polygon):
-    """Vectorized point-in-polygon for cell centres."""
-    inside = np.zeros(x.shape, dtype=bool)
-    j = len(polygon) - 1
-    for i in range(len(polygon)):
-        xi, yi = polygon[i]
-        xj, yj = polygon[j]
-        crosses = (yi > y) != (yj > y)
-        at_x = (xj - xi) * (y - yi) / (yj - yi + np.finfo(float).eps) + xi
-        inside ^= crosses & (x < at_x)
-        j = i
-    return inside
+def _polygon_cell_coverage(x, y, polygon):
+    """Rasterize convex polygon/cell intersections using separating axes."""
+    half_cell = RESOLUTION_M / 2.0
+    lo, hi = polygon.min(axis=0) - half_cell, polygon.max(axis=0) + half_cell
+    selected = (x >= lo[0]) & (x <= hi[0]) & (y >= lo[1]) & (y <= hi[1])
+    centers = np.column_stack((x[selected], y[selected]))
+    intersects = np.ones(len(centers), dtype=bool)
+    edges = np.roll(polygon, -1, axis=0) - polygon
+    for edge in edges:
+        normal = np.array([-edge[1], edge[0]])
+        support = polygon @ normal
+        cell_centers = centers @ normal
+        cell_radius = half_cell * np.abs(normal).sum()
+        intersects &= (cell_centers + cell_radius >= support.min() - 1e-12) & (
+            cell_centers - cell_radius <= support.max() + 1e-12
+        )
+    coverage = np.zeros(x.shape, dtype=bool)
+    coverage[selected] = intersects
+    return coverage
 
 
 def _dilate(mask, radius_m):
@@ -251,17 +270,7 @@ def generate():
     world_x, world_y = np.meshgrid(xs, ys)
     occupied = np.zeros(world_x.shape, dtype=bool)
     for polygon in fixed_structure_polygons():
-        lo, hi = polygon.min(axis=0), polygon.max(axis=0)
-        selected = (
-            (world_x >= lo[0])
-            & (world_x <= hi[0])
-            & (world_y >= lo[1])
-            & (world_y <= hi[1])
-        )
-        if selected.any():
-            occupied[selected] |= _inside_polygon(
-                world_x[selected], world_y[selected], polygon
-            )
+        occupied |= _polygon_cell_coverage(world_x, world_y, polygon)
     occupied |= _berm_safety_mask(world_x, world_y)
     occupied = _dilate(occupied, RESOLUTION_M / math.sqrt(2.0))
 
