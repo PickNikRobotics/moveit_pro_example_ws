@@ -115,7 +115,7 @@ def test_traversable_areas_stay_free(world_x, world_y) -> None:
     assert not _is_keepout(image, metadata, world_x, world_y)
 
 
-def test_each_fixed_structure_polygon_is_covered_after_clearance_growth() -> None:
+def test_each_fixed_structure_polygon_is_covered() -> None:
     """Every selected source polygon contributes lethal cells to the generated mask."""
     image, metadata = _committed()
     for polygon in GENERATOR.fixed_structure_polygons():
@@ -123,29 +123,23 @@ def test_each_fixed_structure_polygon_is_covered_after_clearance_growth() -> Non
         assert _is_keepout(image, metadata, *center)
 
 
-def test_structure_clearance_extends_to_rover_radius_but_not_beyond() -> None:
-    """The mast mask grows by the configured all-yaw rover clearance, without unbounded growth."""
+def test_structure_raster_margin_is_bounded() -> None:
+    """The mast mask includes a raster margin, not robot-center clearance."""
     image, metadata = _committed()
     # The mast base's east edge is world x=-0.65. Its full y span avoids the narrow post above it.
     edge_x, world_y = -0.65, -5.60
-    clearance = GENERATOR._footprint_clearance_m()
-    assert _is_keepout(image, metadata, edge_x + clearance - 0.05, world_y)
-    assert not _is_keepout(image, metadata, edge_x + clearance + 0.10, world_y)
+    assert _is_keepout(image, metadata, edge_x + 0.025, world_y)
+    assert not _is_keepout(image, metadata, edge_x + 0.15, world_y)
 
 
 @pytest.mark.parametrize("world_x", [12.7, -5.7, -3.3])
-def test_wall_strips_grow_by_rover_clearance(world_x) -> None:
-    """Berm and both road walls reserve clearance while leaving the lane open."""
+def test_wall_strips_include_only_raster_margin(world_x) -> None:
+    """Berm and both road walls retain their safety strips and a bounded raster margin."""
     image, metadata = GENERATOR.generate()
-    clearance = GENERATOR._footprint_clearance_m()
     direction = -1 if world_x in (12.7, -3.3) else 1
     world_y = 0.0 if world_x == 12.7 else 17.0
-    assert _is_keepout(
-        image, metadata, world_x + direction * (clearance - 0.05), world_y
-    )
-    assert not _is_keepout(
-        image, metadata, world_x + direction * (clearance + 0.10), world_y
-    )
+    assert _is_keepout(image, metadata, world_x + direction * 0.025, world_y)
+    assert not _is_keepout(image, metadata, world_x + direction * 0.15, world_y)
 
 
 @pytest.mark.parametrize(

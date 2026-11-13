@@ -30,7 +30,6 @@ HERE = Path(__file__).resolve().parent
 PACKAGE = HERE.parent
 SCENE = HERE / "husky_scene.xml"
 MOON_BASE = HERE / "moon_base_geoms.xml"
-NAV2_PARAMS = PACKAGE / "params" / "nav2_params.yaml"
 DEFAULT_OUTPUT = PACKAGE / "maps"
 RESOLUTION_M = 0.05
 WORLD_BOUNDS_M = (-20.0, -20.0, 20.0, 24.0)
@@ -151,14 +150,6 @@ def fixed_structure_polygons():
     return polygons
 
 
-def _footprint_clearance_m():
-    """All-yaw rover clearance from the Nav2 footprint and padding."""
-    params = yaml.safe_load(NAV2_PARAMS.read_text())
-    local = params["local_costmap"]["local_costmap"]["ros__parameters"]
-    footprint = np.array(yaml.safe_load(local["footprint"]), dtype=float)
-    return float(np.linalg.norm(footprint, axis=1).max() + local["footprint_padding"])
-
-
 def _spawn_pose():
     """World pose of map origin from the selected default keyframe."""
     key = ET.parse(SCENE).getroot().find("keyframe/key[@name='default']")
@@ -256,7 +247,7 @@ def generate():
                 world_x[selected], world_y[selected], polygon
             )
     occupied |= _berm_safety_mask(world_x, world_y)
-    occupied = _dilate(occupied, _footprint_clearance_m())
+    occupied = _dilate(occupied, RESOLUTION_M / math.sqrt(2.0))
 
     spawn, yaw = _spawn_pose()
     if abs(yaw) > 1e-9:
