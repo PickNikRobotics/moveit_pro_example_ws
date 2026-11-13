@@ -81,7 +81,7 @@ ENV VLA_REQUIRE_GPU=1
 # hadolint ignore=DL3006
 FROM runtime${MOVEIT_INFERENCE_IMAGE_SUFFIX} AS server
 
-COPY vla_inference_server.py /app/
+COPY vla_inference_server.py vla_qnn_policy.py vla_qnn_runtime.py /app/
 WORKDIR /app
 
 # Non-root default for a bare `docker run` (the compose service overrides the

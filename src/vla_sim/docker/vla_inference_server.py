@@ -60,6 +60,7 @@ the error state.
 
 import argparse
 import base64
+import copy
 import hashlib
 import hmac
 import json
@@ -137,6 +138,12 @@ RELOAD_IDLE_SECONDS = 5.0
 # policy_call_timeout of 10.0 in the stock objective), and a hung inference
 # must not block the reload that would replace it.
 INFER_ABANDONED_SECONDS = 30.0
+# How long a reload waits for a hung /infer to release the native QNN sessions
+# before replacing the process without freeing them.
+QNN_RELEASE_TIMEOUT_SECONDS = 1.0
+# How long a reload waits for a QNN load and warmup to finish, so it can free
+# the sessions that load created, before replacing the process over it.
+QNN_LOAD_ABANDONED_SECONDS = 120.0
 INFERENCE_KEY_ENV = "MOVEIT_INFERENCE_KEY"
 _HF_TOKEN_FILE_SOURCE_ENV = "MOVEIT_PRO_HF_TOKEN_FROM_FILE"
 
@@ -662,6 +669,113 @@ class PolicyRunner:
         return cold_s, steady_s, chunk.shape[0]
 
 
+class QnnPolicyRunner(PolicyRunner):
+    """Native pi0.5 backend behind the same inference/warmup/HTTP interface."""
+
+    def __init__(
+        self,
+        bundle: str,
+        checkpoint: str,
+        policy_type: str,
+        revision: str,
+        state_dim: int,
+        fps: float,
+        guidance_horizon: int,
+        rtc_schedule: str,
+    ):
+        if policy_type not in ("", "pi05"):
+            raise ValueError("the QNN backend supports pi05 only; GR00T uses PyTorch")
+        if not bundle:
+            raise ValueError("set qnn_bundle in vla_serving.yaml (or --qnn-bundle)")
+        if not 0 <= guidance_horizon <= 50:
+            raise ValueError("QNN guidance_horizon must be in 0..50 steps")
+        from vla_qnn_policy import QnnPolicy
+
+        self.device = "npu:qnn_htp"
+        self.lock = threading.Lock()
+        self.guidance_horizon = guidance_horizon
+        self.policy = QnnPolicy(
+            bundle,
+            checkpoint,
+            revision,
+            state_dim,
+            fps,
+            RTCConfig(
+                enabled=True,
+                prefix_attention_schedule=resolve_rtc_schedule(rtc_schedule),
+            ),
+        )
+        self.state_dim = self.policy.config["request_state_dim"]
+        self.request_names = self.policy.config["camera_names"]
+        self.int8 = False
+        self.precision = dict(self.policy.config["precision"])
+        self.release_started = False
+
+    def load(self):
+        """Allocate graph contexts only after the server owns this runner."""
+        with self.lock:
+            self.policy.load()
+
+    def expected_state_dim(self) -> int:
+        return self.state_dim
+
+    def expected_camera_keys(self) -> list:
+        return self.request_names
+
+    def prepare_rtc(self, payload: dict) -> tuple:
+        from vla_qnn_policy import prepare_rtc
+
+        return prepare_rtc(
+            payload,
+            self.policy.config["chunk_size"],
+            self.policy.config["model_action_dim"],
+        )
+
+    def infer(
+        self, images, state, prompt, prev_chunk, inference_delay, guidance_horizon
+    ):
+        horizon = resolve_rtc_horizon(
+            inference_delay, guidance_horizon, self.guidance_horizon
+        )
+        with self.lock:
+            if self.release_started:
+                raise RuntimeError(
+                    "QNN sessions are releasing or closed; reload the server"
+                )
+            return self.policy.infer(
+                images, state, prompt, prev_chunk, inference_delay, horizon
+            )
+
+    def close(self) -> bool:
+        """Free the native sessions unless a hung /infer still holds them.
+
+        @return: True when the sessions were released and can no longer serve.
+        """
+        if not self.lock.acquire(timeout=QNN_RELEASE_TIMEOUT_SECONDS):
+            log("WARNING: a hung /infer holds the QNN sessions; not freeing them")
+            return False
+        try:
+            self.release_started = True
+            self.policy.close()
+        except Exception as exc:
+            # Retain this runner for cleanup retry. Some contexts may already
+            # be freed, so release_started also prevents advertising ready.
+            log(f"ERROR: QNN cleanup failed: {exc}")
+            raise
+        finally:
+            self.lock.release()
+        return True
+
+    def warmup(self) -> tuple[float, float, int]:
+        # Warmup is not an observation: preserve the seeded noise stream for
+        # the first real request and every subsequent chunk.
+        rng_state = copy.deepcopy(self.policy.rng.bit_generator.state)
+        try:
+            return super().warmup()
+        finally:
+            self.policy.rng.bit_generator.state = rng_state
+
+
 class ServerState:
     """Load status shared between the loader thread and the HTTP handlers."""
 
@@ -669,6 +783,9 @@ class ServerState:
         self.status = "loading"
         self.detail = ""
         self.runner: PolicyRunner | None = None
+        # A failed QNN load whose native resources still need release. This
+        # runner is never used for inference but remains reachable for retry.
+        self.cleanup_runner: QnnPolicyRunner | None = None
         # Resolved by the loader thread; meaningful once status is "ready".
         self.fps = 0.0
         # The selected checkpoint is available through the authenticated
@@ -696,6 +813,8 @@ class ServerState:
         # Set once the watcher commits to a reload, so no /infer starts in the
         # moment before the process is replaced.
         self.reloading = False
+        # Start of a QNN load still creating or warming native sessions.
+        self.native_load_started: float | None = None
 
     @property
     def inflight_infers(self) -> int:
@@ -714,7 +833,37 @@ class ServerState:
             del self.infer_starts[threading.get_ident()]
             self.last_infer_monotonic = time.monotonic()
 
+    def begin_native_load(self) -> bool:
+        """Record a QNN load starting; False when a reload has been committed."""
+        with self.activity_lock:
+            if self.reloading:
+                return False
+            self.native_load_started = time.monotonic()
+            return True
+
+    def publish_ready(self, runner: PolicyRunner) -> bool:
+        """Publish the loaded policy atomically with the watcher's reload commit."""
+        with self.activity_lock:
+            # A reload can outlive an expired load's warmup. Even when exec
+            # fails and cancel_reload clears reloading, released QNN sessions
+            # must not overwrite the watcher's error or accept new /infer.
+            if isinstance(runner, QnnPolicyRunner) and (
+                self.reloading or runner.release_started
+            ):
+                return False
+            self.runner = runner
+            self.cleanup_runner = None
+            self.status = "ready"
+            return True
+
     def _idle(self, now: float) -> bool:
+        # A QNN load owns native sessions before state.runner is published;
+        # wait for it so the reload can free them, unless the load hung.
+        if (
+            self.native_load_started is not None
+            and now - self.native_load_started < QNN_LOAD_ABANDONED_SECONDS
+        ):
+            return False
         # Judged on the oldest /infer: once it outlives INFER_ABANDONED_SECONDS
         # it is hung, and every later request is queued behind it on the
         # runner's lock, so none of them can hold off the reload that clears it.
@@ -855,11 +1004,35 @@ def watch_runtime_inputs(
                     f"call(s) hung for more than {INFER_ABANDONED_SECONDS:g}s"
                 )
             log("serving configuration changed; reloading the model")
+            released = False
+            native_runner = None
+            if state is not None:
+                native_runner = state.cleanup_runner
+                if native_runner is None and isinstance(state.runner, QnnPolicyRunner):
+                    native_runner = state.runner
+            if native_runner is not None:
+                try:
+                    released = native_runner.close()
+                except Exception as exc:
+                    state.detail = f"QNN cleanup failed during reload ({exc}); retrying"
+                    state.status = "error"
+                    state.cancel_reload()
+                    continue
+                if released:
+                    state.cleanup_runner = None
             try:
                 restart()
             except OSError as exc:
                 # The inputs still differ from the baseline, so the next poll
-                # retries; until then keep serving the loaded model.
+                # retries; until then keep serving the loaded model, unless
+                # its native sessions were already released.
+                if released:
+                    state.detail = (
+                        "the reload could not replace the process after "
+                        f"releasing the QNN sessions ({exc}); retrying, or "
+                        "restart the inference server"
+                    )
+                    state.status = "error"
                 if state is not None:
                     state.cancel_reload()
                 log(f"ERROR: the reload could not replace the process: {exc}")
@@ -905,6 +1078,7 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
     """Load + warm the policy in the background; on failure park in the error state."""
     state.checkpoint = args.checkpoint
     state.checkpoint_revision = getattr(args, "checkpoint_revision", "")
+    runner = None
     try:
         # A malformed serving config was deferred out of parse_args so the
         # socket could bind first; surface it here like any other load failure.
@@ -931,46 +1105,70 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 "this private Trainer checkpoint requires Hugging Face model access; "
                 "configure it from the Trainer tab"
             )
-        # Resolving the fps can read the checkpoint's train_config.json (a
-        # download for hub checkpoints), so it happens here rather than before
-        # the socket binds, and an unresolvable rate parks in the error state
-        # instead of exiting into a compose restart loop.
-        state.fps = resolve_fps(args.checkpoint, args.fps, args.checkpoint_revision)
-        policy_type = resolve_policy_type(
-            args.checkpoint, args.policy_class, args.checkpoint_revision
-        )
-        device = resolve_device(
-            args.device,
-            torch.cuda.is_available(),
-            os.environ.get("VLA_REQUIRE_GPU") == "1",
-        )
-        if policy_type not in TESTED_POLICY_TYPES:
-            log(
-                f"WARNING: policy family '{policy_type}' is untested with this "
-                f"server (tested: {', '.join(TESTED_POLICY_TYPES)}); loading best-effort"
+        backend = getattr(args, "backend", "pytorch")
+        if backend == "qnn":
+            if not state.begin_native_load():
+                raise RuntimeError(
+                    "the serving configuration changed before the QNN load "
+                    "started; the server is reloading"
+                )
+            log(f"loading pi05 compiled QNN bundle '{args.qnn_bundle}' ...")
+            runner = QnnPolicyRunner(
+                args.qnn_bundle,
+                args.checkpoint,
+                args.policy_class,
+                args.checkpoint_revision,
+                args.state_dim,
+                args.fps,
+                args.guidance_horizon,
+                args.rtc_schedule,
             )
-        log(
-            f"loading {policy_type} checkpoint '{args.checkpoint}'"
-            f"{f' at {args.checkpoint_revision}' if args.checkpoint_revision else ''} "
-            f"on '{device}' "
-            f"(torch {torch.__version__}, HIP {torch.version.hip}, CUDA {torch.version.cuda}"
-            f"{', int8' if args.int8 and policy_type == 'pi05' else ''}) ..."
-        )
-        runner = PolicyRunner(
-            args.checkpoint,
-            policy_type,
-            device,
-            args.guidance_horizon,
-            args.rtc_schedule,
-            args.state_dim,
-            args.int8,
-            checkpoint_revision=args.checkpoint_revision,
-            groot_rtc_ramp_rate=args.groot_rtc_ramp_rate,
-        )
+            state.cleanup_runner = runner
+            runner.load()
+            # All serving metadata comes from the locally compiled bundle, not
+            # a mutable Hub HEAD. No host neural weights are downloaded/loaded.
+            state.fps = runner.policy.fps
+            state.checkpoint_revision = runner.policy.config["model_revision"]
+            device = runner.device
+        elif backend == "pytorch":
+            # Metadata resolution can download Hub files, so it stays on this
+            # loader thread, after the socket binds.
+            state.fps = resolve_fps(args.checkpoint, args.fps, args.checkpoint_revision)
+            policy_type = resolve_policy_type(
+                args.checkpoint, args.policy_class, args.checkpoint_revision
+            )
+            device = resolve_device(
+                args.device,
+                torch.cuda.is_available(),
+                os.environ.get("VLA_REQUIRE_GPU") == "1",
+            )
+            if policy_type not in TESTED_POLICY_TYPES:
+                log(
+                    f"WARNING: policy family '{policy_type}' is untested with this "
+                    f"server (tested: {', '.join(TESTED_POLICY_TYPES)}); loading best-effort"
+                )
+            log(
+                f"loading {policy_type} checkpoint '{args.checkpoint}'"
+                f"{f' at {args.checkpoint_revision}' if args.checkpoint_revision else ''} "
+                f"on '{device}' "
+                f"(torch {torch.__version__}, HIP {torch.version.hip}, CUDA {torch.version.cuda}"
+                f"{', int8' if args.int8 and policy_type == 'pi05' else ''}) ..."
+            )
+            runner = PolicyRunner(
+                args.checkpoint,
+                policy_type,
+                device,
+                args.guidance_horizon,
+                args.rtc_schedule,
+                args.state_dim,
+                args.int8,
+                checkpoint_revision=args.checkpoint_revision,
+                groot_rtc_ramp_rate=args.groot_rtc_ramp_rate,
+            )
+        else:
+            raise ValueError("backend must be pytorch or qnn in vla_serving.yaml")
 
-        image_features = [
-            k for k in runner.policy.config.input_features if "image" in k
-        ]
+        image_features = runner.expected_camera_keys()
         log(
             f"checkpoint expects {len(image_features)} camera(s) {image_features} "
             f"(request names: {runner.request_names}) and a "
@@ -1009,14 +1207,19 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                     f"real-time budget at {state.fps:g} fps"
                 )
         except Exception as exc:
+            if isinstance(runner, QnnPolicyRunner):
+                # Fixed-shape native bundles have no padded-state exception;
+                # a failed graph execution must never advertise a ready NPU.
+                raise
             log(
                 f"WARNING: warmup inference failed ({type(exc).__name__}: {exc}); "
                 "continuing, the first request pays the cold cost"
             )
 
-        state.runner = runner
-        state.status = "ready"
-        log("ready")
+        if state.publish_ready(runner):
+            log("ready")
+        else:
+            log("model load finished after reload committed; not publishing ready")
     except (GatedRepoError, RepositoryNotFoundError) as exc:
         traceback.print_exc()
         state.detail = hub_access_error_message(
@@ -1027,10 +1230,33 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
         state.status = "error"
         log(f"FATAL: model load failed: {state.detail}")
     except Exception as exc:
+        released_by_watcher = (
+            isinstance(runner, QnnPolicyRunner)
+            and runner.release_started
+            and state.status == "error"
+        )
+        if isinstance(runner, QnnPolicyRunner):
+            state.cleanup_runner = runner
+            try:
+                if runner.close():
+                    state.cleanup_runner = None
+            except Exception as cleanup_error:
+                log(f"QNN cleanup retained for retry: {cleanup_error}")
         traceback.print_exc()
-        state.detail = f"{type(exc).__name__}: {exc}"
+        if not released_by_watcher:
+            state.detail = f"{type(exc).__name__}: {exc}"
         state.status = "error"
-        log(f"FATAL: model load failed: {state.detail}")
+        log(f"FATAL: model load failed: {type(exc).__name__}: {exc}")
+    finally:
+        state.native_load_started = None
+
+
+def ready_fields(runner: PolicyRunner) -> dict:
+    """Device and precision fields /health and /status report for a ready policy."""
+    fields = {"device": runner.device, "int8": runner.int8}
+    if isinstance(runner, QnnPolicyRunner):
+        fields["qnnPrecision"] = runner.precision
+    return fields
 
 
 def run_inference(state: ServerState, payload: dict) -> dict:
@@ -1039,6 +1265,8 @@ def run_inference(state: ServerState, payload: dict) -> dict:
     new_episode in the payload is informational only: PolicyRunner resets per
     call, and the episode boundary is carried by an empty prev_chunk.
     """
+    if not isinstance(payload, dict):
+        raise ValueError("/infer payload must be a JSON object")
     for key in ("state", "images", "task"):
         if key not in payload:
             raise ValueError(f"/infer payload is missing '{key}'")
@@ -1085,29 +1313,33 @@ def run_inference(state: ServerState, payload: dict) -> dict:
             "image_names to the checkpoint's name for the camera on the "
             "matching image_topics entry"
         )
-    images = {name: decode_image_b64(data) for name, data in payload["images"].items()}
-
-    prev_chunk = None
-    prev = payload.get("prev_chunk_left_over")
-    if prev:
-        try:
-            prev_chunk = np.asarray(prev, dtype=float)
-        except (TypeError, ValueError) as exc:
+    if isinstance(runner, QnnPolicyRunner):
+        # QNN's fixed graph ABI cannot accept truncated widths, fractional step
+        # counts or overflowing carryover. Refuse before native execution.
+        prev_chunk, inference_delay, guidance_horizon = runner.prepare_rtc(payload)
+    else:
+        prev_chunk = None
+        prev = payload.get("prev_chunk_left_over")
+        if prev:
+            try:
+                prev_chunk = np.asarray(prev, dtype=float)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(
+                    f"/infer payload 'prev_chunk_left_over' is not a numeric array ({exc})"
+                ) from exc
+            if prev_chunk.ndim != 2 or not np.isfinite(prev_chunk).all():
+                raise ValueError(
+                    "/infer payload 'prev_chunk_left_over' must be a 2-D array of "
+                    "finite numbers"
+                )
+        inference_delay = int(payload.get("inference_delay", 0))
+        guidance_horizon = int(payload.get("guidance_horizon", 0))
+        if inference_delay < 0 or guidance_horizon < 0:
             raise ValueError(
-                f"/infer payload 'prev_chunk_left_over' is not a numeric array ({exc})"
-            ) from exc
-        if prev_chunk.ndim != 2 or not np.isfinite(prev_chunk).all():
-            raise ValueError(
-                "/infer payload 'prev_chunk_left_over' must be a 2-D array of "
-                "finite numbers"
+                "/infer payload 'inference_delay' and 'guidance_horizon' must be "
+                "non-negative"
             )
-    inference_delay = int(payload.get("inference_delay", 0))
-    guidance_horizon = int(payload.get("guidance_horizon", 0))
-    if inference_delay < 0 or guidance_horizon < 0:
-        raise ValueError(
-            "/infer payload 'inference_delay' and 'guidance_horizon' must be "
-            "non-negative"
-        )
+    images = {name: decode_image_b64(data) for name, data in payload["images"].items()}
 
     absolute, carryover = runner.infer(
         images,
@@ -1149,8 +1381,7 @@ def make_handler(state: ServerState):
                 if state.status == "error":
                     health["detail"] = state.detail
                 elif state.status == "ready":
-                    health["device"] = state.runner.device
-                    health["int8"] = state.runner.int8
+                    health.update(ready_fields(state.runner))
                 self._send(200, health)
                 return
             if self.path != "/status":
@@ -1175,8 +1406,7 @@ def make_handler(state: ServerState):
             if state.status == "error":
                 health["detail"] = state.detail
             elif state.status == "ready":
-                health["device"] = state.runner.device
-                health["int8"] = state.runner.int8
+                health.update(ready_fields(state.runner))
             self._send(200, health)
 
         def _authorized(self) -> bool:
@@ -1368,10 +1598,29 @@ def parse_args() -> argparse.Namespace:
         help="training fps; response dt=1/fps; 0 reads the "
         "checkpoint's train_config.json",
     )
+    backend = resolve_default(config.get("backend"), "pytorch")
+    if backend not in ("pytorch", "qnn"):
+        config_errors.append("backend must be pytorch or qnn")
+        backend = "pytorch"
+    parser.add_argument(
+        "--backend",
+        choices=("pytorch", "qnn"),
+        default=backend,
+        help="inference backend: pytorch (default) or native QNN HTP (pi05 only)",
+    )
+    bundle = resolve_default(config.get("qnn_bundle"), "")
+    if not isinstance(bundle, str):
+        config_errors.append("qnn_bundle must be a local JSON manifest path")
+        bundle = ""
+    parser.add_argument(
+        "--qnn-bundle",
+        default=bundle,
+        help="local compiled QNN bundle JSON manifest; required for backend=qnn",
+    )
     parser.add_argument(
         "--device",
         default=str(resolve_default(config.get("device"), "auto")),
-        help="torch device: auto | cpu | cuda",
+        help="PyTorch backend device: auto | cpu | cuda; QNN uses bundle placement",
     )
     parser.add_argument(
         "--int8",

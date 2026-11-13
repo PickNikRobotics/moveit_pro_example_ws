@@ -25,19 +25,34 @@ checkpoint_revision: ""
 checkpoint_requires_hf_token: false
 
 # LeRobot policy family (pi05 | smolvla | groot | ...). Empty reads the checkpoint's
-# config.json "type"; set it only when that field is missing.
+# config.json "type" on PyTorch; QNN supports only compiled pi05 bundles.
 policy_class: ""
+
+# Inference backend: pytorch | qnn. PyTorch remains the default for every policy
+# family; qnn runs compiled pi0.5 graphs on the Qualcomm Hexagon HTP only.
+backend: pytorch
+
+# QNN only: local schema-1 compiled-context bundle JSON, e.g.
+# /models/pi05-qnn/bundle.json. It names graph directories, trained statistics
+# and a local tokenizer; relative paths resolve beside the JSON. The bundle's
+# model_id/revision must match checkpoint/checkpoint_revision (empty revision
+# uses the bundle's immutable source SHA); fps/state_dim must match too, or be 0.
+# Native QAIRT 2.49 libraries/device access must be supplied by the NPU host;
+# the standard PyTorch image does not include them. See docker/README.md.
+qnn_bundle: ""
 
 # Training frame rate. The chunk plays at 1/fps seconds per step, so a wrong
 # value rescales every commanded joint velocity. Keep the objective's dt at
 # 1/fps. 0 reads the rate from train_config.json, which this checkpoint omits.
 fps: 10.0
 
-# Torch device: auto | cpu | cuda. auto selects a usable NVIDIA or AMD GPU.
+# PyTorch only: auto | cpu | cuda. auto selects a usable NVIDIA or AMD GPU.
+# QNN uses the compiled bundle's HTP device placement, never CPU/GPU fallback.
 # The ROCm image requires GPU access in auto mode; other images fall back to CPU.
 # Explicit cpu always selects CPU. Explicit cuda fails if GPU access is unavailable.
 device: auto
 
+# PyTorch only; QNN precision is fixed by the compiled bundle.
 # Hold the pi0.5 language backbone and vision tower at eight bits, most of the
 # weights: roughly 3 GiB less GPU memory for a little more time per chunk. false
 # loads every weight at full width, and a policy family other than pi0.5 ignores
