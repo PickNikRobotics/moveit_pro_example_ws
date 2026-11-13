@@ -126,7 +126,7 @@ def test_queued_navigation_reuses_confirmed_collection_and_nav2_configuration() 
     assert sequence is not None
     assert [node.get("ID") for node in sequence] == [
         "Refine Localization In Place",
-        "Fallback",
+        "Finally",
     ]
     behavior_tree = tree.find("./BehaviorTree")
     assert behavior_tree is not None
@@ -157,24 +157,20 @@ def test_queued_navigation_reuses_confirmed_collection_and_nav2_configuration() 
     assert model.find("./MetadataFields/Metadata[@runnable='true']") is not None
 
 
-def test_queued_navigation_restores_arm_controller_before_failure() -> None:
-    """Rejected or failed queue execution restores control without returning success."""
+def test_queued_navigation_restores_arm_controller_on_halt_and_completion() -> None:
+    """The halt-safe cleanup restores control without overriding the queue result."""
     tree = ET.parse(OBJECTIVES / "navigate_queued_waypoints.xml")
-    fallback = tree.find("./BehaviorTree/Control/Control[@ID='Fallback']")
-    assert fallback is not None, "Queue failures must reach controller restoration."
-    execution, recovery = list(fallback)
-    assert execution.get("ID") == recovery.get("ID") == "Sequence"
+    cleanup = tree.find("./BehaviorTree/Control/Control[@ID='Finally']")
+    assert cleanup is not None, "Stop Objective must reach controller restoration."
+    execution, restoration = list(cleanup)
+    assert execution.get("ID") == "Sequence"
     assert [node.get("ID") for node in execution] == [
         "SwitchController",
         "Navigate Planar Waypoints",
-        "SwitchController",
     ]
-    assert execution[-1].get("activate_controllers") == "joint_trajectory_controller"
-    assert [node.get("ID") for node in recovery] == [
-        "SwitchController",
-        "AlwaysFailure",
-    ]
-    assert recovery[0].get("activate_controllers") == "joint_trajectory_controller"
+    assert restoration.get("ID") == "SwitchController"
+    assert restoration.get("activate_controllers") == "joint_trajectory_controller"
+    assert restoration.get("timeout") == "5.0"
 
 
 @pytest.mark.parametrize(

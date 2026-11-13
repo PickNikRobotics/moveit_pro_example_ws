@@ -46,6 +46,7 @@ install(PROGRAMS
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(behaviortree_cpp_picknik REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   find_package(tf2_msgs REQUIRED)
   ament_lint_auto_find_test_dependencies()
@@ -53,6 +54,11 @@ if(BUILD_TESTING)
   ament_add_gtest(odom_world_drift_test test/test_odom_world_drift.cpp)
   target_link_libraries(odom_world_drift_test odom_world_drift_core)
   ament_target_dependencies(odom_world_drift_test tf2_msgs)
+  ament_add_gtest(queued_navigation_cleanup_test test/test_queued_navigation_cleanup.cpp)
+  target_link_libraries(queued_navigation_cleanup_test behaviortree_cpp_picknik::behaviortree_cpp_picknik)
+  target_compile_features(queued_navigation_cleanup_test PRIVATE cxx_std_20)
+  target_compile_definitions(queued_navigation_cleanup_test PRIVATE
+    HANGAR_QUEUED_OBJECTIVE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/objectives/navigate_queued_waypoints.xml")
   # Pure-data comparison of the URDF chain against the MJCF bodies; no simulator,
   # so it stays outside the long objectives suite below.
   ament_add_pytest_test(

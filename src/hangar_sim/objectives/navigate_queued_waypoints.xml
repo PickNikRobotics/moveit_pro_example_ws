@@ -7,7 +7,7 @@
   >
     <Control ID="Sequence" name="RefineCollectNavigate">
       <SubTree ID="Refine Localization In Place" _collapsed="true" />
-      <Control ID="Fallback" name="Navigate queue or restore controllers">
+      <Control ID="Finally" name="Navigate queue and restore controllers">
         <Control ID="Sequence" name="Collect and navigate">
           <Action
             ID="SwitchController"
@@ -27,18 +27,13 @@
             timeout_sec="{timeout_sec}"
             max_pose_age_sec="1.0"
           />
-          <Action
-            ID="SwitchController"
-            activate_controllers="joint_trajectory_controller"
-          />
         </Control>
-        <Control ID="Sequence" name="Restore controllers and fail">
-          <Action
-            ID="SwitchController"
-            activate_controllers="joint_trajectory_controller"
-          />
-          <Action ID="AlwaysFailure" />
-        </Control>
+        <Action
+          ID="SwitchController"
+          name="Restore arm controller on completion or halt"
+          activate_controllers="joint_trajectory_controller"
+          timeout="5.0"
+        />
       </Control>
     </Control>
   </BehaviorTree>
