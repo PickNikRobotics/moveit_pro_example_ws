@@ -8,6 +8,7 @@
         _collapsed="true"
         prompt="a green block"
         object_centroid="{object_centroid}"
+        detections_empty="{detections_empty}"
       />
     </Control>
   </BehaviorTree>
@@ -17,6 +18,11 @@
         <Metadata runnable="true" />
         <Metadata subcategory="Perception - ML" />
       </MetadataFields>
+      <output_port
+        name="detections_empty"
+        default="{detections_empty}"
+        type="bool"
+      />
       <inout_port name="object_centroid" default="{object_centroid}" />
     </SubTree>
   </TreeNodesModel>

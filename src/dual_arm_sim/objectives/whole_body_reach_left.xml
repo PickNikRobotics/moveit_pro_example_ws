@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Whole Body Reach Left">
+  <!-- The tables box in the Home pose, so the base first backs into open floor; the target is then the left gripper's Ready pose moved sideways in base_link, beyond the arm's reach. -->
+  <BehaviorTree
+    ID="Whole Body Reach Left"
+    _description="Reach the left gripper sideways, past the arm's reach, so the base and the spine move with the arm"
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <SubTree
+        ID="Whole Body Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Whole Body Demo"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="base_link"
+        position_xyz="0.8345;1.0782;0.8538"
+        orientation_xyzw="0.784002;0.440434;-0.324680;0.293160"
+        pose_stamped="{target_pose}"
+      />
+      <SubTree
+        ID="Whole Body Move to Pose"
+        _collapsed="true"
+        target_pose="{target_pose}"
+        planning_group_name="left_manipulator_with_base"
+        tip_link="left_grasp_link"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Whole Body Reach Left">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

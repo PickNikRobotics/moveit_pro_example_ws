@@ -3,6 +3,7 @@
   <!--//////////-->
   <BehaviorTree ID="Find with prompt" _description="" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="Script" code="detections_empty := false" />
       <SubTree
         ID="Segment Point Cloud from Text Prompt Subtree"
         _collapsed="false"
@@ -19,15 +20,30 @@
         use_latest_transform="true"
       />
       <Action
+        ID="GetSizeOfVector"
+        vector_in="{point_cloud_vector}"
+        vector_size="{detection_count}"
+      />
+      <Action ID="Script" code="detections_empty = detection_count == 0" />
+      <Condition ID="ScriptCondition" code="!detections_empty" />
+      <Action
         ID="GetElementOfVector"
         index="0"
         vector_in="{point_cloud_vector}"
         element="{object_cloud}"
       />
+      <!-- The overhead view is dominated by the block top; mask edges can also contain sides, table or floor. -->
+      <Action
+        ID="ExtractDominantPlaneFromPointCloud"
+        point_cloud="{object_cloud}"
+        plane_point_cloud="{object_surface}"
+        inlier_tolerance="0.001"
+        min_inlier_fraction="0.6"
+      />
       <Action
         ID="GetCentroidFromPointCloud"
         output_pose="{object_centroid}"
-        point_cloud="{object_cloud}"
+        point_cloud="{object_surface}"
       />
       <Action
         ID="VisualizePose"
@@ -44,6 +60,14 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
+      <output_port
+        name="detections_empty"
+        default="{detections_empty}"
+        type="bool"
+      >
+        True only when segmentation succeeded with no objects; failures leave
+        this false.
+      </output_port>
       <inout_port name="object_centroid" default="{object_centroid}" />
       <inout_port name="prompt" default="{prompt}" />
     </SubTree>

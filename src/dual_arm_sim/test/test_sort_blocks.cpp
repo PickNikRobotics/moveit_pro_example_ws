@@ -41,18 +41,22 @@ namespace
 {
 struct Scenario
 {
-  std::deque<bool> choose_right{ true };
   std::deque<bool> red;
   std::deque<bool> green;
   std::string fail_at;
   int fail_on_call = 1;
   std::string hold_at;
+  int hold_on_call = 1;
   std::map<std::string, int> calls;
   std::vector<std::string> motions;
+  std::vector<std::string> transfer_steps;
+  std::vector<std::string> initialization_parameters;
+  std::vector<double> carry_speeds;
+  std::vector<double> carry_accelerations;
   int halts = 0;
 };
 
-bool consume(std::deque<bool>& results)
+[[nodiscard]] bool consume(std::deque<bool>& results)
 {
   if (results.empty())
   {
@@ -71,41 +75,80 @@ public:
   {
   }
 
-  static BT::PortsList providedPorts()
+  [[nodiscard]] static BT::PortsList providedPorts()
   {
-    return { BT::InputPort<std::string>("operation"), BT::InputPort<std::string>("arm") };
+    return { BT::InputPort<std::string>("operation"),
+             BT::InputPort<std::string>("arm"),
+             BT::InputPort<std::string>("waypoint_name"),
+             BT::InputPort<std::string>("joint_group_name"),
+             BT::InputPort<std::string>("controller_names"),
+             BT::InputPort<std::string>("controller_action_server"),
+             BT::InputPort<double>("carry_speed"),
+             BT::InputPort<double>("carry_acceleration"),
+             BT::InputPort<std::string>("solution"),
+             BT::OutputPort<std::string>("pickup_solution"),
+             BT::OutputPort<std::string>("carry_solution"),
+             BT::OutputPort<bool>("detections_empty", "{detections_empty}",
+                                  "Successful segmentation found no objects.") };
   }
 
 private:
-  BT::NodeStatus onStart() override
+  [[nodiscard]] BT::NodeStatus onStart() override
   {
-    const auto operation = getInput<std::string>("operation").value();
-    const auto key = operation + ":" + getInput<std::string>("arm").value();
+    const std::string operation = getInput<std::string>("operation").value();
+    const std::string key = operation + ":" + getInput<std::string>("arm").value();
     const int call = ++scenario_.calls[key];
-    if (operation == "BiasedCoinFlip")
+    if (const auto speed = getInput<double>("carry_speed"); speed.has_value())
     {
-      return consume(scenario_.choose_right) ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+      scenario_.carry_speeds.push_back(speed.value());
+      scenario_.carry_accelerations.push_back(getInput<double>("carry_acceleration").value());
     }
     if (operation == "Find Red Block" || operation == "Find Green Block")
     {
-      return consume(operation == "Find Red Block" ? scenario_.red : scenario_.green) ? BT::NodeStatus::SUCCESS :
-                                                                                        BT::NodeStatus::FAILURE;
+      const bool failed = key == scenario_.fail_at && call == scenario_.fail_on_call;
+      const bool found = !failed && consume(operation == "Find Red Block" ? scenario_.red : scenario_.green);
+      // A failed segmentation/fit is not evidence that the table is empty.
+      setOutput("detections_empty", !failed && !found);
+      return found ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
     }
     if (operation == "Execute MTC Solution" || operation == "Move to Waypoint" ||
         operation.find("Gripper") != std::string::npos)
     {
       scenario_.motions.push_back(key);
     }
+    if (operation == "Move to Waypoint" && getInput<std::string>("arm").value().empty())
+    {
+      scenario_.initialization_parameters = { getInput<std::string>("waypoint_name").value(),
+                                              getInput<std::string>("joint_group_name").value(),
+                                              getInput<std::string>("controller_names").value(),
+                                              getInput<std::string>("controller_action_server").value() };
+    }
     if (key == scenario_.fail_at && call == scenario_.fail_on_call)
     {
       return BT::NodeStatus::FAILURE;
     }
-    return key == scenario_.hold_at ? BT::NodeStatus::RUNNING : BT::NodeStatus::SUCCESS;
+    if (operation == "Plan Block Transfer")
+    {
+      const std::string arm = getInput<std::string>("arm").value();
+      setOutput("pickup_solution", arm + " pickup");
+      setOutput("carry_solution", arm + " carry");
+      scenario_.transfer_steps.push_back(key);
+    }
+    else if (operation == "Execute MTC Solution")
+    {
+      scenario_.transfer_steps.push_back(getInput<std::string>("solution").value());
+    }
+    else if (operation.find("Gripper") != std::string::npos)
+    {
+      scenario_.transfer_steps.push_back(key);
+    }
+    return key == scenario_.hold_at && call == scenario_.hold_on_call ? BT::NodeStatus::RUNNING :
+                                                                        BT::NodeStatus::SUCCESS;
   }
 
-  BT::NodeStatus onRunning() override
+  [[nodiscard]] BT::NodeStatus onRunning() override
   {
-    const auto key = getInput<std::string>("operation").value() + ":" + getInput<std::string>("arm").value();
+    const std::string key = getInput<std::string>("operation").value() + ":" + getInput<std::string>("arm").value();
     return key == scenario_.fail_at ? BT::NodeStatus::FAILURE : BT::NodeStatus::RUNNING;
   }
 
@@ -133,6 +176,20 @@ void substituteOperations(tinyxml2::XMLElement* element, std::string arm = "")
   const std::string id = element->Attribute("ID") ? element->Attribute("ID") : "";
   if (tag == "SubTree" || (tag == "Action" && id != "Script"))
   {
+    const std::string carry_speed = element->Attribute("carry_speed") ? element->Attribute("carry_speed") : "";
+    const std::string carry_acceleration =
+        element->Attribute("carry_acceleration") ? element->Attribute("carry_acceleration") : "";
+    const std::string detections_empty =
+        element->Attribute("detections_empty") ? element->Attribute("detections_empty") : "";
+    std::map<std::string, std::string> solution_ports;
+    for (const auto* port : { "solution", "pickup_solution", "carry_solution", "waypoint_name", "joint_group_name",
+                              "controller_names", "controller_action_server" })
+    {
+      if (const auto* value = element->Attribute(port))
+      {
+        solution_ports.emplace(port, value);
+      }
+    }
     std::vector<std::string> attributes;
     for (auto* attribute = element->FirstAttribute(); attribute; attribute = attribute->Next())
     {
@@ -149,6 +206,19 @@ void substituteOperations(tinyxml2::XMLElement* element, std::string arm = "")
     element->SetAttribute("ID", "Operation");
     element->SetAttribute("operation", id.c_str());
     element->SetAttribute("arm", arm.c_str());
+    for (const auto& [port, value] : solution_ports)
+    {
+      element->SetAttribute(port.c_str(), value.c_str());
+    }
+    if (!carry_speed.empty())
+    {
+      element->SetAttribute("carry_speed", carry_speed.c_str());
+      element->SetAttribute("carry_acceleration", carry_acceleration.c_str());
+    }
+    if (!detections_empty.empty())
+    {
+      element->SetAttribute("detections_empty", detections_empty.c_str());
+    }
   }
   for (auto* child = element->FirstChildElement(); child; child = child->NextSiblingElement())
   {
@@ -159,7 +229,7 @@ void substituteOperations(tinyxml2::XMLElement* element, std::string arm = "")
 class SortBlocks : public ::testing::Test
 {
 public:
-  BT::Tree makeTree()
+  [[nodiscard]] BT::Tree makeTree()
   {
     tinyxml2::XMLDocument source;
     if (source.LoadFile(SORT_BLOCKS_XML) != tinyxml2::XML_SUCCESS)
@@ -174,11 +244,11 @@ public:
     return factory.createTreeFromText(printer.CStr());
   }
 
-  static BT::NodeStatus finish(BT::Tree& tree)
+  [[nodiscard]] static BT::NodeStatus finish(BT::Tree& tree)
   {
     for (int tick = 0; tick < 100; ++tick)
     {
-      const auto status = tree.tickExactlyOnce();
+      const BT::NodeStatus status = tree.tickExactlyOnce();
       if (status != BT::NodeStatus::RUNNING)
       {
         return status;
@@ -191,24 +261,107 @@ public:
   BT::BehaviorTreeFactory factory;
 };
 
-TEST_F(SortBlocks, EmptyTableSucceedsWithoutMotion)
+TEST_F(SortBlocks, EmptyTableInitializesHomeWithoutTransferMotion)
 {
+  // GIVEN neither color has detections.
   auto tree = makeTree();
+  // WHEN the sort loop checks both colors.
   EXPECT_EQ(finish(tree), BT::NodeStatus::SUCCESS);
-  EXPECT_TRUE(scenario.motions.empty());
+  // THEN only initialization runs, using the controller that can move the spine and both arms.
+  EXPECT_EQ(scenario.motions, (std::vector<std::string>{ "Move to Waypoint:" }));
+  EXPECT_EQ(scenario.initialization_parameters,
+            (std::vector<std::string>{ "Home", "manipulator", "joint_trajectory_admittance_controller",
+                                       "/joint_trajectory_admittance_controller/follow_joint_trajectory" }));
+}
+
+TEST_F(SortBlocks, RegressionHomeFailureStopsBeforePerceptionOrTransfer)
+{
+  // GIVEN initialization fails while blocks are still available.
+  scenario.red = { true };
+  scenario.green = { true };
+  scenario.fail_at = "Move to Waypoint:";
+  auto tree = makeTree();
+  // WHEN Home cannot be reached.
+  EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
+  // THEN the loop must not mask the failure or run perception and transfer.
+  EXPECT_EQ(scenario.calls["Find Red Block:right"], 0);
+  EXPECT_EQ(scenario.calls["Find Green Block:left"], 0);
+  EXPECT_TRUE(scenario.transfer_steps.empty());
+}
+
+TEST_F(SortBlocks, RegressionHomeCompletesBeforeTheFirstTransfer)
+{
+  // GIVEN initialization is still running after navigation.
+  scenario.red = { true };
+  scenario.hold_at = "Move to Waypoint:";
+  auto tree = makeTree();
+  // WHEN the controller has not finished moving Home.
+  EXPECT_EQ(tree.tickExactlyOnce(), BT::NodeStatus::RUNNING);
+  // THEN perception and pickup cannot run with the old spine height.
+  EXPECT_EQ(scenario.calls["Find Red Block:right"], 0);
+  EXPECT_TRUE(scenario.transfer_steps.empty());
+  tree.haltTree();
+  EXPECT_EQ(scenario.halts, 1);
 }
 
 TEST_F(SortBlocks, BothArmsCompleteBeforeExhaustionSucceeds)
 {
-  scenario.choose_right = { true, false, true };
+  // GIVEN one detected block of each color.
   scenario.red = { true, false };
   scenario.green = { true, false };
   auto tree = makeTree();
+  // WHEN the sort loop completes.
   EXPECT_EQ(finish(tree), BT::NodeStatus::SUCCESS);
+  // THEN both arms pick, place and return home before exhaustion.
   EXPECT_EQ(scenario.calls["Execute MTC Solution:right"], 2);
   EXPECT_EQ(scenario.calls["Execute MTC Solution:left"], 2);
   EXPECT_EQ(scenario.calls["Move to Waypoint:right"], 1);
   EXPECT_EQ(scenario.calls["Move to Waypoint:left"], 1);
+}
+
+TEST_F(SortBlocks, RegressionEmptyGreenDetectionsDoNotLeaveRedBlocksUnprocessed)
+{
+  // GIVEN three red blocks and no green blocks.
+  scenario.red = { true, true, true, false };
+  auto tree = makeTree();
+
+  // WHEN the actual Sort Blocks control flow reaches terminal success.
+  EXPECT_EQ(finish(tree), BT::NodeStatus::SUCCESS);
+
+  // THEN every red block must be picked and placed, and both colors must have been checked for exhaustion.
+  EXPECT_EQ(scenario.calls["Execute MTC Solution:right"], 6);
+  EXPECT_EQ(scenario.calls["Find Red Block:right"], 4);
+  EXPECT_GE(scenario.calls["Find Green Block:left"], 1);
+  EXPECT_TRUE(scenario.red.empty());
+}
+
+TEST_F(SortBlocks, RegressionBothColorsAreExhaustedBeforeSuccess)
+{
+  // GIVEN three blocks of each color.
+  scenario.red = { true, true, true, false };
+  scenario.green = { true, true, true, false };
+  auto tree = makeTree();
+
+  // WHEN the actual Sort Blocks control flow finishes.
+  EXPECT_EQ(finish(tree), BT::NodeStatus::SUCCESS);
+
+  // THEN all six picks and placements occurred, and neither detection queue retains a block.
+  EXPECT_EQ(scenario.calls["Execute MTC Solution:right"], 6);
+  EXPECT_EQ(scenario.calls["Execute MTC Solution:left"], 6);
+  EXPECT_TRUE(scenario.red.empty());
+  EXPECT_TRUE(scenario.green.empty());
+  EXPECT_EQ(scenario.calls["Plan Block Transfer:right"], 3);
+  EXPECT_EQ(scenario.calls["Plan Block Transfer:left"], 3);
+  ASSERT_EQ(scenario.carry_speeds.size(), 6);
+  for (const double speed : scenario.carry_speeds)
+  {
+    EXPECT_DOUBLE_EQ(speed, 0.25);
+  }
+  ASSERT_EQ(scenario.carry_accelerations.size(), 6);
+  for (const double acceleration : scenario.carry_accelerations)
+  {
+    EXPECT_DOUBLE_EQ(acceleration, 0.0625);
+  }
 }
 
 class SortBlocksMotionFailure : public SortBlocks, public ::testing::WithParamInterface<std::pair<std::string, int>>
@@ -217,13 +370,19 @@ class SortBlocksMotionFailure : public SortBlocks, public ::testing::WithParamIn
 
 TEST_P(SortBlocksMotionFailure, AbortFailsImmediatelyWithoutTryingTheOtherArm)
 {
+  // GIVEN a motion operation aborts for the selected arm.
   scenario.red = { true };
   scenario.green = { true };
   scenario.fail_at = GetParam().first;
   scenario.fail_on_call = GetParam().second;
-  scenario.choose_right = { scenario.fail_at.find(":right") != std::string::npos };
+  if (scenario.fail_at.find(":left") != std::string::npos)
+  {
+    scenario.red.clear();
+  }
   auto tree = makeTree();
+  // WHEN the abort reaches the sort loop.
   EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
+  // THEN no later motion or other-arm attempt is allowed.
   ASSERT_FALSE(scenario.motions.empty());
   EXPECT_EQ(scenario.motions.back(), scenario.fail_at);
   const std::string other_arm = scenario.fail_at.find(":right") != std::string::npos ? "left" : "right";
@@ -247,27 +406,155 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_F(SortBlocks, ControllerAbortAfterRunningFailsWithoutMovingOtherArm)
 {
+  // GIVEN the right controller is executing a trajectory.
   scenario.red = { true };
   scenario.green = { true };
   scenario.hold_at = "Execute MTC Solution:right";
   auto tree = makeTree();
   ASSERT_EQ(tree.tickExactlyOnce(), BT::NodeStatus::RUNNING);
+  // WHEN it aborts after returning RUNNING.
   scenario.fail_at = scenario.hold_at;
   EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
+  // THEN the left arm remains idle.
   EXPECT_EQ(scenario.calls["Execute MTC Solution:left"], 0);
   EXPECT_EQ(scenario.motions.back(), scenario.fail_at);
 }
 
-TEST_F(SortBlocks, CancellationHaltsMotion)
+class SortBlocksPerceptionFailure : public SortBlocks, public ::testing::WithParamInterface<std::string>
 {
+};
+
+TEST_P(SortBlocksPerceptionFailure, RegressionPerceptionErrorCannotSucceedAsExhaustion)
+{
+  // GIVEN a perception error for either color, not a valid empty detection result.
   scenario.red = { true };
-  scenario.hold_at = "Execute MTC Solution:right";
+  scenario.green = { true };
+  scenario.fail_at = GetParam();
+  if (scenario.fail_at == "Find Green Block:left")
+  {
+    scenario.red.clear();
+  }
+  auto tree = makeTree();
+
+  // WHEN the Find subtree fails.
+  EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
+
+  // THEN no arm may move, and a red perception error must not fall through to green.
+  EXPECT_EQ(scenario.motions, (std::vector<std::string>{ "Move to Waypoint:" }));
+  if (scenario.fail_at == "Find Red Block:right")
+  {
+    EXPECT_EQ(scenario.calls["Find Green Block:left"], 0);
+  }
+
+  // A later successful empty detection must not retain this failure.
+  scenario.fail_at.clear();
+  scenario.red.clear();
+  scenario.green.clear();
+  EXPECT_EQ(finish(tree), BT::NodeStatus::SUCCESS);
+}
+
+INSTANTIATE_TEST_SUITE_P(BothColors, SortBlocksPerceptionFailure,
+                         ::testing::Values("Find Red Block:right", "Find Green Block:left"),
+                         [](const ::testing::TestParamInfo<std::string>& info) {
+                           return info.param == "Find Red Block:right" ? "Red" : "Green";
+                         });
+
+TEST_F(SortBlocks, RegressionPoseTransformFailureCannotSucceedAsExhaustion)
+{
+  // GIVEN a detected red block whose pose cannot be transformed.
+  scenario.red = { true };
+  scenario.green = { true };
+  scenario.fail_at = "TransformPose:right";
+  auto tree = makeTree();
+
+  // WHEN the pose conversion fails before grasp planning.
+  EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
+
+  // THEN neither stale-pose motion nor the other color's branch is allowed.
+  EXPECT_EQ(scenario.motions, (std::vector<std::string>{ "Move to Waypoint:" }));
+  EXPECT_EQ(scenario.calls["Find Green Block:left"], 0);
+}
+
+class SortBlocksPlanFailure : public SortBlocks, public ::testing::WithParamInterface<std::string>
+{
+};
+
+TEST_P(SortBlocksPlanFailure, RegressionTransferMustPlanBeforeGraspExecution)
+{
+  // GIVEN one block and an infeasible continuation after its grasp.
+  const std::string arm = GetParam();
+  scenario.red = arm == "right" ? std::deque<bool>{ true } : std::deque<bool>{};
+  scenario.green = { true };
+  scenario.fail_at = "Plan Block Transfer:" + arm;
+  auto tree = makeTree();
+
+  // WHEN complete transfer planning fails.
+  EXPECT_EQ(finish(tree), BT::NodeStatus::FAILURE);
+
+  // THEN the open gripper never approaches or closes on a block with no carry path.
+  EXPECT_EQ(scenario.calls[scenario.fail_at], 1);
+  EXPECT_EQ(scenario.calls["Execute MTC Solution:" + arm], 0);
+  EXPECT_EQ(scenario.calls["Close Right Gripper:right"], 0);
+  EXPECT_EQ(scenario.calls["Close Left Gripper:left"], 0);
+  if (arm == "right")
+  {
+    EXPECT_EQ(scenario.calls["Find Green Block:left"], 0);
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(BothArms, SortBlocksPlanFailure, ::testing::Values("right", "left"),
+                         [](const ::testing::TestParamInfo<std::string>& info) { return info.param; });
+
+TEST_F(SortBlocks, RegressionGrippersCloseBetweenPickupAndCarrySolutions)
+{
+  // GIVEN one block for each arm and distinguishable pickup/carry solutions from the planner.
+  scenario.red = { true };
+  scenario.green = { true };
+  auto tree = makeTree();
+
+  // WHEN both transfers complete through the shipped SubTree port mappings.
+  EXPECT_EQ(finish(tree), BT::NodeStatus::SUCCESS);
+
+  // THEN each hand closes only after pickup and opens only after its own carry, not the other arm's solution.
+  EXPECT_EQ(scenario.transfer_steps,
+            (std::vector<std::string>{ "Open Right Gripper:right", "Plan Block Transfer:right", "right pickup",
+                                       "Close Right Gripper:right", "right carry", "Open Right Gripper:right",
+                                       "Open Left Gripper:left", "Plan Block Transfer:left", "left pickup",
+                                       "Close Left Gripper:left", "left carry", "Open Left Gripper:left" }));
+}
+
+class SortBlocksCancellation : public SortBlocks, public ::testing::WithParamInterface<std::pair<std::string, int>>
+{
+};
+
+TEST_P(SortBlocksCancellation, CancellationHaltsPlanningOrMotionWithoutClosingOrContinuing)
+{
+  // GIVEN an active complete-transfer plan, pickup, or carry.
+  scenario.red = { true };
+  scenario.hold_at = GetParam().first;
+  scenario.hold_on_call = GetParam().second;
   auto tree = makeTree();
   ASSERT_EQ(tree.tickExactlyOnce(), BT::NodeStatus::RUNNING);
+  const auto previous_motions = scenario.motions;
+
+  // WHEN the Objective is cancelled.
   tree.haltTree();
+
+  // THEN the active operation is halted, no later gripper or motion runs, and a later run starts cleanly.
   EXPECT_EQ(scenario.halts, 1);
+  EXPECT_EQ(scenario.motions, previous_motions);
   scenario.hold_at.clear();
   scenario.red.clear();
   EXPECT_EQ(finish(tree), BT::NodeStatus::SUCCESS);
 }
+
+INSTANTIATE_TEST_SUITE_P(TransferStages, SortBlocksCancellation,
+                         ::testing::Values(std::make_pair("Plan Block Transfer:right", 1),
+                                           std::make_pair("Execute MTC Solution:right", 1),
+                                           std::make_pair("Execute MTC Solution:right", 2)),
+                         [](const ::testing::TestParamInfo<std::pair<std::string, int>>& info) {
+                           return info.param.first == "Plan Block Transfer:right" ? "Plan" :
+                                  info.param.second == 1                          ? "Pickup" :
+                                                                                    "Carry";
+                         });
 }  // namespace
