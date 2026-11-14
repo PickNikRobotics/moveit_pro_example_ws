@@ -1,0 +1,5 @@
+repositories:
+  external_dependencies/microduck_description:
+    type: git
+    url: https://github.com/adityakamath/microduck_description.git
+    version: 4d378791e561912cfbb363b075c44b5d3a922d22
