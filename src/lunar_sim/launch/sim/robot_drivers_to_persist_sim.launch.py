@@ -55,7 +55,7 @@ from nav2_common.launch import RewrittenYaml
 
 
 def _urdf_param(name):
-    """Return a config.yaml urdf_params value, so the map anchor follows the scene MuJoCo loads."""
+    """Return a config.yaml urdf_params value, so launch follows the scene MuJoCo loads."""
     urdf_params = (
         SystemConfigParser().get_hardware_config().robot_description.urdf_params
     )
@@ -78,6 +78,47 @@ def _select_map_mode(context):
     localization = IfCondition(LaunchConfiguration("localization")).evaluate(context)
     mode = "slam" if slam else "localization" if localization else "static"
     return [SetLaunchConfiguration("lunar_map_mode", mode)]
+
+
+def _as_bool(value):
+    """Normalize a VO selector without treating every nonempty string as true."""
+    if isinstance(value, bool):
+        return value
+    if value in (0, "0", "false", "False"):
+        return False
+    if value in (1, "1", "true", "True"):
+        return True
+    raise ValueError(f"enable_vo must be a boolean, got {value!r}.")
+
+
+def _vo_enabled(config_value):
+    """Let the explicit integration lane override the default-off package config."""
+    return _as_bool(os.environ.get("LUNAR_SIM_ENABLE_VO", config_value))
+
+
+def _vo_device(config_value):
+    """Select CPU or CUDA explicitly, without falling back between providers."""
+    value = os.environ.get("LUNAR_SIM_VO_DEVICE", config_value)
+    if value not in ("cpu", "cuda"):
+        raise ValueError(f"vo_device must be 'cpu' or 'cuda', got {value!r}.")
+    return value
+
+
+def _vo_bundle_manifest(config_value):
+    """Require a user-supplied model bundle only when VO is explicitly enabled."""
+    value = os.environ.get("LUNAR_SIM_VO_BUNDLE_MANIFEST", config_value)
+    if not isinstance(value, str) or not os.path.isabs(value):
+        raise ValueError(
+            "VO requires a user-supplied bundle: set vo_bundle_manifest in config.yaml "
+            "or LUNAR_SIM_VO_BUNDLE_MANIFEST to an absolute manifest path inside the Runtime. "
+            "This workspace does not download VO models."
+        )
+    if not os.path.isfile(value):
+        raise FileNotFoundError(
+            f"VO bundle manifest is not a file inside the Runtime: {value!r}. "
+            "Mount the downloaded bundle and set vo_bundle_manifest to its container path."
+        )
+    return value
 
 
 def _spawn_pose(scene_path, keyframe):
@@ -281,6 +322,33 @@ def generate_launch_description():
         ],
     )
 
+    optional_vo_actions = []
+    if _vo_enabled(_urdf_param("enable_vo")):
+        vo_launch = os.path.join(
+            get_package_share_directory("moveit_pro_nav_ros"),
+            "launch",
+            "stereo_visual_odometry.launch.py",
+        )
+        bundle_manifest = _vo_bundle_manifest(_urdf_param("vo_bundle_manifest"))
+        optional_vo_actions.append(
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(vo_launch),
+                launch_arguments={
+                    "bundle_manifest": bundle_manifest,
+                    "device": _vo_device(_urdf_param("vo_device")),
+                    "left_image_topic": "/oakd/left/image_rect",
+                    "right_image_topic": "/oakd/right/image_rect",
+                    "left_camera_info_topic": "/oakd/left/camera_info",
+                    "right_camera_info_topic": "/oakd/right/camera_info",
+                    "camera_frame": "oakd_left_optical_frame",
+                    "odom_frame": "camera_odom",
+                    "model_width": "1024",
+                    "model_height": "576",
+                    "autostart": "false",
+                }.items(),
+            )
+        )
+
     return LaunchDescription(
         declare_args
         + [
@@ -298,4 +366,5 @@ def generate_launch_description():
             scan_relay("rear"),
             fuse_state_estimator,
         ]
+        + optional_vo_actions
     )

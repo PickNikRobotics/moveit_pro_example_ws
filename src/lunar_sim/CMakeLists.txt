@@ -18,6 +18,7 @@ install(
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
+  find_package(ament_cmake_ros REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
   # Pytest discovers the Objective integration module from this directory too. Give the
@@ -33,6 +34,17 @@ if(BUILD_TESTING)
           base_jog_config_test test/test_base_jog_config.py
           TIMEOUT 30
           ENV ${LUNAR_SIM_UNIT_TEST_ENV})
+  ament_add_pytest_test(
+          vo_trajectory_metrics_test test/vo_measurement/test_trajectory_metrics.py
+          TIMEOUT 30
+          ENV ${LUNAR_SIM_UNIT_TEST_ENV})
+  ament_add_ros_isolated_pytest_test(
+          vo_composed_tf_test test/vo_measurement/test_tf_lookup.py
+          TIMEOUT 30
+          ENV ${LUNAR_SIM_UNIT_TEST_ENV})
+  # Always let the isolated runner allocate the domain, even if the caller exported one.
+  set_property(TEST vo_composed_tf_test APPEND PROPERTY ENVIRONMENT_MODIFICATION
+    "ROS_DOMAIN_ID=unset:")
   # Redirect ROS node logs into the test_results tree so the test-results CI artifact ships them back too.
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py

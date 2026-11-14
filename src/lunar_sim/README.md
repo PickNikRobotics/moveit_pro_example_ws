@@ -478,6 +478,91 @@ The stereo pair is gated behind `enable_vo` (default off), matching hangar_sim, 
 
 With `enable_vo` on, `picknik_mujoco_ros` publishes the pair as rectified stereo for visual odometry: mono8 `/oakd/{left,right}/image_rect` and `/oakd/{left,right}/camera_info`, sharing one stamp per frame pair, with the baseline in the right `camera_info`'s `P[3]`. The `oakd_stereo` `<sensor>` block in `description/husky_a300_mujoco.xacro` declares the pair.
 
+### Native stereo visual odometry observer
+
+#### Hardware and GPU setup
+
+A GPU-enabled MoveIt Pro Runtime is a container with the CUDA inference libraries, access to the host NVIDIA GPU through NVIDIA Container Toolkit, and VO explicitly configured to use `device=cuda`. Installing a GPU or running a CUDA-labelled image alone does not select GPU inference: native VO defaults to `device=cpu`. Verify the selected provider for both ALIKED and LightGlue; a requested CUDA run that cannot use CUDA must fail rather than silently fall back to CPU.
+
+**CUDA compatibility is not the same as live VO performance.** This version's Ubuntu 24.04 / ROS 2 Jazzy GPU images use CUDA 13.2. NVIDIA removed Maxwell, Pascal, and Volta compilation/library support starting with [CUDA 13.0](https://docs.nvidia.com/cuda/archive/13.0.0/cuda-toolkit-release-notes/index.html#deprecated-architectures), so Turing (compute capability 7.5) or newer is a necessary architecture floor for this CUDA 13 stack, not a sufficient performance guarantee. NVIDIA lists the [GTX 1080 Ti as compute capability 6.1](https://developer.nvidia.com/cuda/gpus/legacy), below that floor, and the [RTX 3050 as 8.6](https://developer.nvidia.com/cuda/gpus), above it. The GTX 1080 Ti is therefore outside this stack's supported architecture range. No 1080 Ti benchmark was run for this Objective. A different CUDA 12 stack would need separate compatibility and runtime qualification; it is not provided by this example.
+
+**Minimum performant GPU and VRAM for this Objective: not established.** A Thor run completed the
+full Objective with CUDA ALIKED/LightGlue at about 4.5 Hz and met the trajectory, coverage, gap,
+lifecycle, and cancellation gates. That result qualifies the tested configuration; it does not set
+a product throughput minimum or qualify an RTX 3050. Follow-up: evaluate the previously benchmarked
+TensorRT FP32/TF32 ALIKED path in the native runtime, rechecking accuracy and lifecycle.
+
+VO models are **not included or downloaded by this public workspace**. Obtain an authorized
+1024x576 ALIKED/LightGlue bundle separately and mount the whole bundle into the Runtime; its
+manifest and model files must remain together. Public model downloads are not yet available.
+Do not add the private model repository as a workspace submodule.
+
+Set `enable_vo: true`, choose `vo_device: "cpu"` or `vo_device: "cuda"`, and set
+`vo_bundle_manifest` to the manifest's absolute path **inside the Runtime** in
+`config/config.yaml`. Rebuild `lunar_sim`, then restart the Runtime. An explicit
+`LUNAR_SIM_VO_BUNDLE_MANIFEST` Runtime-environment value overrides that manifest path.
+Enabling VO without a valid manifest path fails with setup instructions instead of downloading
+models or starting an incomplete observer. The default remains `enable_vo: false` with `vo_device: "cpu"`, so ordinary lunar startup
+has no VO inference cost and CPU remains available when explicitly enabled. A CUDA request is passed
+to the native launch as `device=cuda`; the native runtime faults if either graph is served by a
+different provider rather than falling back to CPU.
+
+Optional Runtime-environment overrides are `LUNAR_SIM_ENABLE_VO=1`, `LUNAR_SIM_VO_DEVICE=cpu` or `cuda`, and `LUNAR_SIM_VO_BUNDLE_MANIFEST=/absolute/container/path/to/manifest.yaml`. They override the corresponding configuration values when the Runtime starts; exporting them only in the measurement terminal does not reconfigure a running Runtime.
+The persistent-driver launch includes MoveIt Pro's installed `stereo_visual_odometry.launch.py` in
+its own component container with the 1024x576 ALIKED/LightGlue bundle, the
+`/oakd/{left,right}` rectified streams, physical frame `oakd_left_optical_frame`, and
+`autostart=false`. Confirm the runtime log identifies CUDA for both ALIKED and LightGlue before
+accepting a GPU result.
+
+The runnable `Estimate Visual Odometry Square` Objective stops any stale session, resets the VO
+origin, starts and waits for tracking, and reuses `Dead Reckon Square`. It rejects a runtime that is
+not running, tracking loss, or a reinitialization. Its `Finally` branch requests STOP after normal
+completion or while the tree is being halted. STOP cleanup is best-effort within the 70-second
+halt bound; its 65-second response timeout does not guarantee completion behind an arbitrarily
+slow or stuck START callback. Timing out or halting the START client does not cancel the
+server-side model load. The reused `DriveDistance` and `TurnInPlace` Behaviors continue to control
+the rover from wheel/IMU odometry. VO is an independent observer and publishes no TF.
+
+The Objective does not produce drift scores: it runs the experiment and monitors tracking. Separate optional scripts under [`test/vo_measurement/`](test/vo_measurement/README.md) measure the published VO result against same-run MuJoCo ground truth. Run `measure_vo_square.py` in the existing Runtime's ROS environment, run the Objective in the Desktop App, then press Enter in the measurement terminal after completion. The recorder uses a source-stamped camera-mounting transform and prints metrics without starting or controlling the Runtime; pytest is not required. Ground truth is labelled `mj_world -> chassis_link`; its twist is not scored.
+
+Both camera trajectories are anchored at that same first VO timestamp. The scorer interpolates
+truth by source stamp with at most 0.05 s nearest-sample separation and performs no scale, rotation,
+or translation fit beyond the common initial-pose anchor. It rejects non-finite, duplicate, or
+backward stamps, pose discontinuities/resets, and missing truth brackets instead of sorting,
+dropping, or joining segments.
+
+The functional example qualification criteria are:
+
+- at least 40 VO poses, 5.5 m of physical-camera path, and 4.5 rad of accumulated rotation;
+- ATE RMSE at most 0.35 m, position-error p95 at most 0.60 m, final drift at most 0.45 m, and
+  orientation RMSE at most 15 degrees;
+- maximum output, leading, and trailing gaps of 0.50 s, with no consecutive VO step above 0.75 m
+  or 1.0 rad.
+
+The scorer always reports output rate, but rate is not a functional acceptance threshold: this
+observer does not control the rover, and no product minimum has been specified. The other limits
+require most of the 7.2 m chassis route and all four turns while rejecting truncated, geometrically
+wrong, discontinuous, or stale trajectories. They are declared in
+`test/vo_measurement/trajectory_metrics.py`. Synthetic tests verify the scoring logic, not live VO performance. Save the manual check's output or record a bag when you need retained results.
+
+A bag remains useful for diagnosis:
+
+```bash
+ros2 bag record -o lunar_vo_square \
+  /oakd/left/image_rect /oakd/right/image_rect \
+  /oakd/left/camera_info /oakd/right/camera_info \
+  /ground_truth/odom /stereo_visual_odometry/odometry \
+  /stereo_visual_odometry/diagnostics /tf /tf_static /odom \
+  /imu_sensor_broadcaster/imu
+```
+
+Record host load and simulator real-time factor beside a qualification result: CPU replay accuracy
+is not evidence of live throughput. Keep `use_sim_time` false for live runs because this simulator
+publishes no `/clock`.
+
+This flow is map-independent. `map -> odom` and the existing fuse/Nav2 chain are unchanged; VO is
+not fed into fuse, does not own a TF edge, and does not require a SLAM map or AMCL.
+
 ## Roadmap
 
 This is layer 2 (procedural crater heightfield + scattered rocks) of a lunar-environment stack,

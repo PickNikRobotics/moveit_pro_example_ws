@@ -29,6 +29,7 @@
 """Integration tests for the lunar_sim objective library and its navigation stack."""
 
 import math
+import os
 import time
 
 import pytest
@@ -40,6 +41,7 @@ from rcl_interfaces.srv import GetParameters
 from rclpy.action import ActionClient
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from tf2_msgs.msg import TFMessage
+from moveit_studio_utils_py.system_config import SystemConfigParser
 from moveit_pro_test_utils.objective_test_fixture import (
     ExecuteObjectiveResource,
     MUJOCO_RESET_HOOK,
@@ -55,8 +57,37 @@ SIM_RESETTER.register("lunar_sim", MUJOCO_RESET_HOOK)
 
 cancel_objectives: set[str] = set()
 
+
+def _vo_enabled_for_integration(configured_value: object, override: str | None) -> bool:
+    """Apply the launch selector semantics to the Objective integration lane."""
+    value = configured_value if override is None else override
+    if value in (True, 1, "1", "true", "True"):
+        return True
+    if value in (False, 0, "0", "false", "False"):
+        return False
+    source = "config enable_vo" if override is None else "LUNAR_SIM_ENABLE_VO"
+    raise ValueError(f"{source} must be a boolean, got {value!r}.")
+
+
+def _configured_enable_vo() -> object:
+    """Read enable_vo through the Runtime's effective config parser."""
+    urdf_params = (
+        SystemConfigParser().get_hardware_config().robot_description.urdf_params
+    )
+    return next(param["enable_vo"] for param in urdf_params if "enable_vo" in param)
+
+
 # Non-runnable objectives are filtered out by the fixture and need not be listed here.
 skip_objectives = {
+    # Native stereo VO is opt-in because its real models and stereo rendering are expensive. The
+    # enabled lane must execute this Objective, never silently skip it.
+    *(
+        {"Estimate Visual Odometry Square"}
+        if not _vo_enabled_for_integration(
+            _configured_enable_vo(), os.environ.get("LUNAR_SIM_ENABLE_VO")
+        )
+        else set()
+    ),
     # User input required: no primary UI is attached in headless CI.
     "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
     "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
