@@ -35,7 +35,9 @@
 
 Both simulated SICK nanoScan3s are <camera> sensors with DEPTH_TYPE=THREE_D_LIDAR, so
 picknik_mujoco_ros publishes them as an organized PointCloud2 rather than as a LaserScan.
-The self-return filters consume /scan_front_raw and /scan_rear_raw. Their filtered LaserScans feed the timestamp-matched /scan_mapping stream for Beluga AMCL and SLAM, and both Nav2 costmap obstacle layers. The parameters are set in launch/sim/robot_drivers_to_persist_sim.launch.py.
+The self-return filters consume /scan_front_raw and /scan_rear_raw. See the package
+README's "Localization and navigation Objectives" for downstream consumers. The
+parameters are set in launch/sim/robot_drivers_to_persist_sim.launch.py.
 
 The cloud is `resolution` beams wide and 3 rows tall. Row 1 is the elevation-0 row and is
 the only one that belongs in a 2D scan; rows 0 and 2 sit at +/-fovy/2 and would put floor
@@ -170,7 +172,7 @@ class LidarFlattener(Node):
 
         # A beam that hit nothing, or hit outside [range_min, range_max], is left as NaN
         # by the plugin's stitcher. LaserScan wants those out of range, not NaN, because
-        # AMCL and both costmap layers only skip a reading they can compare against
+        # the costmap layers need an out-of-range value they can compare against
         # range_max.
         valid = np.isfinite(ranges)
         if self.noise > 0.0:

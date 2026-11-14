@@ -34,8 +34,8 @@
 """Merges /scan_front + /scan_rear (each a 275 deg sweep trimmed by 6 deg at
 each end, blind notch in opposite corners) into a single 360 deg /scan in
 base_link, with timestamp-matched /scan_mapping as a diagnostic output.
-AMCL and slam_toolbox now use /livox/scan; Nav2 still consumes the individual
-SICK scans. These merged SICK outputs remain available for inspection.
+See the package README's "Localization and navigation Objectives" for consumers;
+these merged SICK outputs remain available for inspection.
 
 The sources are produced by this package's lidar_flattener from the MuJoCo 3D
 lidars' point clouds, 1651 beams each, the figure the real nanoScan3 reports.
@@ -71,8 +71,8 @@ class ScanMerger(Node):
         self.declare_parameter("rear_topic", "/scan_rear")
         self.declare_parameter("output_topic", "/scan")
         self.declare_parameter("target_frame", "base_link")
-        # Bin count is set by angular ACCURACY, not by how many bins fill. Do NOT lower it to
-        # "fill" the scan; it MOVES TOGETHER with nav2's max_beams.
+        # Bin count controls angular precision, not how many bins fill; lowering it to
+        # "fill" the diagnostic scan changes the projected bearings.
         self.declare_parameter("num_output_beams", 1440)
         self.declare_parameter("merge_rate_hz", 10.0)
         self.declare_parameter("max_scan_age_sec", 0.2)
@@ -261,8 +261,8 @@ class ScanMerger(Node):
         out.ranges = ranges_out.astype(np.float32).tolist()
 
         self.scan_pub.publish(out)
-        # The Simulator renders both lidars together. SLAM needs one instant and
-        # must skip empty bins instead of tracing phantom free-space rays.
+        # Retain the legacy single-instant diagnostic: unobserved bins are below
+        # range_min, not fabricated free-space endpoints.
         if front.header.stamp == rear.header.stamp:
             mapping_scan = copy.deepcopy(out)
             mapping_scan.ranges = (
