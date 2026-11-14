@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Build Map">
+  <BehaviorTree
+    ID="Build Map"
+    _description="Switch to SLAM, teleoperate to explore the hangar, save the map, then restore localization against the previous map."
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="WaitForUserDecision"
+        prompt="Start mapping, then drive with the Base tab. Continue saves the map; Abort ends mapping without saving."
+        approve_label="Start"
+        reject_label="Cancel"
+        timeout_sec="3600"
+      />
+      <Action
+        ID="WaitForServiceAvailable"
+        service_name="/lifecycle_manager_mapping/manage_nodes"
+        timeout="3"
+      />
+      <Action
+        ID="CallManageLifecycleNodes"
+        service_name="/lifecycle_manager_navigation/manage_nodes"
+        command="1"
+      />
+      <Action
+        ID="Script"
+        code="mapping_ready := false; localization_restored := false; map_saved := false"
+      />
+      <Decorator ID="ForceSuccess">
+        <Control ID="Parallel" success_count="1" failure_count="1">
+          <Control ID="Sequence">
+            <Decorator ID="RetryUntilSuccessful" num_attempts="-1">
+              <Control ID="Sequence">
+                <Action ID="WaitForDuration" delay_duration="0.05" />
+                <Action ID="ScriptCondition" code="mapping_ready" />
+              </Control>
+            </Decorator>
+            <Action
+              ID="GetOccupancyGrid"
+              topic_name="/map"
+              message_out="{mapping_grid}"
+            />
+            <SubTree
+              ID="Request Teleoperation"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              joint_trajectory_controller_name="joint_trajectory_controller"
+              execution_pipeline="jtc"
+              enable_user_interaction="true"
+              initial_teleop_mode="3"
+              user_interaction_prompt="Drive with the Base tab. Stop moving, then press Continue to save the map, or Abort to discard it."
+            />
+            <Action
+              ID="CallSaveMapService"
+              map_name="hangar_map"
+              service_name="/slam_toolbox/save_map"
+              response_timeout="30"
+              wait_for_server_available_timeout="3"
+            />
+            <Action ID="Script" code="map_saved = true" />
+          </Control>
+          <Action
+            ID="SwitchLifecycleManagers"
+            source_manager="/lifecycle_manager_localization"
+            target_manager="/lifecycle_manager_mapping"
+            ready="{mapping_ready}"
+            restored="{localization_restored}"
+          />
+        </Control>
+      </Decorator>
+      <Action ID="ScriptCondition" code="localization_restored" />
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="world"
+        source_frame_id="ridgeback_base_link"
+        transform="{truth_transform}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{truth_transform}"
+        pose_stamped="{truth_pose}"
+      />
+      <!--The shipped hangar map is aligned with simulation world, not the newly built SLAM map.-->
+      <Action
+        ID="ReinterpretPoseFrame"
+        input_pose="{truth_pose}"
+        expected_input_frame_id="world"
+        frame_id="map"
+        output_pose="{recovery_pose}"
+      />
+      <SubTree
+        ID="Refine Localization In Place Subtree"
+        seed_pose="{recovery_pose}"
+        restore_pose="{recovery_pose}"
+      />
+      <Action
+        ID="CallManageLifecycleNodes"
+        service_name="/lifecycle_manager_navigation/manage_nodes"
+        command="2"
+      />
+      <Action ID="ScriptCondition" code="map_saved" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Build Map">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
