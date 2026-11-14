@@ -32,17 +32,12 @@ import argparse
 import hashlib
 import importlib.util
 import math
+from pathlib import Path
 import sys
 import time
-import xml.etree.ElementTree as ET
-from pathlib import Path
 from unittest.mock import Mock
+import xml.etree.ElementTree as ET
 
-import mujoco
-import numpy as np
-import pytest
-import rclpy
-import yaml
 from ament_index_python.packages import (
     get_package_prefix,
     get_package_share_directory,
@@ -50,17 +45,17 @@ from ament_index_python.packages import (
 from launch import LaunchContext
 from launch.utilities import perform_substitutions
 from launch_ros.actions import Node
+import mujoco
+import numpy as np
+import pytest
+import rclpy
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import LaserScan, PointCloud2, PointField
+import yaml
 
 PACKAGE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PACKAGE / "scripts"))
-from livox_localization_scan import (
-    LivoxLocalizationScan,
-    SENSOR_BASE_XYZ,
-    SLICE_HEIGHT_M,
-    slice_livox_cloud,
-)  # noqa: E402
+livox = importlib.import_module("livox_localization_scan")
 
 
 def cloud(points, *, bigendian=False):
@@ -90,7 +85,7 @@ def finite_ranges(scan):
 def test_scan_preserves_survey_geometry_stamp_and_native_cloud(bigendian):
     msg = cloud([[2, 0, 0], [0, -3, 0]], bigendian=bigendian)
     original = bytes(msg.data)
-    scan = slice_livox_cloud(msg)
+    scan = livox.slice_livox_cloud(msg)
     assert bytes(msg.data) == original
     assert scan.header.stamp == msg.header.stamp
     assert scan.header.frame_id == "livox_slice"
@@ -110,7 +105,7 @@ def test_scan_preserves_survey_geometry_stamp_and_native_cloud(bigendian):
 
 def test_height_band_is_in_base_link_not_native_or_world():
     # Native Z points down: +/-0.02 m maps to base Z=1.68..1.72 m.
-    scan = slice_livox_cloud(
+    scan = livox.slice_livox_cloud(
         cloud([[2, 0, 0.02], [0, 3, -0.02], [-4, 0, 0.02001], [0, -5, -0.02001]])
     )
     np.testing.assert_allclose(sorted(finite_ranges(scan)), [2, 3])
@@ -120,7 +115,7 @@ def test_half_metre_self_gate_uses_sensor_xy_not_base_xy_or_3d_range():
     # x=0.49 is 0.70 m from base_link, but inside the sensor-centred self gate.
     # hypot(0.4999, 0.02) >0.50 must still be excluded by the planar self gate.
     # A rear return at x=-0.50 is only 0.29 m from base, but must survive.
-    scan = slice_livox_cloud(
+    scan = livox.slice_livox_cloud(
         cloud([[0.49, 0, 0], [0.4999, 0, 0.02], [-0.50, 0, 0], [0, -0.50, 0]])
     )
     np.testing.assert_allclose(finite_ranges(scan), [0.5, 0.5])
@@ -129,7 +124,7 @@ def test_half_metre_self_gate_uses_sensor_xy_not_base_xy_or_3d_range():
 def test_source_range_limit_remains_3d_and_nearest_planar_hit_wins():
     # The second 40 m point exceeds the original 3D source-range limit, though
     # its planar range is 40.0. An invalid component can never produce a hit.
-    scan = slice_livox_cloud(
+    scan = livox.slice_livox_cloud(
         cloud([[40, 0, 0], [0, 40, 0.02], [3, 0, 0], [2, 0, 0.019], [1, 0, np.inf]])
     )
     np.testing.assert_allclose(finite_ranges(scan), [2])
@@ -144,7 +139,7 @@ def test_beams_use_nearest_centres_and_wrap_at_the_seam():
     points = [
         [r * math.cos(a), -r * math.sin(a), 0] for r, a in zip((3, 2, 4, 5), angles)
     ]
-    scan = slice_livox_cloud(cloud(points))
+    scan = livox.slice_livox_cloud(cloud(points))
     assert scan.ranges[20] == pytest.approx(2.0)
     assert scan.ranges[332] == 4.0
     assert len(finite_ranges(scan)) == 2
@@ -166,12 +161,12 @@ def test_rejects_other_source_contracts(change):
     else:
         msg.data = msg.data[:-1]
     with pytest.raises(ValueError, match="333x60 packed XYZ"):
-        slice_livox_cloud(msg)
+        livox.slice_livox_cloud(msg)
 
 
 def test_stopped_duplicate_older_or_invalid_source_is_not_replayed():
     rclpy.init()
-    node = LivoxLocalizationScan()
+    node = livox.LivoxLocalizationScan()
     node._publisher = Mock()
     try:
         msg = cloud([[2, 0, 0]])
@@ -194,7 +189,7 @@ def test_stopped_duplicate_older_or_invalid_source_is_not_replayed():
 
 def test_ros_delivers_one_scan_per_fresh_cloud_and_stops_with_the_source():
     rclpy.init()
-    node = LivoxLocalizationScan()
+    node = livox.LivoxLocalizationScan()
     received = []
     try:
         source = node.create_publisher(
@@ -240,13 +235,13 @@ def test_projection_calibration_matches_the_unchanged_fixed_inverted_mount():
     sensor = model.body("livox_frame").id
     base_rotation = data.xmat[base].reshape(3, 3)
     sensor_origin = (data.xpos[sensor] - data.xpos[base]) @ base_rotation
-    np.testing.assert_allclose(sensor_origin, SENSOR_BASE_XYZ, atol=1e-6)
+    np.testing.assert_allclose(sensor_origin, livox.SENSOR_BASE_XYZ, atol=1e-6)
     np.testing.assert_allclose(
         base_rotation.T @ data.xmat[sensor].reshape(3, 3),
         np.diag([1, -1, -1]),
         atol=1e-6,
     )
-    assert SLICE_HEIGHT_M == SENSOR_BASE_XYZ[2]
+    assert livox.SLICE_HEIGHT_M == livox.SENSOR_BASE_XYZ[2]
 
 
 def test_installed_map_is_the_verified_partial_survey_not_the_geometry_control():

@@ -47,10 +47,7 @@ import math
 import os
 import shutil
 
-import yaml
-
 from ament_index_python.packages import get_package_share_directory
-from nav2_common.launch import RewrittenYaml
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -58,15 +55,17 @@ from launch.actions import (
     IncludeLaunchDescription,
     OpaqueFunction,
 )
+from launch.conditions import IfCondition, UnlessCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import (
-    LaunchConfiguration,
     EnvironmentVariable,
+    LaunchConfiguration,
     PythonExpression,
 )
 from launch_ros.parameter_descriptions import ParameterValue
-from launch.conditions import IfCondition, UnlessCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from moveit_studio_utils_py.launch_common import NodeWithAnsiLogging as Node
+from nav2_common.launch import RewrittenYaml
+import yaml
 
 # Nav2's own navigate-to-pose tree, and the copy of it this launch file writes with the Smac
 # planner selected instead. BehaviorTree.CPP will not accept a relative tree path, so both are
@@ -169,7 +168,8 @@ def require_mapping_for_truth_navigation(context):
     """Keep the optional truth-based survey mode out of ordinary AMCL navigation."""
     if not IfCondition(LaunchConfiguration("slam")).evaluate(context):
         raise RuntimeError(
-            "MARKET_SIM_GROUND_TRUTH_NAV requires slam:=true for a mapping survey; set the flag false for lidar-localized navigation."
+            "MARKET_SIM_GROUND_TRUTH_NAV requires slam:=true for a mapping survey; "
+            "set the flag false for lidar-localized navigation."
         )
     return []
 
@@ -329,7 +329,8 @@ def generate_launch_description():
         executable="reset_controller_guard.py",
         name="reset_controller_guard",
     )
-    # Reset synchronization holds Nav2 commands until Fuse, planar TF and (outside SLAM) AMCL agree.
+    # Reset synchronization holds Nav2 commands until Fuse, planar TF and
+    # (outside SLAM) AMCL agree.
     relocalizer = Node(
         package="market_sim",
         executable="reset_relocalizer.py",
@@ -349,7 +350,8 @@ def generate_launch_description():
         base_limits = yaml.safe_load(stream)["base_jvc"]["ros__parameters"][
             "max_joint_velocity"
         ]
-    # Convert body-frame commands to the simulation's planar actuators; fused pose alone reaches MoveIt.
+    # Convert body-frame commands to the simulation's planar actuators;
+    # fused pose alone reaches MoveIt.
     base_velocity = Node(
         package="market_sim",
         executable="base_twist_to_planar.py",
@@ -489,7 +491,8 @@ def generate_launch_description():
             remappings=list(remappings),
         )
 
-    # The controller feeds the smoother; both its output and recoveries publish body-frame /nav2_cmd_vel.
+    # The controller feeds the smoother; both its output and recoveries publish
+    # body-frame /nav2_cmd_vel.
     to_smoother = [("cmd_vel", "cmd_vel_nav")]
     navigation = [
         nav2_node("nav2_controller", "controller_server", to_smoother),

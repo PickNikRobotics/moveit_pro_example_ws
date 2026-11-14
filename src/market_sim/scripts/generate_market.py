@@ -45,11 +45,11 @@ import argparse
 import copy
 import json
 import math
+from pathlib import Path
 import re
 import struct
 import xml.etree.ElementTree as ET
 import zlib
-from pathlib import Path
 
 import numpy as np
 
@@ -274,7 +274,7 @@ def store_visuals(layout, world):
 
 
 def decor_box(name, pos, size, material):
-    """A visual-only box: no contacts, and in the group cameras and lidars render."""
+    """Create a visual-only box: no contacts, and in the group cameras and lidars render."""
     return element(
         "geom",
         [
@@ -747,7 +747,7 @@ def gondola_pose(layout, gondola):
 
 
 def unit_poses(layout, gondola, back_depth):
-    """World poses of a gondola's two unit frames: on the floor, at the front, +Y into the shelf."""
+    """Return world poses of both gondola units, with +Y into the shelf."""
     pose, yaw = gondola_pose(layout, gondola)
     return [
         (transform(pose, yaw, (0.0, -back_depth, 0.0)), yaw),
@@ -913,7 +913,7 @@ def localization_footprints(layout, shelf, footprints):
 
 
 def keyframes():
-    """The default key: the robot's default pose, at the start."""
+    """Return the default key: the robot's default pose, at the start."""
     attrs = [("name", "default"), ("qpos", fmt(ROBOT_QPOS)), ("ctrl", fmt(ROBOT_CTRL))]
     return [element("key", attrs)]
 
@@ -922,7 +922,7 @@ def keyframes():
 
 
 def aisle_goals(layout, back_depth):
-    """A base pose facing the middle of each real aisle, in the map frame.
+    """Return a base pose facing the middle of each real aisle, in the map frame.
 
     The map frame equals the world frame. E gondolas are worked from their west side, the
     others from their south side.

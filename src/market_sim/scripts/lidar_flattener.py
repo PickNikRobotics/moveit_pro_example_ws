@@ -79,7 +79,8 @@ class LidarFlattener(Node):
         # describing the columns published. angle_min is 0 because beam 0 is the frame's X.
         self.declare_parameter("angle_min", 0.0)
         self.declare_parameter("angle_max", math.radians(270.0))
-        # Trimming drops each sweep's end beams and moves angle_min off 0; the downstream box filter separately removes returns within the stowed Duo envelope.
+        # Trimming drops each sweep's end beams and moves angle_min off 0;
+        # the downstream box filter separately removes returns within the stowed Duo envelope.
         self.declare_parameter("trim_low_deg", 0.0)
         self.declare_parameter("trim_high_deg", 0.0)
         self.declare_parameter("range_min", 0.05)

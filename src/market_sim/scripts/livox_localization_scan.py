@@ -42,14 +42,13 @@ range validation and 0.50 m self gate while advertising range_min=0.1 m.
 
 import math
 
+from livox_mid360_cloud import stamp_ns
 import numpy as np
 import rclpy
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import LaserScan, PointCloud2, PointField
-
-from livox_mid360_cloud import stamp_ns
 
 SOURCE_FRAME = "livox_frame"
 SCAN_FRAME = "livox_slice"

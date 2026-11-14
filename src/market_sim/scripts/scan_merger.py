@@ -31,7 +31,9 @@
 # Copied from the PickNik sim of this robot, reformatted by this repository's formatter;
 # its defaults (1440 beams, 10 Hz, base_link, 0.20 m minimum) already match this package's scans.
 
-"""Merges /scan_front + /scan_rear (each a 275 deg sweep trimmed by 6 deg at
+"""Merge the SICK scans into diagnostic 360-degree base_link outputs.
+
+Merges /scan_front + /scan_rear (each a 275 deg sweep trimmed by 6 deg at
 each end, blind notch in opposite corners) into a single 360 deg /scan in
 base_link, with timestamp-matched /scan_mapping as a diagnostic output.
 See the package README's "Localization and navigation Objectives" for consumers;
@@ -133,8 +135,10 @@ class ScanMerger(Node):
         self._latest_rear = msg
 
     def _lookup_transform(self, source_frame, stamp):
-        """Resolve the mount every cycle rather than caching: fresh costs nothing against a static
-        transform and stays correct if the frame goes dynamic again.
+        """Resolve the mount every cycle rather than caching it.
+
+        Fresh costs nothing against a static transform and stays correct if the
+        frame goes dynamic again.
         """
         try:
             return self.tf_buffer.lookup_transform(
