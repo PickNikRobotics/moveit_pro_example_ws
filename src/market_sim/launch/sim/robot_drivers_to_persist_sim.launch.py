@@ -47,10 +47,7 @@ import math
 import os
 import shutil
 
-import yaml
-
 from ament_index_python.packages import get_package_share_directory
-from nav2_common.launch import RewrittenYaml
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -58,15 +55,17 @@ from launch.actions import (
     IncludeLaunchDescription,
     OpaqueFunction,
 )
+from launch.conditions import IfCondition, UnlessCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import (
-    LaunchConfiguration,
     EnvironmentVariable,
+    LaunchConfiguration,
     PythonExpression,
 )
 from launch_ros.parameter_descriptions import ParameterValue
-from launch.conditions import IfCondition, UnlessCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from moveit_studio_utils_py.launch_common import NodeWithAnsiLogging as Node
+from nav2_common.launch import RewrittenYaml
+import yaml
 
 # Nav2's own navigate-to-pose tree, and the copy of it this launch file writes with the Smac
 # planner selected instead. BehaviorTree.CPP will not accept a relative tree path, so both are
@@ -169,7 +168,8 @@ def require_mapping_for_truth_navigation(context):
     """Keep the optional truth-based survey mode out of ordinary AMCL navigation."""
     if not IfCondition(LaunchConfiguration("slam")).evaluate(context):
         raise RuntimeError(
-            "MARKET_SIM_GROUND_TRUTH_NAV requires slam:=true for a mapping survey; set the flag false for lidar-localized navigation."
+            "MARKET_SIM_GROUND_TRUTH_NAV requires slam:=true for a mapping survey; "
+            "set the flag false for lidar-localized navigation."
         )
     return []
 
@@ -206,8 +206,8 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "localization_map",
-            default_value=os.path.join(share, "maps", "market_localization.yaml"),
-            description="Map that AMCL localizes on: what the lidars see at their height.",
+            default_value=os.path.join(share, "maps", "market_livox_h170.yaml"),
+            description="Survey-built map for the Mid-360 1.70 +/-0.02 m localization slice.",
         ),
         DeclareLaunchArgument(
             "log_level", default_value="info", description="Nav2 and AMCL log level."
@@ -217,7 +217,9 @@ def generate_launch_description():
     frames = [
         static_transform("world", "map"),
         static_transform("world", "mj_world"),
-        # Scan frames: z up, X at beam 0 of each sweep, at the lidar mounting points.
+        # The study projects the Mid-360's XY origin onto base Z=0, with X forward/Y left.
+        static_transform("base_link", "livox_slice", x=0.210),
+        # SICK scan frames: z up, X at beam 0 of each sweep, at the lidar mounting points.
         static_transform(
             "base_link",
             "lidar_front_ROS",
@@ -259,11 +261,17 @@ def generate_launch_description():
             }
         ],
     )
-    # Native 360-deg depth lidar -> asymmetric Mid-360 cloud, separate from SICK navigation.
+    # Keep the native Mid-360 cloud unchanged; a separate projection feeds AMCL and SLAM.
     livox_cloud = Node(
         package="market_sim",
         executable="livox_mid360_cloud.py",
         name="livox_mid360_cloud",
+        output="log",
+    )
+    livox_scan = Node(
+        package="market_sim",
+        executable="livox_localization_scan.py",
+        name="livox_localization_scan",
         output="log",
     )
     # Exclude returns inside the stowed Duo envelope; navigation stows the arms before driving.
@@ -304,9 +312,9 @@ def generate_launch_description():
         for side in ("front", "rear")
     ]
 
-    # AMCL reads one scan topic, so both scans are merged into one 360 deg /scan in base_link.
+    # Retain the SICK /scan and /scan_mapping diagnostic outputs; AMCL/SLAM use /livox/scan.
     # The lidar clouds arrive one render period after their stamp, so a merge cycle's newest
-    # scans are up to two periods old; a tighter limit drops cycles and starves AMCL.
+    # scans are up to two periods old; a tighter limit drops diagnostic cycles.
     scan_merger = Node(
         package="market_sim",
         executable="scan_merger.py",
@@ -321,7 +329,8 @@ def generate_launch_description():
         executable="reset_controller_guard.py",
         name="reset_controller_guard",
     )
-    # Reset synchronization holds Nav2 commands until Fuse, planar TF and (outside SLAM) AMCL agree.
+    # Reset synchronization holds Nav2 commands until Fuse, planar TF and
+    # (outside SLAM) AMCL agree.
     relocalizer = Node(
         package="market_sim",
         executable="reset_relocalizer.py",
@@ -341,7 +350,8 @@ def generate_launch_description():
         base_limits = yaml.safe_load(stream)["base_jvc"]["ros__parameters"][
             "max_joint_velocity"
         ]
-    # Convert body-frame commands to the simulation's planar actuators; fused pose alone reaches MoveIt.
+    # Convert body-frame commands to the simulation's planar actuators;
+    # fused pose alone reaches MoveIt.
     base_velocity = Node(
         package="market_sim",
         executable="base_twist_to_planar.py",
@@ -481,7 +491,8 @@ def generate_launch_description():
             remappings=list(remappings),
         )
 
-    # The controller feeds the smoother; both its output and recoveries publish body-frame /nav2_cmd_vel.
+    # The controller feeds the smoother; both its output and recoveries publish
+    # body-frame /nav2_cmd_vel.
     to_smoother = [("cmd_vel", "cmd_vel_nav")]
     navigation = [
         nav2_node("nav2_controller", "controller_server", to_smoother),
@@ -504,6 +515,7 @@ def generate_launch_description():
         + [
             lidar_flattener,
             livox_cloud,
+            livox_scan,
             scan_merger,
             base_velocity,
             odometry,

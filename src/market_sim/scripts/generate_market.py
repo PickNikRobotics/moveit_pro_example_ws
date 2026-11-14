@@ -31,25 +31,25 @@
 
 Reads FLOOR_PLAN below and the shelf assets in ``market_assets/``, and writes the MuJoCo
 scene parts (``mjcf/market/``), their mesh and texture (``mjcf/assets/market/``), the Nav2
-map (``maps/market.{png,yaml}``), the localization map (``maps/market_localization.{png,yaml}``)
-and the Navigate to Aisle Objectives.
+map (``maps/market.{png,yaml}``), the SICK-plane geometry reference
+(``maps/market_localization.{png,yaml}``) and the Navigate to Aisle Objectives.
 
 Run from anywhere, with numpy installed:
 
     python3 src/market_sim/scripts/generate_market.py
 
-See the package README for the layout rules.
+See the package README for layout rules and rebuilding the separate survey map.
 """
 
 import argparse
 import copy
 import json
 import math
+from pathlib import Path
 import re
 import struct
 import xml.etree.ElementTree as ET
 import zlib
-from pathlib import Path
 
 import numpy as np
 
@@ -154,8 +154,8 @@ LOW_SHELF_BOX_MATERIALS = {
     "_collision": "shelf_panel_steel",
 }
 
-# Height above the floor of both lidars' scan plane (the mounts in mjcf/mobile_fr3_duo.xml);
-# a test keeps the two equal. The localization map holds what crosses this plane.
+# Height above the floor of the SICK scan plane (the mounts in mjcf/mobile_fr3_duo.xml);
+# a test keeps the two equal. The generated geometry reference holds what crosses this plane.
 LIDAR_HEIGHT = 0.19065
 # Per-material parts of one shelf unit, for the planning scene's <visual> geometry. Collision
 # checking uses the box instead, so these only ever load when show_visual_geometry is asked for.
@@ -224,11 +224,11 @@ def xml_element(node):
 
 
 def store_visuals(layout, world):
-    """Enclosure, lighting and the stocking carts: what the static maps leave out.
+    """Enclosure, lighting and the stocking carts: what the generated maps leave out.
 
-    Everything here is visual only, so none of it collides or reaches the maps. The carts are
-    the exception worth noting: they are physical in the simulator but deliberately absent from
-    both maps, so the costmaps must see them through the lidars like any other obstacle.
+    Everything here is visual only, so none of it collides or reaches the generated maps. The
+    carts are the exception: they are physical but deliberately absent from both generated maps,
+    so the costmaps must see them through the lidars like any other obstacle.
     """
     nodes = []
     template = ET.parse(ASSET_DIR / "visuals" / "stocking_cart.xml").getroot()
@@ -274,7 +274,7 @@ def store_visuals(layout, world):
 
 
 def decor_box(name, pos, size, material):
-    """A visual-only box: no contacts, and in the group cameras and lidars render."""
+    """Create a visual-only box: no contacts, and in the group cameras and lidars render."""
     return element(
         "geom",
         [
@@ -723,7 +723,7 @@ def rack_urdf(layout, shelf, world):
         (layout.width, layout.depth, FLOOR_SLAB_THICKNESS),
     )
 
-    # Stocking carts: physical in the simulator and absent from both maps, so the arm needs them.
+    # Include physical carts in the arm's collision scene even though generated maps omit them.
     for index, position in enumerate(STOCKING_CART_POSITIONS):
         centre = [position[i] + CART_BOX_CENTRE[i] for i in range(3)]
         lines += fixed_box_link(f"stocking_cart_{index}", centre, 0.0, CART_BOX_SIZE)
@@ -747,7 +747,7 @@ def gondola_pose(layout, gondola):
 
 
 def unit_poses(layout, gondola, back_depth):
-    """World poses of a gondola's two unit frames: on the floor, at the front, +Y into the shelf."""
+    """Return world poses of both gondola units, with +Y into the shelf."""
     pose, yaw = gondola_pose(layout, gondola)
     return [
         (transform(pose, yaw, (0.0, -back_depth, 0.0)), yaw),
@@ -880,10 +880,10 @@ def build_world(layout, shelf):
 
 
 def localization_footprints(layout, shelf, footprints):
-    """What the lidars see at their height: shelf boxes crossing it, registers, the dock, walls.
+    """SICK-plane geometry reference: crossing shelf boxes, registers, the dock and walls.
 
     The scan plane passes over the bottom deck to the back panel, so the full gondola footprint
-    that Nav2 keeps the base out of would give AMCL a deck's depth of slack.
+    that Nav2 keeps the base out of is not a match for this plane.
     """
     _, collisions, geometry = shelf
     back_depth = geometry["overall"]["y"][1]
@@ -913,7 +913,7 @@ def localization_footprints(layout, shelf, footprints):
 
 
 def keyframes():
-    """The default key: the robot's default pose, at the start."""
+    """Return the default key: the robot's default pose, at the start."""
     attrs = [("name", "default"), ("qpos", fmt(ROBOT_QPOS)), ("ctrl", fmt(ROBOT_CTRL))]
     return [element("key", attrs)]
 
@@ -922,7 +922,7 @@ def keyframes():
 
 
 def aisle_goals(layout, back_depth):
-    """A base pose facing the middle of each real aisle, in the map frame.
+    """Return a base pose facing the middle of each real aisle, in the map frame.
 
     The map frame equals the world frame. E gondolas are worked from their west side, the
     others from their south side.
