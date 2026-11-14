@@ -64,8 +64,7 @@ def _values(element, attribute, default):
 def _rotation(element):
     """Return the rotation for the scene's intrinsic xyz Euler convention."""
     if any(
-        element.get(attribute)
-        for attribute in ("quat", "axisangle", "xyaxes", "zaxis")
+        element.get(attribute) for attribute in ("quat", "axisangle", "xyaxes", "zaxis")
     ):
         raise ValueError(f"{element.get('name')}: unsupported orientation; use euler")
     roll, pitch, yaw = _values(element, "euler", "0 0 0")
@@ -142,12 +141,13 @@ def _body_geom_polygons(body, selected=None):
         kind = geom.get("type", "sphere")
         size = _values(geom, "size", "0")
         if kind == "box":
-            corners = np.array(
-                [[x, y, z] for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)]
-            ) * size
-            world_corners = (
-                (corners @ geom_rotation.T + geom_pos) @ body_rotation.T + body_pos
+            corners = (
+                np.array([[x, y, z] for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)])
+                * size
             )
+            world_corners = (
+                corners @ geom_rotation.T + geom_pos
+            ) @ body_rotation.T + body_pos
             polygon = _convex_hull(world_corners[:, :2])
         elif kind in {"cylinder", "capsule"}:
             polygon = _round_geom_polygon(geom, kind, size, body_rotation, body_pos)
