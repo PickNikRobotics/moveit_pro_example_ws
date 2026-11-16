@@ -1,7 +1,11 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>kitchen_sim</name>
+<<<<<<< HEAD
   <version>10.3.0</version>
+=======
+  <version>10.2.1</version>
+>>>>>>> origin/v10.2
 
   <description>Base configuration package for the Franka arm.</description>
 

@@ -1,7 +1,11 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>moveit_pro_sam3</name>
+<<<<<<< HEAD
   <version>10.3.0</version>
+=======
+  <version>10.2.1</version>
+>>>>>>> origin/v10.2
   <description>
     ROS package that downloads SAM3 ONNX models for image segmentation at build
     time.
