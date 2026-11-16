@@ -68,7 +68,9 @@ repos:
   - repo: https://github.com/tcort/markdown-link-check
     rev: v3.14.1
     hooks:
+      # opensource.org answers 403 to link checkers, so its BSD-3-Clause page is skipped by pattern.
       - id: markdown-link-check
+        args: ["-q", "-c", ".markdown-link-check.json"]
 
   # NOTE: Broken on arm64. Will need to bump once https://github.com/hadolint/hadolint/issues/840 is fixed.
   - repo: https://github.com/hadolint/hadolint
