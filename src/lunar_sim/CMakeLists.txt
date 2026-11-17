@@ -18,6 +18,17 @@ install(
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(nav2_costmap_2d REQUIRED)
+  find_package(nav2_map_server REQUIRED)
+  find_package(nav2_util REQUIRED)
+  find_package(pluginlib REQUIRED)
+  find_package(tf2_ros REQUIRED)
+  ament_add_gtest(keepout_collision_test test/test_keepout_collision.cpp)
+  target_compile_definitions(keepout_collision_test PRIVATE
+    LUNAR_SIM_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+  ament_target_dependencies(keepout_collision_test
+    nav2_costmap_2d nav2_map_server nav2_util pluginlib tf2_ros)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
   # Pytest discovers the Objective integration module from this directory too. Give the
@@ -31,6 +42,10 @@ if(BUILD_TESTING)
           ENV ${LUNAR_SIM_UNIT_TEST_ENV})
   ament_add_pytest_test(
           base_jog_config_test test/test_base_jog_config.py
+          TIMEOUT 30
+          ENV ${LUNAR_SIM_UNIT_TEST_ENV})
+  ament_add_pytest_test(
+          keepout_mask_test test/test_keepout_mask.py
           TIMEOUT 30
           ENV ${LUNAR_SIM_UNIT_TEST_ENV})
   # Redirect ROS node logs into the test_results tree so the test-results CI artifact ships them back too.
