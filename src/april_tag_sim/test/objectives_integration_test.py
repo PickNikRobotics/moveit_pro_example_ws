@@ -57,8 +57,9 @@ skip_objectives: set[str] = {
     "Collect Angled AprilTag Detection Data",  # Data-collection loop driven by a camera feed.
     "Collect Parallel AprilTag Detection Data",  # Data-collection loop driven by a camera feed.
     "Pick April Tag Labeled Object",  # Requires AprilTag detection + a live grasp.
-    # Core-library objectives aggregated into every config; both need a
-    # primary UI and cannot run in headless CI.
+    # Core-library objectives require operator input unavailable in headless CI.
+    "Collect Planar Waypoints",  # Confirmed planar selection needs an operator.
+    "Navigate Planar Waypoints",  # Confirmed selection and per-leg path approval.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
 }

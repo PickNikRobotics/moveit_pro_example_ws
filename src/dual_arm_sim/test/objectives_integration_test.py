@@ -57,6 +57,8 @@ cancel_objectives: set[str] = set()
 # backend cannot satisfy. Expand this set from the first weekly CI run rather
 # than guessing more aggressively up front.
 skip_objectives: set[str] = {
+    "Collect Planar Waypoints",  # Confirmed planar selection needs an operator.
+    "Navigate Planar Waypoints",  # Confirmed selection and per-leg path approval.
     "Teleoperate",  # Waits on UI teleoperation input.
     "Navigate to Clicked Point",  # GetPoseFromUser waits on a click in the UI.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
