@@ -59,7 +59,6 @@ skip_objectives: set[str] = {
     "Pick April Tag Labeled Object",  # Requires AprilTag detection + a live grasp.
     # Core-library objectives require operator input unavailable in headless CI.
     "Collect Planar Waypoints",  # Confirmed planar selection needs an operator.
-    "Navigate Planar Waypoints",  # Confirmed selection and per-leg path approval.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
 }

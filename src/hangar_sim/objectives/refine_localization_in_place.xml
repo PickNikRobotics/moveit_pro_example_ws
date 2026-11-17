@@ -8,7 +8,15 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Localize Robot If Needed" />
-      <!--The seed is the estimate the filter already holds, so a rejected refinement restores that same estimate.-->
+      <!--Preserve the filter's full uncertainty before applying the refinement seed.-->
+      <Action
+        ID="GetLocalizationEstimate"
+        estimate_topic="/pose"
+        update_service="/request_nomotion_update"
+        global_frame_id="map"
+        timeout_sec="5.0"
+        estimate="{restore_estimate}"
+      />
       <Action
         ID="GetLatestTransform"
         name="Read the current estimate"
@@ -27,6 +35,8 @@
         name="Refine the estimate"
         seed_pose="{initial_pose}"
         restore_pose="{initial_pose}"
+        restore_estimate="{restore_estimate}"
+        has_restore_estimate="true"
       />
     </Control>
   </BehaviorTree>

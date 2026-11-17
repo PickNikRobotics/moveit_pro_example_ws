@@ -63,7 +63,7 @@ skip_objectives = {
     "Request Teleoperation",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     # Core-library objectives require operator input unavailable in headless CI.
     "Collect Planar Waypoints",  # Confirmed planar selection needs an operator.
-    "Navigate Planar Waypoints",  # Confirmed selection and per-leg path approval.
+    "Navigate Queued Waypoints",  # Confirmed planar collection + per-leg path approval require an operator.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     "Vector Subtrees Example",  # Looks up the `world` frame, which lunar_sim's TF tree does not have.

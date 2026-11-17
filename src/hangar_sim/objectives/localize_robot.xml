@@ -38,38 +38,41 @@
         frame_id="map"
         output_pose="{initial_pose}"
       />
-      <!--On rejection, the subtree restores the estimate held before this run.-->
-      <Control ID="Fallback" name="Keep the current estimate to restore">
+      <!--Capture before seeding. An existing localizer must supply a valid estimate; capture errors do not fall back to a seed.-->
+      <Control ID="IfThenElse" name="Keep the current estimate to restore">
         <Decorator ID="SuppressChildErrors">
-          <Control ID="Sequence">
-            <Action
-              ID="GetLatestTransform"
-              name="Read the current estimate"
-              target_frame_id="map"
-              source_frame_id="ridgeback_base_link"
-              transform="{current_transform}"
-            />
-            <Action
-              ID="ConvertTransformStampedToPoseStamped"
-              transform_stamped="{current_transform}"
-              pose_stamped="{restore_pose}"
-            />
-          </Control>
+          <Action
+            ID="GetLatestTransform"
+            name="Check for an existing localization"
+            target_frame_id="map"
+            source_frame_id="ridgeback_base_link"
+            transform="{current_transform}"
+          />
         </Decorator>
+        <Control ID="Sequence" name="Capture localization uncertainty">
+          <Action
+            ID="GetLocalizationEstimate"
+            estimate_topic="/pose"
+            update_service="/request_nomotion_update"
+            global_frame_id="map"
+            timeout_sec="5.0"
+            estimate="{restore_estimate}"
+          />
+          <Action ID="Script" code="has_restore_estimate := 'true'" />
+        </Control>
         <Action
-          ID="ReinterpretPoseFrame"
-          name="No estimate yet: restore the placed pose"
-          input_pose="{initial_pose}"
-          expected_input_frame_id="map"
-          frame_id="map"
-          output_pose="{restore_pose}"
+          ID="Script"
+          name="No estimate yet: restore the placed seed"
+          code="has_restore_estimate := 'false'"
         />
       </Control>
       <SubTree
         ID="Refine Localization In Place Subtree"
         name="Refine the estimate"
         seed_pose="{initial_pose}"
-        restore_pose="{restore_pose}"
+        restore_pose="{initial_pose}"
+        restore_estimate="{restore_estimate}"
+        has_restore_estimate="{has_restore_estimate}"
       />
     </Control>
   </BehaviorTree>

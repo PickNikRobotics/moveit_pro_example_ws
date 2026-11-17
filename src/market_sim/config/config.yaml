@@ -95,6 +95,9 @@ objectives:
     visualization_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/visualization"
+    navigation_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/navigation"
     # Listed last, so Objectives saved from the UI land in this package.
     market_sim_objectives:
       package_name: "market_sim"

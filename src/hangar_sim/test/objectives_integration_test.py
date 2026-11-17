@@ -125,7 +125,6 @@ skip_objectives = {
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     "Collect Planar Waypoints",  # GetPlanarPoseFromUser requires confirmed selections.
-    "Navigate Planar Waypoints",  # Confirmed collection + per-leg path approval.
     # A 121 m drive for scoring odometry against ground truth, not a smoke test;
     # it is run by hand.
     "Navigate Hangar Loop",
