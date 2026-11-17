@@ -5,15 +5,15 @@
   <!-- The environment the path tracers light the scene with (VAPR, and Nyx through nyx_export_scene): picknik_vapr's
        `space` sky, a sun at elevation 25 and world azimuth 130 against stars, with NASA's Blue Marble below. MuJoCo
        ignores <custom> and keeps its skybox. 1.8 is the uvfix spike's measured multiplier, which keeps the lit gold near
-       its OpenGL brightness. Nyx lights from nyx_env_map instead: a generated map of the Sun at elevation 25 and
+       its OpenGL brightness. Nyx lights from environment:map instead: a generated map of the Sun at elevation 25 and
        azimuth 130 against black, with NASA's Blue Marble below (assets/space_earth_sun_2k.hdr). VAPR keeps
        environment:sky. -->
   <custom>
     <text name="environment:sky" data="space" />
     <numeric name="environment:sky" data="1.8 0" />
     <text name="environment:sun_light" data="sun" />
-    <text name="nyx_env_map" data="assets/space_earth_sun_2k.hdr" />
-    <text name="nyx_env_multiplier" data="1.8" />
+    <text name="environment:map" data="assets/space_earth_sun_2k.hdr" />
+    <text name="environment:multiplier" data="1.8" />
   </custom>
 
   <include file="gen3_7dof_assets.xml" />
