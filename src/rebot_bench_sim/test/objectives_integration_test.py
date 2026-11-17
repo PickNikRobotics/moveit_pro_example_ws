@@ -88,7 +88,6 @@ cancel_objectives: set[str] = set()
 # the bench scene does not have.
 skip_objectives: set[str] = {
     "Collect Planar Waypoints",  # Confirmed planar selection needs an operator.
-    "Navigate Planar Waypoints",  # Confirmed selection and per-leg path approval.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     "Clear Snapshot",  # No octomap: the reBot configs define no 3D sensors.

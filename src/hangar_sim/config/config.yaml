@@ -82,6 +82,9 @@ objectives:
     mujoco_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/mujoco"
+    navigation_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/navigation"
     hangar_sim_objectives:
       package_name: "hangar_sim"
       relative_path: "objectives"

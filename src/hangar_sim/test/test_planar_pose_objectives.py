@@ -33,6 +33,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 import pytest
+import yaml
 
 OBJECTIVES = Path(__file__).resolve().parents[1] / "objectives"
 
@@ -97,8 +98,10 @@ def test_localization_uses_shared_picker_and_preserves_restore_flow() -> None:
     refinement = tree.find(".//SubTree[@ID='Refine Localization In Place Subtree']")
     assert refinement is not None
     assert refinement.get("seed_pose") == reinterpret.get("output_pose")
-    assert refinement.get("restore_pose") == "{restore_pose}"
-    assert tree.find(".//Control[@ID='Fallback']") is not None
+    assert refinement.get("restore_pose") == "{initial_pose}"
+    assert refinement.get("restore_estimate") == "{restore_estimate}"
+    assert refinement.get("has_restore_estimate") == "{has_restore_estimate}"
+    assert tree.find(".//Control[@ID='IfThenElse']") is not None
     assert tree.find(".//Action[@ID='AdjustPoseWithIMarker']") is None
     assert tree.find(".//Action[@ID='TransformPose']") is None
 
@@ -126,7 +129,7 @@ def test_queued_navigation_reuses_confirmed_collection_and_nav2_configuration() 
     assert sequence is not None
     assert [node.get("ID") for node in sequence] == [
         "Refine Localization In Place",
-        "Fallback",
+        "Finally",
     ]
     behavior_tree = tree.find("./BehaviorTree")
     assert behavior_tree is not None
@@ -139,6 +142,11 @@ def test_queued_navigation_reuses_confirmed_collection_and_nav2_configuration() 
     assert navigation.get("waypoint_count") == "{waypoint_count}"
     assert navigation.get("planner_action_name") == "/compute_path_to_pose"
     assert navigation.get("controller_action_name") == "/follow_path"
+    assert (
+        navigation.get("execution_controller_names")
+        == "platform_velocity_controller_nav2"
+    )
+    assert navigation.get("holding_controller_names") == "joint_trajectory_controller"
     assert navigation.get("planner_id") == "GridBased"
     assert navigation.get("controller_id") == "FollowPath"
     assert navigation.get("goal_checker_id") == "general_goal_checker"
@@ -157,24 +165,79 @@ def test_queued_navigation_reuses_confirmed_collection_and_nav2_configuration() 
     assert model.find("./MetadataFields/Metadata[@runnable='true']") is not None
 
 
-def test_queued_navigation_restores_arm_controller_before_failure() -> None:
-    """Rejected or failed queue execution restores control without returning success."""
+def test_queued_navigation_restores_arm_controller_on_halt_and_completion() -> None:
+    """The halt-safe cleanup restores control without overriding the queue result."""
     tree = ET.parse(OBJECTIVES / "navigate_queued_waypoints.xml")
-    fallback = tree.find("./BehaviorTree/Control/Control[@ID='Fallback']")
-    assert fallback is not None, "Queue failures must reach controller restoration."
-    execution, recovery = list(fallback)
-    assert execution.get("ID") == recovery.get("ID") == "Sequence"
-    assert [node.get("ID") for node in execution] == [
-        "SwitchController",
-        "Navigate Planar Waypoints",
-        "SwitchController",
-    ]
-    assert execution[-1].get("activate_controllers") == "joint_trajectory_controller"
-    assert [node.get("ID") for node in recovery] == [
-        "SwitchController",
-        "AlwaysFailure",
-    ]
-    assert recovery[0].get("activate_controllers") == "joint_trajectory_controller"
+    cleanup = tree.find("./BehaviorTree/Control/Control[@ID='Finally']")
+    assert cleanup is not None, "Stop Objective must reach controller restoration."
+    execution, restoration = list(cleanup)
+    assert execution.get("ID") == "Sequence"
+    assert [node.get("ID") for node in execution] == ["Navigate Planar Waypoints"]
+    assert execution.find("./Action[@ID='SwitchController']") is None
+    assert restoration.get("ID") == "SwitchController"
+    assert restoration.get("activate_controllers") == "joint_trajectory_controller"
+    assert restoration.get("timeout") == "5.0"
+
+
+SOURCES = OBJECTIVES.parents[1]
+CORE_LIBRARY = ("moveit_pro_objectives", "objectives/core")
+NAVIGATION_LIBRARY = ("moveit_pro_objectives", "objectives/navigation")
+NAV_LOADER = "moveit_pro::behaviors::NavBehaviorsLoader"
+
+
+def _config_packages() -> dict[str, Path]:
+    """Map each configuration package name to its directory."""
+    packages = {}
+    for config in SOURCES.rglob("config/config.yaml"):
+        package_xml = config.parents[1] / "package.xml"
+        if "external_dependencies" not in config.parts and package_xml.exists():
+            name = ET.parse(package_xml).getroot().findtext("name")
+            packages[name] = config.parents[1]
+    return packages
+
+
+PACKAGES = _config_packages()
+
+
+def _registered_by_key(config: str) -> tuple[dict[str, tuple[str, str]], set[str]]:
+    """Objective libraries by key and Behavior loaders, a child's keys overriding its parent's."""
+    data = yaml.safe_load((PACKAGES[config] / "config" / "config.yaml").read_text())
+    libraries: dict[str, tuple[str, str]] = {}
+    loaders: set[str] = set()
+    if parent := data.get("based_on_package"):
+        libraries, loaders = _registered_by_key(parent)
+    objectives = data.get("objectives") or {}
+    for key, library in (objectives.get("objective_library_paths") or {}).items():
+        libraries[key] = (library["package_name"], library["relative_path"])
+    for plugins in (objectives.get("behavior_loader_plugins") or {}).values():
+        loaders |= set(plugins)
+    return libraries, loaders
+
+
+def _registered(config: str) -> tuple[set[tuple[str, str]], set[str]]:
+    """Objective libraries and Behavior loaders a configuration registers, inherited ones included."""
+    libraries, loaders = _registered_by_key(config)
+    return set(libraries.values()), loaders
+
+
+@pytest.mark.parametrize("config", sorted(PACKAGES))
+def test_navigation_library_is_registered_only_with_nav_behaviors(config: str) -> None:
+    """A configuration that registers the navigation library also loads the Behaviors it names."""
+    libraries, loaders = _registered(config)
+    if NAVIGATION_LIBRARY in libraries:
+        assert (
+            NAV_LOADER in loaders
+        ), f"{config} registers navigation Objectives without {NAV_LOADER}."
+
+
+def test_hangar_registers_the_navigation_library_its_queue_calls() -> None:
+    """Navigate Queued Waypoints calls the Core Navigate Planar Waypoints Subtree."""
+    assert NAVIGATION_LIBRARY in _registered("hangar_sim")[0]
+
+
+def test_lunar_offers_planar_waypoint_navigation() -> None:
+    """lunar_sim lists the Core Navigate Planar Waypoints Objective next to its clicked-point goals."""
+    assert NAVIGATION_LIBRARY in _registered("lunar_sim")[0]
 
 
 @pytest.mark.parametrize(
@@ -193,8 +256,8 @@ def test_queued_navigation_restores_arm_controller_before_failure() -> None:
     ],
 )
 def test_headless_sweep_excludes_operator_confirmed_objectives(config: str) -> None:
-    """Every inherited Core sweep lacks planar confirmation and path approval."""
-    source = OBJECTIVES.parents[1] / config / "test" / "objectives_integration_test.py"
+    """Each sweep skips exactly the operator-confirmed Core Objectives its configuration registers."""
+    source = SOURCES / config / "test" / "objectives_integration_test.py"
     assignments = ast.parse(source.read_text()).body
     skipped = None
     for node in assignments:
@@ -211,7 +274,9 @@ def test_headless_sweep_excludes_operator_confirmed_objectives(config: str) -> N
             skipped = ast.literal_eval(node.value)
             break
     assert skipped is not None, f"{config} must declare its headless exclusions."
-    assert {"Collect Planar Waypoints", "Navigate Planar Waypoints"} <= skipped
+    libraries, _ = _registered(config)
+    assert ("Collect Planar Waypoints" in skipped) == (CORE_LIBRARY in libraries)
+    assert ("Navigate Planar Waypoints" in skipped) == (NAVIGATION_LIBRARY in libraries)
     if config == "hangar_sim":
         assert {
             "Navigate to Clicked Point",
@@ -233,8 +298,10 @@ def test_localization_guidance_names_pose_confirmation() -> None:
     assert "confirm the pose" in message
 
 
-def test_localization_restore_branches_precede_refinement() -> None:
-    """The estimate or placed-pose fallback supplies restore data before refinement."""
+def test_regression_localization_captures_covariance_before_seed_without_hiding_failure() -> (
+    None
+):
+    """An existing localization must yield its complete estimate before seeding."""
     tree = ET.parse(OBJECTIVES / "localize_robot.xml")
     sequence = tree.find("./BehaviorTree/Control[@ID='Sequence']")
     assert sequence is not None
@@ -243,29 +310,72 @@ def test_localization_restore_branches_precede_refinement() -> None:
         "ConvertTransformStampedToPoseStamped",
         "GetPlanarPoseFromUser",
         "ReinterpretPoseFrame",
-        "Fallback",
+        "IfThenElse",
         "Refine Localization In Place Subtree",
     ]
-    fallback = sequence.find("./Control[@ID='Fallback']")
-    assert fallback is not None
-    estimate = fallback.find(
-        "./Decorator[@ID='SuppressChildErrors']/Control[@ID='Sequence']"
-    )
-    assert estimate is not None
-    assert [node.get("ID") for node in estimate] == [
+    selection = sequence.find("./Control[@ID='IfThenElse']")
+    assert selection is not None
+    condition, capture_sequence, no_estimate = list(selection)
+    transform = condition.find("./Action[@ID='GetLatestTransform']")
+    assert transform is not None
+    assert transform.get("target_frame_id") == "map"
+    assert transform.get("source_frame_id") == "ridgeback_base_link"
+    assert condition.get("ID") == "SuppressChildErrors"
+    assert capture_sequence.get("ID") == "Sequence"
+    capture, flag = list(capture_sequence)
+    assert capture.get("ID") == "GetLocalizationEstimate"
+    assert capture.get("estimate_topic") == "/pose"
+    assert capture.get("update_service") == "/request_nomotion_update"
+    assert capture.get("global_frame_id") == "map"
+    assert capture.get("timeout_sec") == "5.0"
+    assert flag.get("code") == "has_restore_estimate := 'true'"
+    assert no_estimate.get("code") == "has_restore_estimate := 'false'"
+    refinement = sequence[-1]
+    assert capture.get("estimate") == refinement.get("restore_estimate")
+    assert refinement.get("has_restore_estimate") == "{has_restore_estimate}"
+    assert refinement.get("restore_pose") == "{initial_pose}"
+    assert capture_sequence.find(".//Decorator[@ID='SuppressChildErrors']") is None
+
+
+def test_regression_refinement_preserves_full_estimate_before_applying_seed() -> None:
+    """Refinement captures uncertainty before TF seed lookup and restores that estimate."""
+    tree = ET.parse(OBJECTIVES / "refine_localization_in_place.xml")
+    sequence = tree.find("./BehaviorTree/Control[@ID='Sequence']")
+    assert sequence is not None
+    assert [node.get("ID") for node in sequence] == [
+        "Localize Robot If Needed",
+        "GetLocalizationEstimate",
         "GetLatestTransform",
         "ConvertTransformStampedToPoseStamped",
+        "Refine Localization In Place Subtree",
     ]
-    transform, converted = list(estimate)
-    assert transform.get("target_frame_id") == "map"
-    assert converted.get("transform_stamped") == transform.get("transform")
-    restore = fallback.find("./Action[@ID='ReinterpretPoseFrame']")
-    assert restore is not None
-    assert restore.get("input_pose") == "{initial_pose}"
-    assert restore.get("expected_input_frame_id") == restore.get("frame_id") == "map"
+    capture = sequence[1]
     refinement = sequence[-1]
-    assert (
-        converted.get("pose_stamped")
-        == restore.get("output_pose")
-        == refinement.get("restore_pose")
-    )
+    assert capture.get("estimate") == refinement.get("restore_estimate")
+    assert refinement.get("has_restore_estimate") == "true"
+
+
+def test_regression_restore_uses_covariance_without_falling_back_after_failure() -> (
+    None
+):
+    """A wired captured estimate is restored directly; only first localization uses pose."""
+    tree = ET.parse(OBJECTIVES / "refine_localization_in_place_subtree.xml")
+    selection = tree.find(".//Control[@ID='IfThenElse']")
+    assert selection is not None
+    condition, restore_estimate, restore_pose = list(selection)
+    assert condition.get("ID") == "ScriptCondition"
+    assert condition.get("code") == "has_restore_estimate == 'true'"
+    assert restore_estimate.get("ID") == restore_pose.get("ID") == "SetInitialPose"
+    assert restore_estimate.get("estimate") == "{restore_estimate}"
+    assert "pose" not in restore_estimate.attrib
+    assert restore_pose.get("pose") == "{restore_pose}"
+    assert "estimate" not in restore_pose.attrib
+    model = tree.find("./TreeNodesModel/SubTree")
+    assert model is not None
+    estimate_port = model.find("./input_port[@name='restore_estimate']")
+    assert estimate_port is not None
+    assert estimate_port.get("type") == "geometry_msgs::msg::PoseWithCovarianceStamped"
+    flag_port = model.find("./input_port[@name='has_restore_estimate']")
+    assert flag_port is not None
+    assert flag_port.get("default") == "false"
+    assert flag_port.get("type") == "std::string"
