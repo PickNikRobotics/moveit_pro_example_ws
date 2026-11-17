@@ -40,12 +40,21 @@ import hashlib
 import http.client
 import json
 import os
+import shutil
 import tempfile
 import threading
 import unittest
 from http.server import ThreadingHTTPServer
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
+
+from huggingface_hub import _CACHED_NO_EXIST
+from huggingface_hub.errors import (
+    EntryNotFoundError,
+    GatedRepoError,
+    LocalEntryNotFoundError,
+)
 
 import cv2
 import numpy as np
@@ -62,8 +71,12 @@ from lerobot.types import TransitionKey
 from safetensors.torch import save_file
 from vla_inference_server import (
     INFER_ABANDONED_SECONDS,
+    POLICY_MANIFEST_FILE,
+    POLICY_MANIFEST_MAX_BYTES,
     RELOAD_IDLE_SECONDS,
     REQUEST_SOCKET_TIMEOUT_SECONDS,
+    UNNAMED_CONFIG_WARNING,
+    UNNAMED_MANIFEST_WARNING,
     PolicyRunner,
     ServerState,
     apply_bearer_key,
@@ -82,6 +95,7 @@ from vla_inference_server import (
     resolve_default,
     resolve_device,
     resolve_fps,
+    resolve_policy_names,
     resolve_rtc_horizon,
     resolve_rtc_schedule,
     trim_vocabulary_heads,
@@ -464,6 +478,21 @@ class TestParseArgsCoercion(unittest.TestCase):
         self.assertEqual(args.fps, 0.0)
         self.assertEqual(args.state_dim, 0)
 
+    def test_joint_names_are_read_from_the_serving_config(self) -> None:
+        """state_names and action_names are YAML lists; anything else parks in config_error."""
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write("state_names: [a, b]\naction_names: a\n")
+            path = f.name
+        try:
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(args.state_names, ["a", "b"])
+        self.assertEqual(args.action_names, [])
+        self.assertIn("action_names must be a list of joint names", args.config_error)
+
     def test_non_boolean_int8_parks_in_config_error(self) -> None:
         """A quoted or misspelled int8 lands in config_error with the flag off.
         Coercing it with bool() would read every non-empty string as true, so the
@@ -722,11 +751,16 @@ class TestReloadIdleWindow(unittest.TestCase):
             state_dim=8,
             int8=False,
             groot_rtc_ramp_rate=0.0,
+            state_names=[],
+            action_names=[],
         )
         runner = MagicMock()
         runner.policy.config.input_features = {}
         runner.warmup = warmup
-        with patch("vla_inference_server.PolicyRunner", return_value=runner):
+        with (
+            patch("vla_inference_server.PolicyRunner", return_value=runner),
+            patch("vla_inference_server.resolve_policy_names", return_value=([], [])),
+        ):
             load_policy(state, args)
         self.assertEqual(state.status, "ready", state.detail)
         return state
@@ -741,12 +775,14 @@ class TestReloadIdleWindow(unittest.TestCase):
         ]
         for fps, chunk_steps, expected in cases:
             with self.subTest(fps=fps, chunk_steps=chunk_steps):
-                state = self._load(fps, MagicMock(return_value=(1.0, 0.1, chunk_steps)))
+                state = self._load(
+                    fps, MagicMock(return_value=(1.0, 0.1, chunk_steps, 2))
+                )
                 self.assertEqual(state.reload_idle_seconds, expected)
 
     def test_a_long_chunk_holds_off_a_reload_for_its_whole_playback(self) -> None:
         """A 20 second chunk is still a running policy 19 seconds after /infer."""
-        state = self._load(5.0, MagicMock(return_value=(1.0, 0.1, 100)))
+        state = self._load(5.0, MagicMock(return_value=(1.0, 0.1, 100, 2)))
         state.last_infer_monotonic = 100.0
 
         self.assertFalse(state.try_begin_reload(100.0 + 20.0 - 0.001))
@@ -757,6 +793,77 @@ class TestReloadIdleWindow(unittest.TestCase):
         state = self._load(5.0, MagicMock(side_effect=RuntimeError("padded state")))
 
         self.assertEqual(state.reload_idle_seconds, RELOAD_IDLE_SECONDS)
+
+
+class TestLoadPolicyJointNames(unittest.TestCase):
+    """load_policy resolves the checkpoint's joint names before it serves."""
+
+    def _load(
+        self, names: tuple[list, list], action_width: int = 2
+    ) -> tuple[ServerState, MagicMock]:
+        state = ServerState()
+        args = argparse.Namespace(
+            config_error="",
+            checkpoint="acme/model",
+            checkpoint_revision="",
+            checkpoint_requires_hf_token=False,
+            fps=10.0,
+            policy_class="pi05",
+            device="cpu",
+            guidance_horizon=8,
+            rtc_schedule="EXP",
+            state_dim=2,
+            int8=False,
+            groot_rtc_ramp_rate=0.0,
+            state_names=[],
+            action_names=[],
+        )
+        runner = MagicMock()
+        runner.policy.config.input_features = {}
+        runner.expected_state_dim.return_value = 2
+        runner.warmup = MagicMock(return_value=(1.0, 0.1, 10, action_width))
+        with (
+            patch("vla_inference_server.PolicyRunner", return_value=runner),
+            patch("vla_inference_server.resolve_policy_names", return_value=names),
+            patch("vla_inference_server.log") as mock_log,
+        ):
+            load_policy(state, args)
+        return state, mock_log
+
+    def test_named_checkpoint_serves_with_its_names(self) -> None:
+        state, mock_log = self._load((["a", "b"], ["b", "a"]))
+
+        self.assertEqual(state.status, "ready", state.detail)
+        self.assertEqual(
+            (state.state_names, state.action_names), (["a", "b"], ["b", "a"])
+        )
+
+    def test_unnamed_checkpoint_serves_in_list_order(self) -> None:
+        """Without names the server still serves; resolve_policy_names says how to add them."""
+        state, _ = self._load(([], []))
+
+        self.assertEqual(state.status, "ready", state.detail)
+        self.assertEqual((state.state_names, state.action_names), ([], []))
+
+    def test_state_names_that_miscount_the_state_park_the_error_state(self) -> None:
+        state, _ = self._load((["a", "b", "c"], ["a", "b", "c"]))
+
+        self.assertEqual(state.status, "error")
+        self.assertIn(
+            "state_names length 3 does not match the checkpoint's 2-dim state",
+            state.detail,
+        )
+
+    def test_action_names_that_miscount_the_warmup_chunk_park_the_error_state(
+        self,
+    ) -> None:
+        """A wrong action_names count is a server misconfiguration, caught before any request."""
+        state, _ = self._load((["a", "b"], ["a", "b"]), action_width=3)
+
+        self.assertEqual(state.status, "error")
+        self.assertIn(
+            "action_names length 2 does not match the 3 values per step", state.detail
+        )
 
 
 class TestImmutableCheckpointLoading(unittest.TestCase):
@@ -897,6 +1004,114 @@ class TestResolveFps(unittest.TestCase):
         """fps=0 with no readable train_config.json is a startup error, not a default."""
         with self.assertRaises(ValueError):
             resolve_fps("nonexistent-checkpoint", 0.0)
+
+
+class TestResolvePolicyNames(unittest.TestCase):
+    """resolve_policy_names: a manifest's names, else the serving config's for a checkpoint without one."""
+
+    def _resolve(self, manifest, state_names=(), action_names=()):
+        """Resolve against a manifest dict, raw manifest text, or an exception for a missing one."""
+        if isinstance(manifest, Exception):
+            locate = MagicMock(side_effect=manifest)
+        else:
+            directory = tempfile.mkdtemp()
+            self.addCleanup(shutil.rmtree, directory)
+            path = Path(directory) / POLICY_MANIFEST_FILE
+            path.write_text(
+                manifest if isinstance(manifest, str) else json.dumps(manifest)
+            )
+            locate = MagicMock(return_value=path)
+        with (
+            patch("vla_inference_server.checkpoint_file_path", locate),
+            patch("vla_inference_server.log") as self.mock_log,
+        ):
+            names = resolve_policy_names(
+                "acme/model", "a" * 40, list(state_names), list(action_names)
+            )
+        locate.assert_called_once_with("acme/model", POLICY_MANIFEST_FILE, "a" * 40)
+        return names
+
+    def _logged(self) -> list:
+        return [call.args[0] for call in self.mock_log.call_args_list]
+
+    def test_manifest_names_win_over_the_serving_config(self) -> None:
+        """A Trainer checkpoint carries its own names; config names never apply."""
+        names = self._resolve(
+            {"state_names": ["a", "b"], "action_names": ["b", "a"]},
+            ["x", "y"],
+            ["y", "x"],
+        )
+        self.assertEqual(names, (["a", "b"], ["b", "a"]))
+
+    def test_a_manifest_without_names_ignores_the_serving_config(self) -> None:
+        """Config names written for another checkpoint never reorder a Trainer checkpoint's joints."""
+        self.assertEqual(
+            self._resolve({"state_dim": 2}, ["x", "y"], ["y", "x"]), ([], [])
+        )
+        self.assertEqual(self._logged(), [UNNAMED_MANIFEST_WARNING])
+        self.assertIn("Retrain with MoveIt Pro Trainer", UNNAMED_MANIFEST_WARNING)
+
+    def test_no_names_without_a_manifest_warns_to_set_the_config(self) -> None:
+        self.assertEqual(self._resolve(FileNotFoundError("no manifest")), ([], []))
+        self.assertEqual(self._logged(), [UNNAMED_CONFIG_WARNING])
+        self.assertIn(
+            "Set state_names and action_names in vla_serving.yaml",
+            UNNAMED_CONFIG_WARNING,
+        )
+
+    def test_an_offline_cache_miss_is_refused_unless_the_hub_reported_no_manifest(
+        self,
+    ) -> None:
+        """Offline, an uncached manifest may still exist, so config names must not stand in for it."""
+        offline = LocalEntryNotFoundError("offline")
+        with patch("vla_inference_server.try_to_load_from_cache", return_value=None):
+            with self.assertRaisesRegex(ValueError, "Start the server online once"):
+                self._resolve(offline, ["x", "y"], ["y", "x"])
+        with patch(
+            "vla_inference_server.try_to_load_from_cache", return_value=_CACHED_NO_EXIST
+        ):
+            self.assertEqual(
+                self._resolve(offline, ["x", "y"], ["y", "x"]), (["x", "y"], ["y", "x"])
+            )
+
+    def test_a_checkpoint_without_a_manifest_takes_the_serving_config_names(
+        self,
+    ) -> None:
+        """An outside checkpoint, local or on the Hub, names its joints in the config."""
+        for missing in (
+            FileNotFoundError("no manifest"),
+            EntryNotFoundError("no manifest"),
+        ):
+            with self.subTest(missing=type(missing).__name__):
+                self.assertEqual(
+                    self._resolve(missing, ["x", "y"], ["y", "x"]),
+                    (["x", "y"], ["y", "x"]),
+                )
+
+    def test_names_for_only_one_side_are_refused(self) -> None:
+        """A state reordered by name with actions labelled in list order would drive the wrong joints."""
+        with self.assertRaisesRegex(
+            ValueError, "sets only one of state_names and action_names"
+        ):
+            self._resolve(FileNotFoundError("no manifest"), ["x", "y"], [])
+        with self.assertRaisesRegex(
+            ValueError, "sets only one of state_names and action_names"
+        ):
+            self._resolve({"state_names": ["a", "b"]})
+
+    def test_duplicate_names_are_refused(self) -> None:
+        """A repeated name would feed one joint's value to two policy inputs."""
+        with self.assertRaisesRegex(ValueError, "repeats a joint"):
+            self._resolve({"state_names": ["a", "a"], "action_names": ["a"]})
+
+    def test_an_oversized_manifest_is_refused(self) -> None:
+        with self.assertRaisesRegex(ValueError, "a policy manifest is at most"):
+            self._resolve(" " * (POLICY_MANIFEST_MAX_BYTES + 1))
+
+    def test_hub_access_errors_propagate(self) -> None:
+        """A gated checkpoint keeps its own access advice instead of reading as no names."""
+        with self.assertRaises(GatedRepoError):
+            self._resolve(GatedRepoError("gated", response=MagicMock()))
 
 
 class TestHubAccessErrorMessage(unittest.TestCase):
@@ -1425,6 +1640,7 @@ class FakeRunner:
     ):
         if self._infer_error is not None:
             raise self._infer_error
+        self.last_state = state
         return np.array([[0.1, 0.2]]), np.array([[0.5, 0.5]])
 
 
@@ -1846,6 +2062,85 @@ class TestHttpStateMachine(unittest.TestCase):
 
         self.assertEqual(status, 400)
         self.assertIn("aux", body["error"])
+
+    def _named_state(self) -> ServerState:
+        state = self._ready_state()
+        state.state_names = ["joint_a", "joint_b"]
+        state.action_names = ["joint_b", "joint_a"]
+        return state
+
+    def test_infer_builds_the_state_in_training_order_by_name(self) -> None:
+        """A robot_state in another order than training reaches the policy reordered."""
+        state = self._named_state()
+        conn = self._start(state)
+        payload = self._valid_payload()
+        payload["state"] = [2.0, 1.0]
+        payload["state_names"] = ["joint_b", "joint_a"]
+        status, body = self._infer(conn, payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertEqual(state.runner.last_state, [1.0, 2.0])
+        self.assertEqual(body["action_names"], ["joint_b", "joint_a"])
+
+    def test_infer_with_missing_and_extra_joints_is_400_naming_them(self) -> None:
+        """One error lists every missing and every extra joint, like LeRobot's check."""
+        conn = self._start(self._named_state())
+        payload = self._valid_payload()
+        payload["state_names"] = ["joint_a", "joint_c"]
+        status, body = self._infer(conn, payload)
+
+        self.assertEqual(status, 400)
+        self.assertIn("missing ['joint_b']", body["error"])
+        self.assertIn("extra ['joint_c']", body["error"])
+
+    def test_infer_with_duplicate_state_names_is_400(self) -> None:
+        conn = self._start(self._named_state())
+        payload = self._valid_payload()
+        payload["state_names"] = ["joint_a", "joint_a"]
+        status, body = self._infer(conn, payload)
+
+        self.assertEqual(status, 400)
+        self.assertIn("must name each of the 2 'state' values once", body["error"])
+
+    def test_infer_without_state_names_reads_list_order_and_warns_once(self) -> None:
+        """An adapter that predates state_names still gets served, in list order."""
+        state = self._named_state()
+        conn = self._start(state)
+        payload = self._valid_payload()
+        payload["state"] = [2.0, 1.0]
+        with patch("vla_inference_server.log") as mock_log:
+            for _ in range(2):
+                status, body = self._infer(conn, payload)
+                self.assertEqual(status, 200, body)
+
+        self.assertEqual(state.runner.last_state, [2.0, 1.0])
+        warnings = [
+            c.args[0] for c in mock_log.call_args_list if "state_names" in c.args[0]
+        ]
+        self.assertEqual(len(warnings), 1)
+
+    def test_unnamed_checkpoint_returns_no_action_names(self) -> None:
+        """An older adapter sees the response it always did."""
+        conn = self._start(self._ready_state())
+        payload = self._valid_payload()
+        payload["state_names"] = ["joint_a", "joint_b"]
+        status, body = self._infer(conn, payload)
+
+        self.assertEqual(status, 200, body)
+        self.assertNotIn("action_names", body)
+
+    def test_action_names_that_miscount_the_chunk_fail_the_request(self) -> None:
+        state = self._named_state()
+        state.action_names = ["joint_a"]
+        conn = self._start(state)
+        payload = self._valid_payload()
+        payload["state_names"] = ["joint_a", "joint_b"]
+        status, body = self._infer(conn, payload)
+
+        self.assertEqual(status, 500)
+        self.assertIn(
+            "action_names length 1 does not match the 2 values per step", body["error"]
+        )
 
     def test_infer_state_width_mismatch_is_400_with_both_widths(self) -> None:
         """A state narrower than the checkpoint expects is the caller's error

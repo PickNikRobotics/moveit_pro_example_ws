@@ -79,8 +79,18 @@ import cv2
 import numpy as np
 import torch
 import yaml
-from huggingface_hub import hf_hub_download, snapshot_download
-from huggingface_hub.errors import GatedRepoError, RepositoryNotFoundError
+from huggingface_hub import (
+    _CACHED_NO_EXIST,
+    hf_hub_download,
+    snapshot_download,
+    try_to_load_from_cache,
+)
+from huggingface_hub.errors import (
+    EntryNotFoundError,
+    GatedRepoError,
+    LocalEntryNotFoundError,
+    RepositoryNotFoundError,
+)
 
 from lerobot.configs.policies import PreTrainedConfig
 from lerobot.configs.types import RTCAttentionSchedule
@@ -123,6 +133,23 @@ REQUEST_SOCKET_TIMEOUT_SECONDS = 30
 # src/vla_sim/config/. Overridable with --config for a standalone `docker run`.
 DEFAULT_CONFIG_PATH = "/vla_config/vla_serving.yaml"
 HUB_COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
+# MoveIt Pro Trainer publishes this beside a checkpoint's weights; it names the
+# dataset's state and action joints.
+POLICY_MANIFEST_FILE = "moveit_pro_policy.json"
+# The MoveIt Pro Runtime refuses a manifest larger than this; so does the server.
+POLICY_MANIFEST_MAX_BYTES = 65_536
+UNNAMED_MANIFEST_WARNING = (
+    f"WARNING: this checkpoint's {POLICY_MANIFEST_FILE} names no state or action "
+    "joints, so /infer matches values to joints in list order. Retrain with "
+    "MoveIt Pro Trainer on a dataset whose meta/info.json names its joints. A "
+    "future release requires names."
+)
+UNNAMED_CONFIG_WARNING = (
+    "WARNING: vla_serving.yaml names no state or action joints for this "
+    "checkpoint, so /infer matches values to joints in list order. Set "
+    "state_names and action_names in vla_serving.yaml. A future release "
+    "requires names."
+)
 MAX_HF_TOKEN_BYTES = 4096
 RELOAD_POLL_SECONDS = 1.0
 # A reload replaces the process, which would fail a running policy's next
@@ -205,8 +232,8 @@ def resolve_default(yaml_value, builtin):
     return builtin if yaml_value is None else yaml_value
 
 
-def load_checkpoint_file(checkpoint: str, filename: str, revision: str = "") -> dict:
-    """Read a JSON file from a local checkpoint directory or an HF repo.
+def checkpoint_file_path(checkpoint: str, filename: str, revision: str = "") -> Path:
+    """Locate a file in a local checkpoint directory or an HF repo.
 
     A local path wins when it exists; anything else must look like an HF repo
     id ("org/name"), fetched through the cache (HF_HUB_OFFLINE and HF_TOKEN
@@ -222,21 +249,24 @@ def load_checkpoint_file(checkpoint: str, filename: str, revision: str = "") -> 
         file = path / filename
         if not file.is_file():
             raise FileNotFoundError(f"'{path}' has no {filename}")
-        return json.loads(file.read_text())
+        return file
     if "/" not in checkpoint:
         raise ValueError(
             f"checkpoint '{checkpoint}' is neither a local directory nor a "
             "Hugging Face repo id"
         )
-    return json.loads(
-        Path(
-            hf_hub_download(
-                repo_id=checkpoint,
-                filename=filename,
-                revision=revision or None,
-            )
-        ).read_text()
+    return Path(
+        hf_hub_download(
+            repo_id=checkpoint,
+            filename=filename,
+            revision=revision or None,
+        )
     )
+
+
+def load_checkpoint_file(checkpoint: str, filename: str, revision: str = "") -> dict:
+    """Read a JSON file from a local checkpoint directory or an HF repo."""
+    return json.loads(checkpoint_file_path(checkpoint, filename, revision).read_text())
 
 
 def resolve_policy_type(checkpoint: str, override: str, revision: str = "") -> str:
@@ -280,6 +310,94 @@ def resolve_fps(checkpoint: str, fps: float, revision: str = "") -> float:
         f"'{checkpoint}'; set fps in vla_serving.yaml (or --fps) to the "
         "rate the policy was trained at"
     )
+
+
+def policy_manifest_path(checkpoint: str, revision: str) -> Path | None:
+    """Return the checkpoint's moveit_pro_policy.json, or None when it has none."""
+    try:
+        return checkpoint_file_path(checkpoint, POLICY_MANIFEST_FILE, revision)
+    except LocalEntryNotFoundError as exc:
+        # The Hub cache records a file the Hub reported missing. Any other
+        # offline miss leaves unknown whether a manifest exists, and the
+        # serving config's names must never apply to a checkpoint that has one.
+        cached = try_to_load_from_cache(
+            checkpoint, POLICY_MANIFEST_FILE, revision=revision or None
+        )
+        if cached is _CACHED_NO_EXIST:
+            return None
+        raise ValueError(
+            f"could not tell whether '{checkpoint}' has a {POLICY_MANIFEST_FILE}, "
+            "because the Hugging Face Hub is unreachable and the file is not "
+            "cached. Start the server online once, or set checkpoint_revision"
+        ) from exc
+    except (FileNotFoundError, EntryNotFoundError):
+        return None
+
+
+def resolve_policy_names(
+    checkpoint: str, revision: str, state_names: list, action_names: list
+) -> tuple[list, list]:
+    """Return the checkpoint's state and action joint names, both empty when it names neither.
+
+    A checkpoint with a moveit_pro_policy.json takes its names only from that
+    file, even when it lists none, because the serving config's names may
+    belong to another checkpoint. A checkpoint without one takes the serving
+    config's names.
+    """
+    source = "vla_serving.yaml"
+    manifest_path = policy_manifest_path(checkpoint, revision)
+    if manifest_path is not None:
+        source = f"the checkpoint's {POLICY_MANIFEST_FILE}"
+        size = manifest_path.stat().st_size
+        if size > POLICY_MANIFEST_MAX_BYTES:
+            raise ValueError(
+                f"{source} is {size} bytes; a policy manifest is at most "
+                f"{POLICY_MANIFEST_MAX_BYTES} bytes"
+            )
+        manifest = json.loads(manifest_path.read_text())
+        if not isinstance(manifest, dict):
+            raise ValueError(f"{source} is not a JSON object")
+        state_names = manifest.get("state_names", [])
+        action_names = manifest.get("action_names", [])
+    for field, names in (("state_names", state_names), ("action_names", action_names)):
+        if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
+            raise ValueError(f"{field} in {source} must be a list of joint names")
+        if len(set(names)) != len(names):
+            raise ValueError(f"{field} in {source} repeats a joint: {names}")
+    # Reordering the state by name while labelling the actions in list order
+    # would command each action to the wrong joint.
+    if bool(state_names) != bool(action_names):
+        raise ValueError(
+            f"{source} sets only one of state_names and action_names; set both "
+            "or neither"
+        )
+    if not state_names:
+        log(UNNAMED_MANIFEST_WARNING if manifest_path else UNNAMED_CONFIG_WARNING)
+    return list(state_names), list(action_names)
+
+
+def state_in_training_order(state: list, request_names, trained_names: list) -> list:
+    """Return the request's state values in the checkpoint's training order, matched by joint name."""
+    if (
+        not isinstance(request_names, list)
+        or not all(isinstance(n, str) for n in request_names)
+        or len(request_names) != len(state)
+        or len(set(request_names)) != len(request_names)
+    ):
+        raise ValueError(
+            f"/infer payload 'state_names' must name each of the {len(state)} "
+            f"'state' values once, got {request_names!r}"
+        )
+    missing = [name for name in trained_names if name not in request_names]
+    extra = [name for name in request_names if name not in trained_names]
+    if missing or extra:
+        raise ValueError(
+            f"robot_state does not match the {len(trained_names)} joints this "
+            f"checkpoint was trained on, missing {missing} and extra {extra}. "
+            "Configure ExecutePolicy to command the joints the policy was trained on."
+        )
+    by_name = dict(zip(request_names, state))
+    return [by_name[name] for name in trained_names]
 
 
 def resolve_device(
@@ -644,10 +762,10 @@ class PolicyRunner:
             absolute = torch.stack(steps, dim=1).squeeze(0).detach().cpu().numpy()
         return absolute, normalized
 
-    def warmup(self) -> tuple[float, float, int]:
+    def warmup(self) -> tuple[float, float, int, int]:
         """Full-size warmup so the first real chunk does not pay model compile/cache costs.
 
-        Returns (cold_s, steady_s, chunk_steps): the first pass carries the
+        Returns (cold_s, steady_s, chunk_steps, action_width): the first pass carries the
         one-time compile/cache costs, the second approximates the per-request
         latency that execution pacing must absorb.
         """
@@ -659,7 +777,7 @@ class PolicyRunner:
         start = time.perf_counter()
         self.infer(images, state, "warmup", None, 0, 0)
         steady_s = time.perf_counter() - start
-        return cold_s, steady_s, chunk.shape[0]
+        return cold_s, steady_s, chunk.shape[0], chunk.shape[1]
 
 
 class ServerState:
@@ -671,6 +789,10 @@ class ServerState:
         self.runner: PolicyRunner | None = None
         # Resolved by the loader thread; meaningful once status is "ready".
         self.fps = 0.0
+        self.state_names: list = []
+        self.action_names: list = []
+        # A request without state_names is warned about once, not per chunk.
+        self.warned_unnamed_request = False
         # The selected checkpoint is available through the authenticated
         # /status endpoint while it loads, not through public /health.
         self.checkpoint = ""
@@ -968,6 +1090,18 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             groot_rtc_ramp_rate=args.groot_rtc_ramp_rate,
         )
 
+        state_names, action_names = resolve_policy_names(
+            args.checkpoint,
+            args.checkpoint_revision,
+            args.state_names,
+            args.action_names,
+        )
+        if state_names and len(state_names) != runner.expected_state_dim():
+            raise ValueError(
+                f"state_names length {len(state_names)} does not match the "
+                f"checkpoint's {runner.expected_state_dim()}-dim state"
+            )
+
         image_features = [
             k for k in runner.policy.config.input_features if "image" in k
         ]
@@ -982,8 +1116,9 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
         # not fatal, because a padded-state pi0.5 config can reject the blank
         # observation while real requests, which carry the true shape, still
         # work (set state_dim in vla_serving.yaml to warm up cleanly).
+        action_width = None
         try:
-            cold_s, steady_s, chunk_steps = runner.warmup()
+            cold_s, steady_s, chunk_steps, action_width = runner.warmup()
             # Real-time chunking stays feasible only while one inference fits
             # into half a chunk of playback time: each seam must commit at
             # least latency/dt steps yet leave at least as many uncommitted,
@@ -1013,7 +1148,18 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 f"WARNING: warmup inference failed ({type(exc).__name__}: {exc}); "
                 "continuing, the first request pays the cold cost"
             )
+        # Without a warmup chunk, run_inference checks the width per request.
+        if (
+            action_names
+            and action_width is not None
+            and len(action_names) != action_width
+        ):
+            raise ValueError(
+                f"action_names length {len(action_names)} does not match the "
+                f"{action_width} values per step the policy returns"
+            )
 
+        state.state_names, state.action_names = state_names, action_names
         state.runner = runner
         state.status = "ready"
         log("ready")
@@ -1057,6 +1203,17 @@ def run_inference(state: ServerState, payload: dict) -> dict:
     runner = state.runner
     expected_state = runner.expected_state_dim()
     robot_state = payload["state"]
+    if state.state_names and "state_names" in payload:
+        robot_state = state_in_training_order(
+            robot_state, payload["state_names"], state.state_names
+        )
+    elif state.state_names and not state.warned_unnamed_request:
+        state.warned_unnamed_request = True
+        log(
+            "WARNING: /infer requests carry no state_names, so the state is read "
+            "in list order; a future release requires them. Update the "
+            "GetActionChunk adapter"
+        )
     if len(robot_state) != expected_state:
         raise ValueError(
             f"request carries a {len(robot_state)}-dim state but the "
@@ -1117,11 +1274,20 @@ def run_inference(state: ServerState, payload: dict) -> dict:
         inference_delay,
         guidance_horizon,
     )
-    return {
+    response = {
         "action_chunk": absolute.tolist(),
         "action_chunk_raw": carryover.tolist(),
         "dt": 1.0 / state.fps,
     }
+    if state.action_names:
+        if len(state.action_names) != absolute.shape[1]:
+            # The server's names are wrong, not the request, so this is a 500.
+            raise RuntimeError(
+                f"action_names length {len(state.action_names)} does not match the "
+                f"{absolute.shape[1]} values per step the policy returned"
+            )
+        response["action_names"] = state.action_names
+    return response
 
 
 def make_handler(state: ServerState):
@@ -1424,6 +1590,12 @@ def parse_args() -> argparse.Namespace:
         )
         handoff_version = None
     args.trainer_handoff_version = handoff_version
+    for field in ("state_names", "action_names"):
+        names = resolve_default(config.get(field), [])
+        if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
+            config_errors.append(f"{field} must be a list of joint names")
+            names = []
+        setattr(args, field, names)
     args.config_error = "; ".join(config_errors)
     return args
 
