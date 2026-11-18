@@ -7,6 +7,9 @@
   <xacro:arg name="ee_id" default="franka_hand" />
   <xacro:arg name="rpy_ee" default="0 0 -0.785" />
 
+  <xacro:property name="fr3_joint_limits"
+    value="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}" />
+
   <!-- Load Franka robot -->
   <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
   <!-- franka_description 2.9.0 loads the FR3 limits, inertials, kinematics and dynamics itself. -->
@@ -127,8 +130,8 @@
       </joint>
       <joint name="fr3_joint6">
         <command_interface name="position">
-          <param name="min">-0.0175</param>
-          <param name="max">3.7525</param>
+          <param name="min">${fr3_joint_limits['joint6']['limit']['lower']}</param>
+          <param name="max">${fr3_joint_limits['joint6']['limit']['upper']}</param>
         </command_interface>
         <state_interface name="position">
           <param name="initial_value">1.5707</param>
