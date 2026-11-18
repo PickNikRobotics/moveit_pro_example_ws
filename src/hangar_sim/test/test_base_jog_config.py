@@ -143,11 +143,13 @@ def test_base_jog_group_contains_only_base_joints(base_jog: dict) -> None:
 
 
 def test_base_mode_switches_controller_before_jogging(base_jog: dict) -> None:
-    """Mode 8 activates the selected controller, then publishes to its own input."""
+    """Mode 8 waits for any one-shot command to finish, activates the selected controller, then publishes to its own input."""
     tree = ET.parse(PACKAGE / "objectives/request_teleoperation.xml")
     branch = tree.find(".//Control[@_while='teleop_mode == 8']")
     assert branch is not None
-    switch, jog = list(branch)
+    (gate,) = list(branch)
+    assert gate.attrib["_while"] == "teleoperation_command_active == false"
+    switch, jog = list(gate)
     assert switch.attrib["ID"] == "SwitchController"
     assert switch.attrib["activate_controllers"] == "{controllers}"
     assert jog.attrib["ID"] == "BaseJog"

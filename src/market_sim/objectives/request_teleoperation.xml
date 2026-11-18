@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Request Teleoperation">
-  <!--Copy of the core Request Teleoperation (MoveIt Pro 10.1.0), so it runs on 10.1.0 and later. Only change: the base iMarker drives with Nav2.-->
+  <!--Copy of the core Request Teleoperation (MoveIt Pro 10.1.0), migrated to the teleoperation command action, so it requires MoveIt Pro 11.0.0 or later. Only change: the base iMarker drives with Nav2.-->
   <!--The integer value used here for teleoperation mode comes from the moveit_studio_sdk_msgs/TeleoperationMode ROS message.-->
   <BehaviorTree
     ID="Request Teleoperation"
@@ -10,6 +10,7 @@
   >
     <Control ID="Sequence">
       <Action ID="Script" code="teleop_mode := 0" />
+      <Action ID="Script" code="teleoperation_command_active := false" />
       <Control ID="Parallel" success_count="1" failure_count="1">
         <Action
           ID="DoTeleoperateAction"
@@ -33,236 +34,235 @@
             <Decorator ID="ForceSuccess" _skipIf="teleop_mode != 6">
               <SubTree ID="Open Gripper" />
             </Decorator>
-            <!--Joint sliders interpolate to joint state-->
-            <Decorator ID="ForceSuccess" _while="teleop_mode == 5">
-              <Control ID="Sequence">
-                <Control ID="Fallback" name="root">
-                  <Control ID="Sequence">
-                    <Action
-                      ID="RetrieveRobotStateParameter"
-                      timeout_sec="-1"
-                      joint_state="{target_joint_state}"
-                    />
-                    <SubTree
-                      ID="Interpolate to Joint State"
-                      _collapsed="false"
-                      target_joint_state="{target_joint_state}"
-                      controller_names="{joint_trajectory_controller_name}"
-                      controller_action_server="{controller_action_server}"
-                      planning_group_name="{default_planning_group}"
-                      velocity_scale_factor="{velocity_scale_factor}"
-                      execution_pipeline="{execution_pipeline}"
-                    />
-                    <Action
-                      ID="PublishEmpty"
-                      topic="/moveit_pro_ui/motion_ended"
-                      queue_size="1"
-                      use_best_effort="false"
-                    />
-                  </Control>
-                  <Control ID="Sequence">
-                    <Action
-                      ID="PublishEmpty"
-                      topic="/moveit_pro_ui/motion_ended"
-                      queue_size="1"
-                      use_best_effort="false"
-                    />
-                    <Action ID="AlwaysFailure" />
-                  </Control>
-                </Control>
-              </Control>
-            </Decorator>
-            <!--Interactive markers move to pose-->
-            <Decorator ID="ForceSuccess" _while="teleop_mode == 4">
-              <Control ID="Sequence">
-                <Control ID="Fallback" name="root">
-                  <Control ID="Sequence">
-                    <Action
-                      ID="RetrievePoseParameter"
-                      timeout_sec="-1"
-                      pose="{target_pose}"
-                    />
-                    <Decorator
-                      ID="ForEach"
-                      index="{index}"
-                      out="{planning_group}"
-                      vector_in="{planning_groups}"
-                    >
-                      <Action ID="AlwaysSuccess" />
-                    </Decorator>
-                    <Decorator
-                      ID="ForEach"
-                      index="{index}"
-                      out="{tip_link}"
-                      vector_in="{tip_links}"
-                    >
-                      <Action ID="AlwaysSuccess" />
-                    </Decorator>
-                    <!--The mobile base stows the arms and drives to the marker with Nav2 at once, with no preview or approval prompt.-->
-                    <!--Every other group plans as in the core Objective.-->
-                    <Control ID="IfThenElse">
-                      <Condition
-                        ID="ScriptCondition"
-                        code="planning_group == 'mobile_base'"
-                      />
-                      <Control ID="Sequence" name="Drive the Base with Nav2">
-                        <Action
-                          ID="TransformPoseFrame"
-                          input_pose="{target_pose}"
-                          target_frame_id="map"
-                          output_pose="{base_goal}"
-                        />
-                        <SubTree
-                          ID="Drive Base using Nav2"
-                          _collapsed="true"
-                          goal_pose="{base_goal}"
-                        />
-                      </Control>
-                      <SubTree
-                        ID="Move to Cartesian Pose"
-                        _collapsed="false"
-                        target_pose="{target_pose}"
-                        controller_names="{joint_trajectory_controller_name}"
-                        controller_action_name="{controller_action_server}"
-                        execution_pipeline="{execution_pipeline}"
-                        link_padding="{link_padding}"
-                        ik_frame="{tip_link}"
-                        planning_group_name="{planning_group}"
-                        max_mtc_solutions="{max_mtc_solutions}"
-                        max_ik_solutions="{max_ik_solutions}"
-                        require_user_approval="{require_user_approval}"
-                        velocity_scale_factor="{velocity_scale_factor}"
-                      />
-                    </Control>
-                    <Action
-                      ID="PublishEmpty"
-                      topic="/moveit_pro_ui/motion_ended"
-                      queue_size="1"
-                      use_best_effort="false"
-                    />
-                  </Control>
-                  <Control ID="Sequence">
-                    <Action
-                      ID="PublishEmpty"
-                      topic="/moveit_pro_ui/motion_ended"
-                      queue_size="1"
-                      use_best_effort="false"
-                    />
-                    <Action ID="AlwaysFailure" />
-                  </Control>
-                </Control>
-              </Control>
-            </Decorator>
-            <!--Waypoint buttons move to joint state-->
-            <Decorator ID="ForceSuccess" _while="teleop_mode == 3">
-              <Control ID="Sequence">
-                <Control ID="Fallback" name="root">
-                  <Control ID="Sequence">
-                    <Action
-                      ID="RetrieveRobotStateParameter"
-                      timeout_sec="-1"
-                      joint_state="{target_joint_state}"
-                    />
-                    <SubTree
-                      ID="Move to Joint State"
-                      _collapsed="false"
-                      target_joint_state="{target_joint_state}"
-                      acceleration_scale_factor="1.0"
-                      velocity_scale_factor="{velocity_scale_factor}"
-                      controller_action_server="{controller_action_server}"
-                      controller_names="{joint_trajectory_controller_name}"
-                      joint_group_name="{default_planning_group}"
-                      link_padding="{link_padding}"
-                      execution_pipeline="{execution_pipeline}"
-                    />
-                    <Action
-                      ID="PublishEmpty"
-                      topic="/moveit_pro_ui/motion_ended"
-                      queue_size="1"
-                      use_best_effort="false"
-                    />
-                  </Control>
-                  <Control ID="Sequence">
-                    <Action
-                      ID="PublishEmpty"
-                      topic="/moveit_pro_ui/motion_ended"
-                      queue_size="1"
-                      use_best_effort="false"
-                    />
-                    <Action ID="AlwaysFailure" />
-                  </Control>
-                </Control>
-              </Control>
-            </Decorator>
             <!--Cartesian jogging-->
             <Control ID="Sequence" _while="teleop_mode == 2">
-              <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
-                <Control ID="Sequence">
-                  <Action
-                    ID="SwitchController"
-                    activate_controllers="{controllers}"
-                    automatic_deactivation="true"
-                    strictness="2"
-                  />
-                  <Decorator ID="ForceSuccess">
+              <Control
+                ID="Sequence"
+                _while="teleoperation_command_active == false"
+              >
+                <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
+                  <Control ID="Sequence">
                     <Action
-                      ID="PoseJog"
-                      controller_names="{controllers}"
-                      link_padding="{link_padding}"
-                      planning_group_names="{planning_groups}"
-                      stop_safety_factor="1.500000"
-                      skip_collision_checks="{skip_collision_checks}"
-                      include_octomap="false"
+                      ID="SwitchController"
+                      activate_controllers="{controllers}"
+                      automatic_deactivation="true"
+                      strictness="2"
                     />
-                  </Decorator>
-                </Control>
-              </Decorator>
+                    <Decorator ID="ForceSuccess">
+                      <Action
+                        ID="PoseJog"
+                        controller_names="{controllers}"
+                        link_padding="{link_padding}"
+                        planning_group_names="{planning_groups}"
+                        stop_safety_factor="1.500000"
+                        skip_collision_checks="{skip_collision_checks}"
+                        include_octomap="false"
+                      />
+                    </Decorator>
+                  </Control>
+                </Decorator>
+              </Control>
             </Control>
             <!--Joint jogging-->
             <Control ID="Sequence" _while="teleop_mode == 1">
-              <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
-                <Control ID="Sequence">
-                  <Action
-                    ID="SwitchController"
-                    activate_asap="true"
-                    automatic_deactivation="true"
-                    controller_list_action_name="/controller_manager/list_controllers"
-                    controller_switch_action_name="/controller_manager/switch_controller"
-                    strictness="1"
-                    timeout="-1.000000"
-                    activate_controllers="{controllers}"
-                  />
-                  <Decorator ID="ForceSuccess">
-                    <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
-                      <Control
-                        ID="Parallel"
-                        success_count="1"
-                        failure_count="1"
+              <Control
+                ID="Sequence"
+                _while="teleoperation_command_active == false"
+              >
+                <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
+                  <Control ID="Sequence">
+                    <Action
+                      ID="SwitchController"
+                      activate_asap="true"
+                      automatic_deactivation="true"
+                      controller_list_action_name="/controller_manager/list_controllers"
+                      controller_switch_action_name="/controller_manager/switch_controller"
+                      strictness="1"
+                      timeout="-1.000000"
+                      activate_controllers="{controllers}"
+                    />
+                    <Decorator ID="ForceSuccess">
+                      <Decorator
+                        ID="RepeatUnlessFailureEachTick"
+                        num_cycles="-1"
                       >
-                        <Decorator
-                          ID="RepeatUnlessFailureEachTick"
-                          num_cycles="-1"
+                        <Control
+                          ID="Parallel"
+                          success_count="1"
+                          failure_count="1"
                         >
+                          <Decorator
+                            ID="RepeatUnlessFailureEachTick"
+                            num_cycles="-1"
+                          >
+                            <Action
+                              ID="GetElementOfVector"
+                              vector_in="{controllers}"
+                              index="0"
+                              element="{first_controller}"
+                            />
+                          </Decorator>
                           <Action
-                            ID="GetElementOfVector"
-                            vector_in="{controllers}"
-                            index="0"
-                            element="{first_controller}"
+                            ID="JointJog"
+                            controller_name="{first_controller}"
+                            link_padding="0.00000"
+                            stop_safety_factor="1.500000"
+                            skip_collision_checks="{skip_collision_checks}"
                           />
-                        </Decorator>
-                        <Action
-                          ID="JointJog"
-                          controller_name="{first_controller}"
-                          link_padding="0.00000"
-                          stop_safety_factor="1.500000"
-                          skip_collision_checks="{skip_collision_checks}"
-                        />
-                      </Control>
+                        </Control>
+                      </Decorator>
                     </Decorator>
-                  </Decorator>
-                </Control>
-              </Decorator>
+                  </Control>
+                </Decorator>
+              </Control>
             </Control>
+          </Control>
+        </Decorator>
+        <Decorator
+          ID="UseTeleoperationCommandActionServer"
+          action_name="/moveit_pro_ui/teleoperation_command"
+          current_mode="{teleop_mode}"
+          command_active="{teleoperation_command_active}"
+          command_type="{teleoperation_command_type}"
+          robot_state="{target_joint_state}"
+          pose="{target_pose}"
+        >
+          <Control ID="Fallback">
+            <!--Joint-slider commands interpolate directly to an absolute robot state.-->
+            <Control ID="Fallback" _skipIf="teleoperation_command_type != 1">
+              <Control ID="Sequence">
+                <SubTree
+                  ID="Interpolate to Joint State"
+                  _collapsed="false"
+                  target_joint_state="{target_joint_state}"
+                  controller_names="{joint_trajectory_controller_name}"
+                  controller_action_server="{controller_action_server}"
+                  planning_group_name="{default_planning_group}"
+                  velocity_scale_factor="{velocity_scale_factor}"
+                  execution_pipeline="{execution_pipeline}"
+                />
+                <Action
+                  ID="PublishEmpty"
+                  topic="/moveit_pro_ui/motion_ended"
+                  queue_size="1"
+                  use_best_effort="false"
+                />
+              </Control>
+              <Control ID="Sequence">
+                <Action
+                  ID="PublishEmpty"
+                  topic="/moveit_pro_ui/motion_ended"
+                  queue_size="1"
+                  use_best_effort="false"
+                />
+                <Action ID="AlwaysFailure" />
+              </Control>
+            </Control>
+            <!--Waypoint commands plan to an absolute robot state with collision checking.-->
+            <Control ID="Fallback" _skipIf="teleoperation_command_type != 2">
+              <Control ID="Sequence">
+                <SubTree
+                  ID="Move to Joint State"
+                  _collapsed="false"
+                  target_joint_state="{target_joint_state}"
+                  acceleration_scale_factor="1.0"
+                  velocity_scale_factor="{velocity_scale_factor}"
+                  controller_action_server="{controller_action_server}"
+                  controller_names="{joint_trajectory_controller_name}"
+                  joint_group_name="{default_planning_group}"
+                  link_padding="{link_padding}"
+                  execution_pipeline="{execution_pipeline}"
+                />
+                <Action
+                  ID="PublishEmpty"
+                  topic="/moveit_pro_ui/motion_ended"
+                  queue_size="1"
+                  use_best_effort="false"
+                />
+              </Control>
+              <Control ID="Sequence">
+                <Action
+                  ID="PublishEmpty"
+                  topic="/moveit_pro_ui/motion_ended"
+                  queue_size="1"
+                  use_best_effort="false"
+                />
+                <Action ID="AlwaysFailure" />
+              </Control>
+            </Control>
+            <!--Interactive-marker commands plan to a pose.-->
+            <Control ID="Fallback" _skipIf="teleoperation_command_type != 3">
+              <Control ID="Sequence">
+                <Decorator
+                  ID="ForEach"
+                  index="{index}"
+                  out="{planning_group}"
+                  vector_in="{planning_groups}"
+                >
+                  <Action ID="AlwaysSuccess" />
+                </Decorator>
+                <Decorator
+                  ID="ForEach"
+                  index="{index}"
+                  out="{tip_link}"
+                  vector_in="{tip_links}"
+                >
+                  <Action ID="AlwaysSuccess" />
+                </Decorator>
+                <!--The mobile base stows the arms and drives to the marker with Nav2 at once, with no preview or approval prompt.-->
+                <!--Every other group plans as in the core Objective.-->
+                <Control ID="IfThenElse">
+                  <Condition
+                    ID="ScriptCondition"
+                    code="planning_group == 'mobile_base'"
+                  />
+                  <Control ID="Sequence" name="Drive the Base with Nav2">
+                    <Action
+                      ID="TransformPoseFrame"
+                      input_pose="{target_pose}"
+                      target_frame_id="map"
+                      output_pose="{base_goal}"
+                    />
+                    <SubTree
+                      ID="Drive Base using Nav2"
+                      _collapsed="true"
+                      goal_pose="{base_goal}"
+                    />
+                  </Control>
+                  <SubTree
+                    ID="Move to Cartesian Pose"
+                    _collapsed="false"
+                    target_pose="{target_pose}"
+                    controller_names="{joint_trajectory_controller_name}"
+                    controller_action_name="{controller_action_server}"
+                    execution_pipeline="{execution_pipeline}"
+                    link_padding="{link_padding}"
+                    ik_frame="{tip_link}"
+                    planning_group_name="{planning_group}"
+                    max_mtc_solutions="{max_mtc_solutions}"
+                    max_ik_solutions="{max_ik_solutions}"
+                    require_user_approval="{require_user_approval}"
+                    velocity_scale_factor="{velocity_scale_factor}"
+                  />
+                </Control>
+                <Action
+                  ID="PublishEmpty"
+                  topic="/moveit_pro_ui/motion_ended"
+                  queue_size="1"
+                  use_best_effort="false"
+                />
+              </Control>
+              <Control ID="Sequence">
+                <Action
+                  ID="PublishEmpty"
+                  topic="/moveit_pro_ui/motion_ended"
+                  queue_size="1"
+                  use_best_effort="false"
+                />
+                <Action ID="AlwaysFailure" />
+              </Control>
+            </Control>
+            <Action ID="AlwaysFailure" />
           </Control>
         </Decorator>
       </Control>
