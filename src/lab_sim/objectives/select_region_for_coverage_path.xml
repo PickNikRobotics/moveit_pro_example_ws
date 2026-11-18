@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Select Region for Coverage Path">
   <BehaviorTree
     ID="Select Region for Coverage Path"
-    _description="Draw a box on the wrist camera, then sweep a coverage path over it (GetRegionFromUser demo)."
+    _description="Draw a box on the wrist camera, adjust it until the coverage path fits, then sweep the path over it (GetRegionFromUser demo)."
     _favorite="true"
   >
     <Control ID="Sequence" name="root">
@@ -27,37 +27,6 @@
         region="{selected_region}"
       />
 
-      <!-- 3. Wrist camera cloud + intrinsics (camera_info denormalizes the region into pixels). -->
-      <Action
-        ID="GetPointCloud"
-        topic_name="/wrist_camera/points"
-        message_out="{point_cloud}"
-        message_timeout_sec="5.0"
-      />
-      <Action
-        ID="GetCameraInfo"
-        topic_name="/wrist_camera/camera_info"
-        message_out="{camera_info}"
-        message_timeout_sec="5.0"
-      />
-
-      <!-- 4. Rasterize the normalized region into a mask (lab_sim_behaviors). -->
-      <Action
-        ID="GetMask2DFromRegion"
-        region="{selected_region}"
-        camera_info="{camera_info}"
-        masks2d="{masks2d}"
-      />
-
-      <!-- 5. Lift the 2D mask onto the cloud -> 3D mask(s). -->
-      <Action
-        ID="GetMasks3DFromMasks2D"
-        masks2d="{masks2d}"
-        point_cloud="{point_cloud}"
-        camera_info="{camera_info}"
-        masks3d="{masks3d}"
-      />
-
       <!-- Reference pose the OBB takes its orientation from. 180 deg about the optical X axis points the
            reference +Z back toward the camera — the outward surface normal. Identity would leave +Z along
            the camera view (into the table), so the OBB would pick region +Z downward and
@@ -71,99 +40,209 @@
         pose_stamped="{region_reference_pose}"
       />
 
-      <!-- 6-9. One mask in, one out: recover the 3D region, fit a box, sweep it, plan + execute. -->
-      <Decorator
-        ID="ForEachUntilSuccess"
-        index="{index}"
-        out="{mask3d}"
-        vector_in="{masks3d}"
-      >
+      <!-- 3-8. Turn the region into a coverage path and show it, then let the operator plan it or move and
+           resize the box (seeded with the current region) and regenerate. adjust_region stays true until the
+           operator chooses "Plan path". path_ready is set only when this pass produced a new path, so an edit
+           that yields no path reopens the editor instead of offering the previous path for planning. Cancelling
+           the editor, losing the Desktop App, or a failed camera read ends the loop with adjust_region still true. -->
+      <Control ID="Fallback">
         <Control ID="Sequence">
           <Action
-            ID="GetPointCloudFromMask3D"
-            mask3d="{mask3d}"
-            point_cloud="{point_cloud}"
-            point_cloud_fragment="{selected_cloud}"
+            ID="Script"
+            code="adjust_region := true; drew_path := false"
           />
+          <Decorator ID="ForceSuccess">
+            <Decorator ID="KeepRunningUntilFailure">
+              <Control ID="Sequence">
+                <Condition ID="ScriptCondition" code="adjust_region" />
+                <Action ID="Script" code="path_ready := false" />
+                <!-- Drop this Objective's previous preview, so a pass that produces no path does not leave it on
+                     screen. No Behavior deletes a single marker, so this clears all markers, and only once this
+                     Objective has drawn its own. -->
+                <Decorator ID="Precondition" if="drew_path" else="SUCCESS">
+                  <Action ID="ClearAllVisualMarkers" />
+                </Decorator>
+                <!-- Capture the cloud on every pass, so its stamp is still in the TF buffer however long
+                     the operator spent on the previous preview. camera_info denormalizes the region. A failed
+                     read ends the loop: reopening the editor cannot fix a missing camera topic. -->
+                <Action
+                  ID="GetPointCloud"
+                  topic_name="/wrist_camera/points"
+                  message_out="{point_cloud}"
+                  message_timeout_sec="5.0"
+                />
+                <Action
+                  ID="GetCameraInfo"
+                  topic_name="/wrist_camera/camera_info"
+                  message_out="{camera_info}"
+                  message_timeout_sec="5.0"
+                />
+                <!-- A pass that yields no path is recoverable: path_ready stays false and the editor reopens below. -->
+                <Decorator ID="ForceSuccess">
+                  <Control ID="Sequence">
+                    <Action
+                      ID="GetMask2DFromRegion"
+                      region="{selected_region}"
+                      camera_info="{camera_info}"
+                      masks2d="{masks2d}"
+                    />
+                    <Action
+                      ID="GetMasks3DFromMasks2D"
+                      masks2d="{masks2d}"
+                      point_cloud="{point_cloud}"
+                      camera_info="{camera_info}"
+                      masks3d="{masks3d}"
+                    />
+                    <!-- One mask in, one out: recover the 3D region, fit a box, and sweep it. -->
+                    <Decorator
+                      ID="ForEachUntilSuccess"
+                      index="{index}"
+                      out="{mask3d}"
+                      vector_in="{masks3d}"
+                    >
+                      <Control ID="Sequence">
+                        <Action
+                          ID="GetPointCloudFromMask3D"
+                          mask3d="{mask3d}"
+                          point_cloud="{point_cloud}"
+                          point_cloud_fragment="{selected_cloud}"
+                        />
 
-          <!-- The drawn box rarely stops at the edge of the surface the operator meant: it also catches the
-               object's sides and the table behind it. A plane fitted through all of that tilts away from the
-               surface, so the sweep would neither follow it nor hold its standoff. Keep the surface itself. -->
-          <Action
-            ID="ExtractDominantPlaneFromPointCloud"
-            point_cloud="{selected_cloud}"
-            inlier_tolerance="0.005"
-            min_inlier_fraction="0.5"
-            plane_point_cloud="{region_cloud}"
-          />
-          <!-- align_xy_to_reference squares the box up with the image axes. The region is a flat patch with
-               no elongation of its own, so its principal axes follow how perspective skewed the selection:
-               they run diagonally across it, tilting the sweep and inflating the box. -->
-          <Action
-            ID="GetOrientedBoundingBoxFromPointCloud"
-            point_cloud="{region_cloud}"
-            reference_pose="{region_reference_pose}"
-            align_xy_to_reference="true"
-            box_center_pose="{region_pose}"
-            box_dimensions="{region_dimensions}"
-          />
-          <!-- SURFACE projection follows the measured surface: each waypoint sits one standoff above the cloud
-               along the local normal. Only the points of point_cloud inside the region box are used. -->
-          <Action
-            ID="GenerateSurfaceCoveragePath"
-            region_pose="{region_pose}"
-            region_dimensions="{region_dimensions}"
-            line_spacing="0.03"
-            point_spacing="0.02"
-            standoff="0.04"
-            margin="0.0"
-            point_cloud="{selected_cloud}"
-            projection_mode="SURFACE"
-            coverage_path="{coverage_path}"
-            region_cloud="{surface_cloud}"
-          />
-          <!-- Show the cloud the sweep was projected onto: point_cloud cropped to the region box. -->
-          <Action ID="SendPointCloudToUI" point_cloud="{surface_cloud}" />
+                        <!-- The drawn box rarely stops at the edge of the surface the operator meant: it also catches the
+                             object's sides and the table behind it. A plane fitted through all of that tilts away from the
+                             surface, so the sweep would neither follow it nor hold its standoff. Keep the surface itself. -->
+                        <Action
+                          ID="ExtractDominantPlaneFromPointCloud"
+                          point_cloud="{selected_cloud}"
+                          inlier_tolerance="0.005"
+                          min_inlier_fraction="0.5"
+                          plane_point_cloud="{region_cloud}"
+                        />
+                        <!-- align_xy_to_reference squares the box up with the image axes. The region is a flat patch with
+                             no elongation of its own, so its principal axes follow how perspective skewed the selection:
+                             they run diagonally across it, tilting the sweep and inflating the box. -->
+                        <Action
+                          ID="GetOrientedBoundingBoxFromPointCloud"
+                          point_cloud="{region_cloud}"
+                          reference_pose="{region_reference_pose}"
+                          align_xy_to_reference="true"
+                          box_center_pose="{region_pose}"
+                          box_dimensions="{region_dimensions}"
+                        />
+                        <!-- SURFACE projection follows the measured surface: each waypoint sits one standoff above the cloud
+                             along the local normal. Only the points of point_cloud inside the region box are used. -->
+                        <Action
+                          ID="GenerateSurfaceCoveragePath"
+                          region_pose="{region_pose}"
+                          region_dimensions="{region_dimensions}"
+                          line_spacing="0.03"
+                          point_spacing="0.02"
+                          standoff="0.04"
+                          margin="0.0"
+                          point_cloud="{selected_cloud}"
+                          projection_mode="SURFACE"
+                          coverage_path="{coverage_path}"
+                          region_cloud="{surface_cloud}"
+                        />
+                        <Action ID="Script" code="path_ready := true" />
+                      </Control>
+                    </Decorator>
+                  </Control>
+                </Decorator>
 
-          <!-- Draw the coverage path as green grid lines over the region so the operator sees the
-               sweep before it is planned, approved, and executed. marker_lifetime 0 keeps it up. -->
-          <Action
-            ID="VisualizePath"
-            path="{coverage_path}"
-            marker_name="coverage_path"
-            line_color_rgb="0;255;0"
-            line_width="0.005"
-            marker_lifetime="0"
-          />
-          <!-- Track all 6 DOF so the tool holds the surface-normal orientation of each waypoint. -->
-          <Action
-            ID="PlanCartesianPath"
-            path="{coverage_path}"
-            planning_group_name="manipulator"
-            tip_links="grasp_link"
-            blending_radius="0.001"
-            trajectory_timing="[{mode: time_optimal}]"
-            cartesian_constraint="[{constraint_type: position_and_orientation}]"
-            joint_trajectory_msg="{coverage_trajectory}"
-          />
-          <SubTree
-            ID="Wait for Joint Trajectory Approval"
-            _collapsed="true"
-            joint_trajectory_msg="{coverage_trajectory}"
-          />
-          <!-- This sweep needs no admittance. Keep the 0.5 rad path and 0.05 rad goal limits,
-               and cancel execution if the controller has not returned a result within 120 s. -->
-          <Action
-            ID="ExecuteTrajectory"
-            execution_pipeline="jtc"
-            controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-            joint_trajectory_msg="{coverage_trajectory}"
-            path_position_tolerance="0.5"
-            goal_position_tolerance="0.05"
-            goal_duration_tolerance="120.0"
-          />
+                <!-- Preview only a path this pass produced. Outside the ForceSuccess: a failed preview (for example
+                     a missing transform to the 3D view) is not fixed by editing the box, so it ends the loop. -->
+                <Decorator ID="Precondition" if="path_ready" else="SUCCESS">
+                  <Control ID="Sequence">
+                    <!-- Show the cloud the sweep was projected onto: point_cloud cropped to the region box. -->
+                    <Action
+                      ID="SendPointCloudToUI"
+                      point_cloud="{surface_cloud}"
+                    />
+
+                    <!-- Draw the coverage path as green grid lines over the region so the operator sees the
+                         sweep before deciding. marker_lifetime 0 keeps it up until the next pass or the exit clears it. -->
+                    <Action
+                      ID="VisualizePath"
+                      path="{coverage_path}"
+                      marker_name="coverage_path"
+                      line_color_rgb="0;255;0"
+                      line_width="0.005"
+                      marker_lifetime="0"
+                    />
+                    <Action ID="Script" code="drew_path := true" />
+                  </Control>
+                </Decorator>
+
+                <!-- WaitForUserDecision fails the same way for "Adjust region", a timeout, and a lost Desktop App.
+                     The one-year maximum timeout keeps an unattended prompt waiting, as the region prompt does,
+                     instead of opening the editor; IsUserAvailable ends the loop when the Desktop App is gone. -->
+                <Control ID="Fallback">
+                  <Control ID="Sequence">
+                    <Condition ID="ScriptCondition" code="path_ready" />
+                    <Action
+                      ID="WaitForUserDecision"
+                      prompt="Plan the coverage path shown in green, or adjust the region and regenerate it?"
+                      approve_label="Plan path"
+                      reject_label="Adjust region"
+                      timeout_sec="31536000"
+                    />
+                    <Action ID="Script" code="adjust_region := false" />
+                  </Control>
+                  <Control ID="Sequence">
+                    <Action ID="IsUserAvailable" />
+                    <!-- Reopen the current region so the operator moves or resizes it, or draws a new one. -->
+                    <Action
+                      ID="GetRegionFromUser"
+                      region_name="selected_region"
+                      prompt="Move or resize the box, or draw a new one, then press Done"
+                      initial_region="{selected_region}"
+                      region="{selected_region}"
+                    />
+                  </Control>
+                </Control>
+              </Control>
+            </Decorator>
+          </Decorator>
+          <Condition ID="ScriptCondition" code="!adjust_region" />
         </Control>
-      </Decorator>
+        <!-- Abandoned or failed: remove this Objective's preview path so it does not outlive the Objective. -->
+        <Control ID="Sequence">
+          <Decorator ID="Precondition" if="drew_path" else="SUCCESS">
+            <Action ID="ClearAllVisualMarkers" />
+          </Decorator>
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+
+      <!-- 9. Plan, approve, and execute the confirmed path. Track all 6 DOF so the tool holds the
+           surface-normal orientation of each waypoint. -->
+      <Action
+        ID="PlanCartesianPath"
+        path="{coverage_path}"
+        planning_group_name="manipulator"
+        tip_links="grasp_link"
+        blending_radius="0.001"
+        trajectory_timing="[{mode: time_optimal}]"
+        cartesian_constraint="[{constraint_type: position_and_orientation}]"
+        joint_trajectory_msg="{coverage_trajectory}"
+      />
+      <SubTree
+        ID="Wait for Joint Trajectory Approval"
+        _collapsed="true"
+        joint_trajectory_msg="{coverage_trajectory}"
+      />
+      <!-- This sweep needs no admittance. Keep the 0.5 rad path and 0.05 rad goal limits,
+           and cancel execution if the controller has not returned a result within 120 s. -->
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        joint_trajectory_msg="{coverage_trajectory}"
+        path_position_tolerance="0.5"
+        goal_position_tolerance="0.05"
+        goal_duration_tolerance="120.0"
+      />
 
       <!-- Return the arm to Home so the operator can immediately re-run the demo.
            Home needs no separate approval; the timeout bounds planning and motion. -->
