@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>rebot_bench_behaviors</name>
-  <version>10.2.0</version>
+  <version>11.0.0</version>
   <description>
     Cube perception and trajectory Behaviors shared by the simulated and
     physical reBot bench.
