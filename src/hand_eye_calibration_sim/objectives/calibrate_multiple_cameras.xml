@@ -44,6 +44,7 @@
             _collapsed="true"
             waypoint_name="{current_waypoint}"
             joint_group_name="{joint_group_name}"
+            collision_check_params="{collision_check_params}"
           />
           <Action ID="WaitForDuration" delay_duration="{settle_seconds}" />
           <SubTree
@@ -269,6 +270,16 @@
         type="std::string"
       >
         Joint group that moves to each waypoint.
+      </input_port>
+      <input_port
+        name="collision_check_params"
+        default="[{override_scene_link_padding: true, link_padding: 0.01}]"
+        type="moveit_studio_msgs::msg::CollisionCheckParams"
+      >
+        Collision-check padding for each move to a waypoint. link_padding
+        defaults to 0.01 m. Lower it for an arm whose links sit closer than
+        that in its normal poses. It is also the robot's planning clearance to
+        world objects. Use the value that Generate Calibration Waypoints used.
       </input_port>
       <input_port
         name="end_effector_frame"
