@@ -25,19 +25,32 @@ checkpoint_revision: ""
 checkpoint_requires_hf_token: false
 
 # LeRobot policy family (pi05 | smolvla | groot | ...). Empty reads the checkpoint's
-# config.json "type"; set it only when that field is missing.
+# config.json "type" on PyTorch; QNN supports only compiled pi05 bundles.
 policy_class: ""
+
+# Inference backend: pytorch | qnn. PyTorch remains the default for every policy
+# family; qnn runs compiled pi0.5 graphs on the Qualcomm Hexagon HTP only.
+backend: pytorch
+
+# QNN only: local compiled-context bundle JSON, e.g. /models/pi05-qnn/bundle.json.
+# Its model_id/revision must match checkpoint/checkpoint_revision (empty uses the
+# bundle's), and fps/state_dim must match or be 0. QNN failures require an
+# explicit inference-server restart, and the NPU host must supply QAIRT 2.49,
+# which the standard image lacks. See docker/README.md.
+qnn_bundle: ""
 
 # Training frame rate. The chunk plays at 1/fps seconds per step, so a wrong
 # value rescales every commanded joint velocity. Keep the objective's dt at
 # 1/fps. 0 reads the rate from train_config.json, which this checkpoint omits.
 fps: 10.0
 
-# Torch device: auto | cpu | cuda. auto selects a usable NVIDIA or AMD GPU.
+# PyTorch only: auto | cpu | cuda. auto selects a usable NVIDIA or AMD GPU.
+# QNN uses the compiled bundle's HTP device placement, never CPU/GPU fallback.
 # The ROCm image requires GPU access in auto mode; other images fall back to CPU.
 # Explicit cpu always selects CPU. Explicit cuda fails if GPU access is unavailable.
 device: auto
 
+# PyTorch only; QNN precision is fixed by the compiled bundle.
 # Hold the pi0.5 language backbone and vision tower at eight bits, most of the
 # weights: roughly 3 GiB less GPU memory for a little more time per chunk. false
 # loads every weight at full width, and a policy family other than pi0.5 ignores
@@ -60,6 +73,7 @@ state_dim: 8
 # column, so the Objective's joint order does not matter. Set both or neither.
 # The server ignores these for a MoveIt Pro Trainer checkpoint, which carries
 # its own names, and MoveIt Pro Trainer clears them when it selects one.
+# The qnn backend reads nothing from the Hub and always uses these.
 # Without names, the server matches values to joints in list order; a future
 # release removes that fallback.
 state_names: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7, robotiq_85_left_knuckle_joint]
