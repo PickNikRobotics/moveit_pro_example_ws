@@ -33,6 +33,8 @@ hardware:
       # Publishes the forward stereo pair for visual odometry. Off because it adds two unusable entries to the
       # camera picker. Rebuild hangar_sim after changing this value.
       - enable_vo: false
+      # Leave false for Build Map, which switches to SLAM during the Objective and restores localization afterward.
+      - slam: false
 
   # Additional launch file included with the persistent driver process (Nav2 sim drivers).
   # [Optional, defaults to a blank launch file if not specified]

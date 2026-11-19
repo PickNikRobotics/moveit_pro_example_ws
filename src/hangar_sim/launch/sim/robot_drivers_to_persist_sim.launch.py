@@ -39,6 +39,7 @@ from launch.actions import (
     OpaqueFunction,
     SetEnvironmentVariable,
 )
+from launch.condition import Condition
 from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import (
@@ -50,7 +51,19 @@ from launch_ros.actions import Node
 from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ParameterFile
 from launch_ros.substitutions import FindPackageShare
+from moveit_studio_utils_py.system_config import SystemConfigParser
 from nav2_common.launch import RewrittenYaml, ReplaceString
+
+
+def _slam_from_config():
+    """Read the SLAM launch default from config.yaml's urdf_params."""
+    urdf_params = (
+        SystemConfigParser().get_hardware_config().robot_description.urdf_params
+    )
+    for param in urdf_params:
+        if "slam" in param:
+            return str(param["slam"])
+    return "False"
 
 
 def _warn_unsupported_localization(context, *args, **kwargs):
@@ -173,7 +186,12 @@ def generate_launch_description():
     )
 
     declare_slam_cmd = DeclareLaunchArgument(
-        "slam", default_value="False", description="Whether run a SLAM"
+        "slam",
+        default_value=_slam_from_config(),
+        description=(
+            "Build a map with slam_toolbox in place of beluga_amcl. "
+            "Defaults to config.yaml's urdf_params slam."
+        ),
     )
 
     declare_localization_cmd = DeclareLaunchArgument(
@@ -242,6 +260,11 @@ def generate_launch_description():
         ),
     )
 
+    idle_mapping_condition = Condition(
+        predicate=lambda context: UnlessCondition(slam).evaluate(context)
+        and IfCondition(localization).evaluate(context)
+    )
+
     # Specify the actions
     bringup_cmd_group = GroupAction(
         [
@@ -285,11 +308,41 @@ def generate_launch_description():
                     "params_file": params_file,
                 }.items(),
             ),
+            # Build Map starts idle SLAM through the Nav2 lifecycle interface.
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    os.path.join(
+                        get_package_share_directory("slam_toolbox"),
+                        "launch",
+                        "online_sync_launch.py",
+                    )
+                ),
+                condition=idle_mapping_condition,
+                launch_arguments={
+                    "use_lifecycle_manager": "true",
+                    "use_sim_time": use_sim_time,
+                    "slam_params_file": params_file,
+                }.items(),
+            ),
+            Node(
+                condition=idle_mapping_condition,
+                package="nav2_lifecycle_manager",
+                executable="lifecycle_manager",
+                name="lifecycle_manager_mapping",
+                parameters=[
+                    {
+                        "autostart": False,
+                        "node_names": ["slam_toolbox"],
+                        "use_sim_time": use_sim_time,
+                    }
+                ],
+                output="screen",
+            ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     os.path.join(config_launch_dir, "localization_launch.py")
                 ),
-                condition=IfCondition(PythonExpression(["not ", slam])),
+                condition=UnlessCondition(slam),
                 launch_arguments={
                     "namespace": namespace,
                     "map": map_yaml_file,
