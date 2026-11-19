@@ -120,10 +120,11 @@ skip_objectives = {
     "Solution - Draw Square",
     "Cartesian Plan Simple Square",
     # Core-library objectives (moveit_pro_objectives) aggregated into every
-    # config. Both need a primary UI and are skipped by lab_sim for the same
-    # reasons.
+    # config. These require operator input or approval unavailable in this sweep.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
+    "Collect Planar Waypoints",  # GetPlanarPoseFromUser requires confirmed selections.
+    "Navigate Planar Waypoints",  # Confirmed collection + per-leg path approval.
     # A 121 m drive for scoring odometry against ground truth, not a smoke test;
     # it is run by hand.
     "Navigate Hangar Loop",

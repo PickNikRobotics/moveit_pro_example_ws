@@ -304,6 +304,8 @@ skip_objectives = {
     "Scan Scene - Multiple Point Clouds",
     "Stack Objects with ICP",  # Skipped because there is no primary ui to switch to in ci
     "Stitch Multiple Point Clouds Together",
+    "Collect Planar Waypoints",  # Confirmed planar selection needs an operator.
+    "Navigate Planar Waypoints",  # Confirmed selection and per-leg path approval.
     "Marker Visualization Example",  # Server not available for GetTextFromUser
     "Register CAD Part",  # TODO: remove this for 9.2.0 and fix it correctly
     "Select Region for Coverage Path",  # Server not available for GetRegionFromUser (needs a UI prompt)
