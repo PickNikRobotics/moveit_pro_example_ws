@@ -1068,7 +1068,7 @@ def test_enable_vo_publishes_the_oakd_pair_as_mono8_rectified_stereo():
     enabled_blocks = [
         block
         for block in root.iter("{http://www.ros.org/wiki/xacro}if")
-        if block.attrib["value"] == "$(arg enable_vo)"
+        if block.attrib["value"] == "${vo_enabled}"
     ]
     sensors = {
         sensor.attrib["name"]: {

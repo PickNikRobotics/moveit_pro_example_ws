@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="VO Estimation Run">
+  <BehaviorTree
+    ID="VO Estimation Run"
+    _description="Drives the rover in a 1.8 m square using wheel/IMU odometry while VO independently estimates and publishes camera motion. VO is not used for driving or navigation. Monitors tracking and requests STOP on every exit. Does not visualize or save the VO trajectory or calculate drift. Run the separate VO measurement script to calculate drift. Requires enable_vo=true and an ALIKED/LightGlue bundle configured in the Runtime; CPU or CUDA inference."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="Check VO before starting the run">
+      <Control ID="Fallback" name="Check VO control service">
+        <Action
+          ID="StopStereoVisualOdometry"
+          response_timeout="5.0"
+          reinitializations="{baseline_reinitializations}"
+        />
+        <Control ID="Sequence" name="Report unavailable VO control">
+          <Action
+            ID="LogMessage"
+            log_level="error"
+            message="VO control did not respond at /stereo_visual_odometry/control. Set enable_vo=true in lunar_sim/config/config.yaml and restart the Runtime if VO is disabled; otherwise inspect VO diagnostics."
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+      <Control
+        ID="Finally"
+        name="Stop visual odometry on every exit"
+        halt_timeout_msec="70000"
+      >
+        <Control
+          ID="Sequence"
+          name="Estimate camera motion during the dead-reckon square"
+        >
+          <Action
+            ID="LogMessage"
+            log_level="info"
+            message="VO control service responded. Resetting the camera-motion estimate."
+          />
+          <Action
+            ID="ResetStereoVisualOdometry"
+            reset_pose="true"
+            response_timeout="5.0"
+          />
+          <Action
+            ID="LogMessage"
+            log_level="info"
+            message="Loading ALIKED and LightGlue on the configured inference device."
+          />
+          <Control ID="Fallback" name="Load VO models">
+            <Action
+              ID="StartStereoVisualOdometry"
+              response_timeout="60.0"
+              status_message="{start_status_message}"
+            />
+            <Control ID="Sequence" name="Report model startup failure">
+              <Action
+                ID="Script"
+                code="vo_failure_message := 'VO models could not be loaded: ' .. start_status_message .. '. Check vo_bundle_manifest, model files, and vo_device in lunar_sim/config/config.yaml.'"
+              />
+              <Action
+                ID="LogMessage"
+                log_level="error"
+                message="{vo_failure_message}"
+              />
+              <Action ID="AlwaysFailure" />
+            </Control>
+          </Control>
+          <Action
+            ID="LogMessage"
+            log_level="info"
+            message="ALIKED and LightGlue loaded; the configured inference device passed validation. Waiting for tracked camera poses."
+          />
+          <Action
+            ID="Script"
+            code="startup_runtime_state := 3; startup_tracking_state := 'unknown'; startup_synchronized_frames := 0; startup_rejected_frames := 0; startup_reinitializations := baseline_reinitializations; startup_status_message := 'No status response received'; startup_control_responded := true"
+          />
+          <Control ID="Fallback" name="Report startup tracking failure">
+            <Control ID="Sequence" name="Wait for healthy startup">
+              <Decorator ID="Timeout" msec="30000">
+                <Decorator ID="RetryUntilSuccessful" num_attempts="-1">
+                  <Control ID="Sequence" name="Wait for the first tracked pose">
+                    <Action ID="WaitForDuration" delay_duration="0.1" />
+                    <Control
+                      ID="Fallback"
+                      name="Read startup status once per poll"
+                    >
+                      <Action
+                        ID="GetStereoVisualOdometryStatus"
+                        response_timeout="5.0"
+                        runtime_state="{startup_runtime_state}"
+                        tracking_state="{startup_tracking_state}"
+                        synchronized_frames="{startup_synchronized_frames}"
+                        rejected_frames="{startup_rejected_frames}"
+                        reinitializations="{startup_reinitializations}"
+                        status_message="{startup_status_message}"
+                      />
+                      <Action
+                        ID="Script"
+                        code="startup_control_responded = false"
+                      />
+                    </Control>
+                    <Control
+                      ID="IfThenElse"
+                      name="Stop polling an unresponsive service"
+                    >
+                      <Condition
+                        ID="ScriptCondition"
+                        code="startup_control_responded"
+                      />
+                      <Condition
+                        ID="ScriptCondition"
+                        code="startup_runtime_state == 1 &amp;&amp; startup_tracking_state == 'tracking' &amp;&amp; startup_reinitializations == baseline_reinitializations"
+                      />
+                      <Action ID="AlwaysSuccess" />
+                    </Control>
+                  </Control>
+                </Decorator>
+              </Decorator>
+              <Condition
+                ID="ScriptCondition"
+                code="startup_control_responded"
+              />
+            </Control>
+            <Control ID="Sequence" name="Explain startup tracking failure">
+              <Control
+                ID="IfThenElse"
+                name="Distinguish tracking failure from missing status"
+              >
+                <Condition
+                  ID="ScriptCondition"
+                  code="startup_control_responded"
+                />
+                <Action
+                  ID="Script"
+                  code="vo_failure_message := 'VO tracking not established: runtime=' .. startup_runtime_state .. ', tracking=' .. startup_tracking_state .. ', accepted=' .. startup_synchronized_frames .. ', rejected=' .. startup_rejected_frames .. ', reinitializations=' .. startup_reinitializations .. '. Status: ' .. startup_status_message .. '. Check stereo inputs and VO diagnostics.'"
+                />
+                <Action
+                  ID="Script"
+                  code="vo_failure_message := 'VO status check failed after model loading: runtime=' .. startup_runtime_state .. ', tracking=' .. startup_tracking_state .. '. Status: ' .. startup_status_message .. '. Check VO diagnostics and inference performance.'"
+                />
+              </Control>
+              <Action
+                ID="LogMessage"
+                log_level="error"
+                message="{vo_failure_message}"
+              />
+              <Action ID="AlwaysFailure" />
+            </Control>
+          </Control>
+          <Action
+            ID="LogMessage"
+            log_level="info"
+            message="VO tracking established. Driving the square using wheel/IMU odometry."
+          />
+          <Decorator ID="Timeout" msec="90000">
+            <Control
+              ID="Parallel"
+              success_count="1"
+              failure_count="1"
+              name="Drive while continuous tracking remains healthy"
+            >
+              <SubTree ID="Dead Reckon Square" _collapsed="true" />
+              <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
+                <Control
+                  ID="Sequence"
+                  name="Reject tracking loss during the route"
+                >
+                  <Action
+                    ID="GetStereoVisualOdometryStatus"
+                    response_timeout="5.0"
+                    runtime_state="{route_runtime_state}"
+                    tracking_state="{route_tracking_state}"
+                    synchronized_frames="{route_synchronized_frames}"
+                    rejected_frames="{route_rejected_frames}"
+                    reinitializations="{route_reinitializations}"
+                    status_message="{route_status_message}"
+                  />
+                  <Control ID="Fallback" name="Report rejected route tracking">
+                    <Condition
+                      ID="ScriptCondition"
+                      code="route_runtime_state == 1 &amp;&amp; route_tracking_state == 'tracking' &amp;&amp; route_reinitializations == baseline_reinitializations"
+                    />
+                    <Control
+                      ID="Sequence"
+                      name="Explain route tracking failure"
+                    >
+                      <Action
+                        ID="Script"
+                        code="vo_failure_message := 'VO square tracking rejected: runtime=' .. route_runtime_state .. ', tracking=' .. route_tracking_state .. ', reinitializations=' .. route_reinitializations .. ' (baseline=' .. baseline_reinitializations .. '). Status: ' .. route_status_message .. '. Check stereo inputs and VO diagnostics before retrying.'"
+                      />
+                      <Action
+                        ID="LogMessage"
+                        log_level="error"
+                        message="{vo_failure_message}"
+                      />
+                      <Action ID="AlwaysFailure" />
+                    </Control>
+                  </Control>
+                  <Action ID="WaitForDuration" delay_duration="0.1" />
+                </Control>
+              </Decorator>
+            </Control>
+          </Decorator>
+          <Action
+            ID="GetStereoVisualOdometryStatus"
+            response_timeout="5.0"
+            runtime_state="{final_runtime_state}"
+            tracking_state="{final_tracking_state}"
+            synchronized_frames="{final_synchronized_frames}"
+            rejected_frames="{final_rejected_frames}"
+            reinitializations="{final_reinitializations}"
+            status_message="{final_status_message}"
+          />
+          <Control ID="Fallback" name="Report rejected final tracking">
+            <Condition
+              ID="ScriptCondition"
+              code="final_runtime_state == 1 &amp;&amp; final_tracking_state == 'tracking' &amp;&amp; final_reinitializations == baseline_reinitializations"
+            />
+            <Control ID="Sequence" name="Explain final tracking failure">
+              <Action
+                ID="Script"
+                code="vo_failure_message := 'VO square final tracking rejected: runtime=' .. final_runtime_state .. ', tracking=' .. final_tracking_state .. ', reinitializations=' .. final_reinitializations .. ' (baseline=' .. baseline_reinitializations .. '). Status: ' .. final_status_message .. '. Check stereo inputs and VO diagnostics before retrying.'"
+              />
+              <Action
+                ID="LogMessage"
+                log_level="error"
+                message="{vo_failure_message}"
+              />
+              <Action ID="AlwaysFailure" />
+            </Control>
+          </Control>
+        </Control>
+        <Control ID="Sequence" name="Stop VO session">
+          <Action
+            ID="LogMessage"
+            log_level="info"
+            message="Stopping VO; waiting for the current inference operation to finish."
+          />
+          <Action ID="StopStereoVisualOdometry" response_timeout="65.0" />
+          <Action
+            ID="LogMessage"
+            log_level="info"
+            message="VO session stopped."
+          />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="VO Estimation Run">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Visual Odometry" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
