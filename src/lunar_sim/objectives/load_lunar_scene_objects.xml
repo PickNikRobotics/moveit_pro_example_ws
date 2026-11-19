@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Load Lunar Scene Objects">
+  <BehaviorTree
+    ID="Load Lunar Scene Objects"
+    _description="Adds the moon base to the planning scene from lunar_scene_objects.urdf, a scene file separate from the robot model, so the 3D view shows the buildings. Nav2 does not read the planning scene, so this changes nothing about navigation. Running it again removes the base first and loads it afresh, without clearing anything else. The base is fixed in odom when loaded, so the 3D view shows the rover offset from it by the odometry drift since then."
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <Action ID="RemoveURDFFromScene" urdf_name="lunar_moon_base" />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="mj_world"
+        pose_stamped="{scene_pose}"
+      />
+      <Action
+        ID="AddURDF"
+        urdf_name="lunar_moon_base"
+        package_name="lunar_sim"
+        urdf_file_path="description/lunar_scene_objects.urdf"
+        urdf_pose="{scene_pose}"
+        show_visual_geometry="true"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Load Lunar Scene Objects">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Planning Scene" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
