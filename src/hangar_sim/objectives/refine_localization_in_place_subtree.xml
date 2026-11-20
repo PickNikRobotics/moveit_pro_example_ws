@@ -11,7 +11,7 @@
   >
     <Control ID="Sequence" name="root">
       <Action ID="SetInitialPose" name="Seed the filter" pose="{seed_pose}" />
-      <!--Any failure after the seed restores restore_pose.-->
+      <!--A rejected seed restores the complete captured estimate, or restore_pose when there was no prior estimate.-->
       <Control ID="Fallback" name="Refine and verify, or restore">
         <Control ID="Sequence" name="Refine and verify">
           <Action
@@ -93,11 +93,25 @@
             log_level="error"
             message="Localization failed. If the scans did not fit the map, run Localize Robot."
           />
-          <Action
-            ID="SetInitialPose"
-            name="Restore the previous estimate"
-            pose="{restore_pose}"
-          />
+          <Control
+            ID="IfThenElse"
+            name="Restore captured uncertainty or the first seed"
+          >
+            <Action
+              ID="ScriptCondition"
+              code="has_restore_estimate == 'true'"
+            />
+            <Action
+              ID="SetInitialPose"
+              name="Restore the previous estimate and covariance"
+              estimate="{restore_estimate}"
+            />
+            <Action
+              ID="SetInitialPose"
+              name="No previous estimate: restore the seed"
+              pose="{restore_pose}"
+            />
+          </Control>
           <Action
             ID="WaitForDuration"
             name="Let the filter take the restore"
@@ -128,6 +142,20 @@
         type="geometry_msgs::msg::PoseStamped"
       >
         Pose to restore if the result is rejected, in map.
+      </input_port>
+      <input_port
+        name="restore_estimate"
+        default="{restore_estimate}"
+        type="geometry_msgs::msg::PoseWithCovarianceStamped"
+      >
+        Captured pose and complete covariance to restore, in map.
+      </input_port>
+      <input_port
+        name="has_restore_estimate"
+        default="false"
+        type="std::string"
+      >
+        Restore the captured estimate when true; otherwise use restore_pose.
       </input_port>
       <input_port name="num_updates" default="20" type="int">
         Number of filter updates.
