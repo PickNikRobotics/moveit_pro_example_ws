@@ -1,0 +1,13 @@
+based_on_package: rebot_bench_sim
+
+hardware:
+  robot_description:
+    urdf:
+      package: rebot_peg_in_hole_sim
+      path: description/rebot_peg.urdf
+
+objectives:
+  objective_library_paths:
+    rebot_peg_in_hole_objectives:
+      package_name: rebot_peg_in_hole_sim
+      relative_path: objectives
