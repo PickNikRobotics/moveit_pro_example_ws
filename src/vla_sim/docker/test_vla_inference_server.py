@@ -41,6 +41,10 @@ import http.client
 import json
 import os
 import shutil
+import socket
+import stat
+import subprocess
+import sys
 import tempfile
 import threading
 import unittest
@@ -69,6 +73,7 @@ from lerobot.policies.pi05.modeling_pi05 import PI05Policy
 from lerobot.processor import RenameObservationsProcessorStep
 from lerobot.types import TransitionKey
 from safetensors.torch import save_file
+import vla_inference_server
 from vla_inference_server import (
     INFER_ABANDONED_SECONDS,
     POLICY_MANIFEST_FILE,
@@ -80,6 +85,7 @@ from vla_inference_server import (
     PolicyRunner,
     ServerState,
     apply_bearer_key,
+    bind_unix_http_server,
     decode_image_b64,
     hub_access_error_message,
     load_checkpoint_file,
@@ -1725,6 +1731,270 @@ class TestInferenceKeyAuthentication(unittest.TestCase):
                     else:
                         expected = 401
                     self.assertEqual(response.status, expected)
+
+
+class TestRelayWatchdog(unittest.TestCase):
+    """A --unix-socket worker exits once its inference_server relay is gone."""
+
+    def setUp(self) -> None:
+        self.now = 1000.0
+        self.watchdog = vla_inference_server.RelayWatchdog(clock=lambda: self.now)
+
+    def test_waits_for_the_first_relay_contact(self) -> None:
+        self.now += vla_inference_server.RELAY_FIRST_CONTACT_SECONDS - 1
+        self.assertIsNone(self.watchdog.expired_reason())
+        self.now += 2
+        self.assertIn("no relay connected", self.watchdog.expired_reason())
+
+    def test_exits_after_the_relay_falls_silent(self) -> None:
+        self.watchdog.touch()
+        self.now += vla_inference_server.RELAY_SILENCE_EXIT_SECONDS - 1
+        self.assertIsNone(self.watchdog.expired_reason())
+        self.watchdog.touch()
+        self.now += vla_inference_server.RELAY_SILENCE_EXIT_SECONDS - 1
+        self.assertIsNone(self.watchdog.expired_reason())
+        self.now += 2
+        self.assertIn("no relay request", self.watchdog.expired_reason())
+
+    def test_every_connection_counts_as_contact(self) -> None:
+        tracked = vla_inference_server.track_relay_contact(
+            make_handler(ServerState()), self.watchdog
+        )
+        self.assertIsNone(self.watchdog._last_contact)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "worker.sock")
+            httpd = vla_inference_server.bind_unix_http_server(path, tracked)
+            thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+            thread.start()
+            try:
+                import socket as socket_module
+
+                client = socket_module.socket(socket_module.AF_UNIX)
+                client.connect(path)
+                client.sendall(b"GET /health HTTP/1.0\r\n\r\n")
+                self.assertIn(b"200", client.recv(4096))
+                client.close()
+            finally:
+                httpd.shutdown()
+                httpd.server_close()
+        self.assertEqual(self.watchdog._last_contact, self.now)
+
+    def test_note_relay_reports_only_a_different_relay(self) -> None:
+        """An empty id never counts; a different non-empty id from the last one does."""
+        self.assertFalse(self.watchdog.note_relay(""))
+        self.assertFalse(self.watchdog.note_relay("relay-a"))
+        self.assertFalse(self.watchdog.note_relay("relay-a"))
+        self.assertFalse(self.watchdog.note_relay(""))
+        self.assertTrue(self.watchdog.note_relay("relay-b"))
+        self.assertFalse(self.watchdog.note_relay("relay-b"))
+
+
+class TestRelayRestartOnNewRelay(unittest.TestCase):
+    """A worker parked after a native QNN failure restarts when a new relay connects."""
+
+    def setUp(self) -> None:
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmp, True)
+        self.socket_path = os.path.join(tmp, "worker.sock")
+        environment = patch.dict(os.environ, {}, clear=False)
+        environment.start()
+        self.addCleanup(environment.stop)
+        restart = patch.object(vla_inference_server, "restart_process")
+        self.restart = restart.start()
+        self.addCleanup(restart.stop)
+
+    def _serve(self, state: ServerState) -> None:
+        watchdog = vla_inference_server.RelayWatchdog()
+        tracked = vla_inference_server.track_relay_contact(
+            make_handler(state), watchdog, state
+        )
+        httpd = bind_unix_http_server(self.socket_path, tracked)
+        thread = threading.Thread(
+            target=httpd.serve_forever, kwargs={"poll_interval": 0.05}, daemon=True
+        )
+        thread.start()
+        # LIFO: shutdown() stops the serve loop before server_close() frees the socket.
+        self.addCleanup(thread.join, 5)
+        self.addCleanup(httpd.server_close)
+        self.addCleanup(httpd.shutdown)
+
+    def _get_health(self, relay_id: str) -> bytes:
+        """One request from a relay process named relay_id; returns the raw response."""
+        client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.addCleanup(client.close)
+        client.settimeout(5)
+        client.connect(self.socket_path)
+        header = f"{vla_inference_server.RELAY_ID_HEADER}: {relay_id}\r\n"
+        client.sendall(f"GET /health HTTP/1.0\r\n{header}\r\n".encode())
+        raw = b""
+        while chunk := client.recv(4096):
+            raw += chunk
+        return raw
+
+    def test_new_relay_restarts_a_parked_worker_exactly_once(self) -> None:
+        """Relay A is the first contact; relay B replaces it and restarts the parked worker."""
+        state = ServerState()
+        state.qnn_restart_required = True
+        self._serve(state)
+
+        self.assertTrue(self._get_health("relay-a").startswith(b"HTTP/1.0 200"))
+        self.restart.assert_not_called()
+        self.assertTrue(self._get_health("relay-b").startswith(b"HTTP/1.0 200"))
+        self.restart.assert_called_once_with()
+        self._get_health("relay-b")
+        self.restart.assert_called_once_with()
+
+    def test_healthy_worker_is_not_restarted_by_a_new_relay(self) -> None:
+        """Without a parked QNN failure, a relay change never restarts the worker."""
+        state = ServerState()
+        self.assertFalse(state.qnn_restart_required)
+        self._serve(state)
+
+        self._get_health("relay-a")
+        self._get_health("relay-b")
+        self.restart.assert_not_called()
+
+
+class TestUnixSocketListener(unittest.TestCase):
+    """The QNN worker's Unix-socket listener: modes, umask, and dispatch."""
+
+    def setUp(self) -> None:
+        tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, tmp, True)
+        self.socket_path = os.path.join(tmp, "worker.sock")
+        environment = patch.dict(os.environ)
+        environment.start()
+        self.addCleanup(environment.stop)
+
+    def _bind(self):
+        httpd = bind_unix_http_server(self.socket_path, make_handler(ServerState()))
+        worker = threading.Thread(target=httpd.serve_forever, daemon=True)
+        worker.start()
+        # LIFO: shutdown() stops the serve loop before server_close() frees the socket.
+        self.addCleanup(httpd.server_close)
+        self.addCleanup(httpd.shutdown)
+        return httpd
+
+    def _mode(self) -> int:
+        return stat.S_IMODE(os.stat(self.socket_path).st_mode)
+
+    def test_socket_is_world_connectable(self) -> None:
+        """The socket is created 0666; access control is the directory, not the mode."""
+        self._bind()
+
+        self.assertTrue(stat.S_ISSOCK(os.stat(self.socket_path).st_mode))
+        self.assertEqual(self._mode(), 0o666)
+
+    def test_bind_leaves_the_process_umask_unchanged(self) -> None:
+        """The temporary umask used for the bind is restored; the mode stays 0666."""
+        previous = os.umask(0o027)
+        self.addCleanup(os.umask, previous)
+        self._bind()
+
+        current = os.umask(0o027)
+        self.assertEqual(current, 0o027)
+        self.assertEqual(self._mode(), 0o666)
+
+    def test_stale_socket_file_is_replaced(self) -> None:
+        """A socket left by a dead process does not block the next bind."""
+        stale = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        stale.bind(self.socket_path)
+        stale.close()
+        self.assertTrue(stat.S_ISSOCK(os.stat(self.socket_path).st_mode))
+
+        self._bind()
+
+        self.assertTrue(stat.S_ISSOCK(os.stat(self.socket_path).st_mode))
+        self.assertEqual(self._mode(), 0o666)
+
+    def test_health_answers_over_the_unix_socket(self) -> None:
+        """GET /health over the socket reaches make_handler and answers 200 JSON."""
+        self._bind()
+        client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.addCleanup(client.close)
+        client.settimeout(5)
+        client.connect(self.socket_path)
+        client.sendall(b"GET /health HTTP/1.0\r\nHost: localhost\r\n\r\n")
+        raw = b""
+        while chunk := client.recv(4096):
+            raw += chunk
+
+        head, _, body = raw.partition(b"\r\n\r\n")
+        self.assertTrue(head.startswith(b"HTTP/1.0 200"), head)
+        self.assertEqual(json.loads(body), {"status": "loading"})
+
+    def test_parse_args_accepts_unix_socket(self) -> None:
+        """--unix-socket is parsed; without it the TCP listener stays the default."""
+        missing_config = os.path.join(os.path.dirname(self.socket_path), "none.yaml")
+        argv = ["vla_inference_server.py", "--config", missing_config]
+        with patch("sys.argv", argv + ["--unix-socket", self.socket_path]):
+            args = parse_args()
+        self.assertEqual(args.unix_socket, self.socket_path)
+        with patch("sys.argv", argv):
+            self.assertEqual(parse_args().unix_socket, "")
+
+    def test_worker_socket_env_dispatches_to_the_forwarder(self) -> None:
+        """With VLA_QNN_WORKER_SOCKET set, running the server file runs the relay.
+
+        A stub forwarder stands in for the real one so no port is bound. It
+        reports whether torch was already imported at dispatch time; the relay
+        half must never load it.
+        """
+        stub_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, stub_dir, True)
+        Path(stub_dir, "vla_inference_forwarder.py").write_text(
+            "import sys\n"
+            "def main():\n"
+            "    print('forwarder-main torch=%s' % ('torch' in sys.modules), flush=True)\n"
+            "    return 0\n"
+        )
+        server_file = str(Path(__file__).with_name("vla_inference_server.py"))
+        bootstrap = (
+            "import runpy, sys\n"
+            "sys.path.insert(0, sys.argv[1])\n"
+            "runpy.run_path(sys.argv[2], run_name='__main__')\n"
+        )
+        env = dict(os.environ, VLA_QNN_WORKER_SOCKET="/nonexistent/worker.sock")
+        result = subprocess.run(
+            [sys.executable, "-c", bootstrap, stub_dir, server_file],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            env=env,
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("forwarder-main torch=False", result.stdout)
+
+
+class TestUnixSocketConfigPath(unittest.TestCase):
+    """A missing --config is an error only for the QNN worker (--unix-socket)."""
+
+    def test_missing_config_with_unix_socket_is_a_config_error(self) -> None:
+        """The error names the missing path and the VLA_QNN_HOST setting to check."""
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = os.path.join(tmp, "vla_serving_wrong.yaml")
+            argv = [
+                "vla_inference_server.py",
+                "--config",
+                missing,
+                "--unix-socket",
+                os.path.join(tmp, "worker.sock"),
+            ]
+            with patch("sys.argv", argv):
+                args = parse_args()
+
+        self.assertIn(missing, args.config_error)
+        self.assertIn("VLA_QNN_HOST", args.config_error)
+
+    def test_missing_config_without_unix_socket_is_not_an_error(self) -> None:
+        """Without --unix-socket a missing config still means built-in defaults."""
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = os.path.join(tmp, "vla_serving_wrong.yaml")
+            with patch("sys.argv", ["vla_inference_server.py", "--config", missing]):
+                args = parse_args()
+
+        self.assertEqual(args.config_error, "")
 
 
 class TestHttpStateMachine(unittest.TestCase):

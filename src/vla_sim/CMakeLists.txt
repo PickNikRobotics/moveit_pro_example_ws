@@ -26,9 +26,15 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   find_package(ament_cmake_pytest REQUIRED)
 
-  # docker/test_vla_*.py are not wired here: they need torch/lerobot (and
-  # ONNX for the QNN export tests) and run inside the inference_server
-  # container instead (see docker/README.md).
+  # The other docker/test_vla_*.py are not wired here: they need torch/lerobot
+  # (and ONNX for the QNN export tests) and run inside the inference_server
+  # container instead (see docker/README.md). The relay's tests need only the
+  # standard library.
+  ament_add_pytest_test(test_vla_inference_forwarder
+    docker/test_vla_inference_forwarder.py
+    TIMEOUT 60
+  )
+
   ament_add_pytest_test(test_get_action_chunk_adapter
     test/test_get_action_chunk_adapter.py
     TIMEOUT 60
