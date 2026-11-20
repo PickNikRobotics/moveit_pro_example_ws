@@ -25,18 +25,18 @@ checkpoint_revision: ""
 checkpoint_requires_hf_token: false
 
 # LeRobot policy family (pi05 | smolvla | groot | ...). Empty reads the checkpoint's
-# config.json "type" on PyTorch; QNN supports only compiled pi05 bundles.
+# config.json "type" on PyTorch; QNN reads it from the bundle (pi05 or groot).
 policy_class: ""
 
 # Inference backend: pytorch | qnn. PyTorch remains the default for every policy
-# family; qnn runs compiled pi0.5 graphs on the Qualcomm Hexagon HTP only.
+# family; qnn runs compiled pi0.5 or GR00T N1.7 graphs on the Qualcomm Hexagon HTP.
 backend: pytorch
 
 # QNN only: local compiled-context bundle JSON, e.g. /models/pi05-qnn/bundle.json.
 # Its model_id/revision must match checkpoint/checkpoint_revision (empty uses the
 # bundle's), and fps/state_dim must match or be 0. QNN failures require an
-# explicit inference-server restart, and the NPU host must supply QAIRT 2.49,
-# which the standard image lacks. See docker/README.md.
+# explicit inference-server restart, and the NPU host must supply QAIRT 2.49
+# (IQ9) or 2.50 (IQ10), which the standard image lacks. See docker/README.md.
 qnn_bundle: ""
 
 # Training frame rate. The chunk plays at 1/fps seconds per step, so a wrong
@@ -93,6 +93,7 @@ rtc_schedule: EXP
 # GR00T only: how fast the guided steps after the frozen prefix move from the
 # previous chunk to the new prediction, the rate r in (1 - e^(-r t)) / (1 - e^(-r)).
 # Larger is more abrupt; lower it if ExecutePolicy rejects chunk joins for a joint
-# velocity limit. 0 uses the checkpoint's rate, or GR00T's 6 when unset; any
-# other value below 0.01 parks the server in the error state.
+# velocity limit. 0 uses the checkpoint's rate, or GR00T's 6 when unset (on QNN,
+# the rate the bundle was exported with); any other value below 0.01 parks the
+# server in the error state.
 groot_rtc_ramp_rate: 0
