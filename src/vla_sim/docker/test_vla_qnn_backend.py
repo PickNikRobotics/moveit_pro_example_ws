@@ -63,13 +63,16 @@ from vla_inference_server import (
     run_inference,
     watch_runtime_inputs,
 )
-from vla_qnn_export import sampling_values
+from vla_qnn_export import groot_sampling_values, sampling_values
 from vla_qnn_policy import (
     FOUR_GRAPH_ABI,
     FOUR_GRAPH_ORDER,
+    GROOT_ABI,
+    GROOT_ORDER,
     SIX_GRAPH_ABI,
     SIX_GRAPH_ORDER,
     graph_ports,
+    groot_ports,
     guide_native_update,
     prepare_rtc,
     resize_with_pad,
@@ -77,6 +80,9 @@ from vla_qnn_policy import (
 )
 from vla_qnn_runtime import (
     ERROR,
+    ApiVersion,
+    Interface,
+    Version,
     Hardware,
     Infrastructure,
     NativeModel,
@@ -93,6 +99,16 @@ from vla_qnn_runtime import (
 def expert_update(actions):
     """Deterministic fake already-integrated expert output, not neural inference."""
     return actions * np.float32(0.99) - np.float32(0.002)
+
+
+def groot_velocity(actions, timestep):
+    """Deterministic fake GR00T action-step velocity, not neural inference."""
+    return np.float32(-0.5) * actions + np.float32(timestep[0] / 1000)
+
+
+# Feeds a fake session keeps, so tests can check host chaining.
+RECORDED = ("x_t", "time_step", "image", "lang_tokens", "lang_mask")
+RECORDED += ("actions", "timestep", "hidden", "deep0", "normalized_state")
 
 
 @contextmanager
@@ -142,7 +158,8 @@ class FakeTokenizer:
 class FakeModel:
     """Native session double with the real graph ABI and deterministic outputs."""
 
-    def __init__(self, name, device, ports):
+    def __init__(self, name, device, ports, log=None):
+        self.log = [] if log is None else log
         self.name = name
         self.device_id = device
         self.calls = []
@@ -170,21 +187,23 @@ class FakeModel:
                 raise AssertionError(
                     f"wrong fake graph shape/dtype for {self.name}/{name}"
                 )
+        self.log.append(self.name)
         self.calls.append(
-            {
-                name: feed[name].copy()
-                for name in ("x_t", "time_step", "image", "lang_tokens", "lang_mask")
-                if name in feed
-            }
+            {name: feed[name].copy() for name in RECORDED if name in feed}
         )
         result = {}
         for name, spec in zip(self.output_names, self.output_refs, strict=True):
             alias = self.source_outputs[int(name.split("_")[1])]
-            result[name] = (
-                expert_update(feed["x_t"])
-                if alias == "action_emb"
-                else np.zeros(spec["shape"], dtype=spec["dtype"])
-            )
+            if alias == "action_emb":
+                result[name] = expert_update(feed["x_t"])
+            elif alias == "velocity":
+                result[name] = groot_velocity(feed["actions"], feed["timestep"])
+            elif "patches" in feed:  # Vision: one distinct value per camera/output.
+                index = self.source_outputs.index(alias)
+                value = feed["patches"].mean() + index
+                result[name] = np.full(spec["shape"], value, dtype=spec["dtype"])
+            else:
+                result[name] = np.zeros(spec["shape"], dtype=spec["dtype"])
         return result
 
 
@@ -194,12 +213,13 @@ class FakeRuntime:
     def __init__(self, ports):
         self.ports = ports
         self.models = {}
+        self.order = []
         self.closed = False
 
     def load(self, binary, abi, device, *, name="model.bin"):
         assert isinstance(binary, bytes)
         assert Path(abi).is_file()
-        model = FakeModel(name, device, self.ports[name])
+        model = FakeModel(name, device, self.ports[name], self.order)
         self.models[name] = model
         return model
 
@@ -510,11 +530,11 @@ class TestQnnSelection(QnnFixture):
         ):
             self.assertEqual(parse_args().backend, "pytorch")
 
-    def test_missing_bundle_and_non_pi05_family_are_refused(self):
+    def test_missing_bundle_and_mismatched_family_are_refused(self):
         for overrides, message in (
             ({"bundle": ""}, "qnn_bundle"),
-            ({"policy_type": "groot"}, "pi05 only"),
-            ({"policy_type": "smolvla"}, "pi05 only"),
+            ({"policy_type": "groot"}, "does not match the pi05 QNN bundle"),
+            ({"policy_type": "smolvla"}, "pi05 and groot only"),
         ):
             with self.subTest(overrides=overrides), self.assertRaisesRegex(
                 ValueError, message
@@ -631,7 +651,7 @@ class TestQnnSelection(QnnFixture):
             "model_action_dim": 33,
             "noise_seed": True,
             "dt": -0.1,
-            "device_placement": {name: 0 for name in SIX_GRAPH_ORDER},
+            "device_placement": {name: 2 for name in SIX_GRAPH_ORDER},
         }
         for field, value in changes.items():
             with self.subTest(field=field), self.assertRaisesRegex(ValueError, "QNN"):
@@ -919,6 +939,409 @@ class TestQnnInference(QnnFixture):
             payload["prev_chunk_left_over"] = [[True] * 8]
             self.assertEqual(call(connection, "/infer", payload)[0], 400)
         self.assertEqual(len(runtime.models["action_expert"].calls), 20)
+
+
+class GrootFixture(unittest.TestCase):
+    """A tiny GR00T N1.7 bundle: 3 cameras of 32x32 pixels, 5 tokens, 6x10 actions."""
+
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name)
+        self.config = {
+            "schema": 1,
+            "graph_abi": GROOT_ABI,
+            "model_id": "test/groot",
+            "model_revision": "c" * 40,
+            "camera_names": ["overview", "scene", "wrist"],
+            "prompt": "stack the blue cube on the green cube",
+            "request_state_dim": 4,
+            "model_action_dim": 4,
+            "max_state_dim": 12,
+            "max_action_dim": 10,
+            "chunk_size": 6,
+            "denoising_steps": 4,
+            "normalization": "MIN_MAX",
+            "action_mapping": {"mode": "trained_min_max"},
+            "image_transform": {
+                "image_crop_size": [28, 28],
+                "image_target_size": [32, 32],
+                "shortest_image_edge": None,
+                "crop_fraction": None,
+                "letter_box_transform": False,
+            },
+            "dt": 0.1,
+            "noise_seed": 265,
+            "stats": "stats.json",
+            "static_inputs": "static.npz",
+            "graphs": {name: name for name in GROOT_ORDER},
+            "device_placement": {name: 0 for name in GROOT_ORDER},
+            "precision": {name: "fp16" for name in GROOT_ORDER},
+        }
+        rng = np.random.default_rng(3)
+        # Relative arm columns have per-step stats; the absolute gripper's repeat.
+        low = rng.uniform(-1, 0, (6, 4)).astype(np.float32)
+        high = low + rng.uniform(0.5, 1, (6, 4)).astype(np.float32)
+        low[:, 3], high[:, 3] = low[0, 3], high[0, 3]
+        self.stats = {
+            "observation.state.min": [-1.0, -2.0, 0.0, 0.5],
+            "observation.state.max": [1.0, 2.0, 0.0, 1.5],
+            "action.min": low.tolist(),
+            "action.max": high.tolist(),
+            "action.relative": [True, True, True, False],
+        }
+        tokens = np.asarray([[7, 151655, 151655, 151655, 9]], dtype=np.int32)
+        self.static = {
+            "token_ids": tokens,
+            "image_mask": (tokens == 151655).astype(np.float32),
+            "valid_mask": np.ones((1, 5), np.float32),
+            "attention_bias": np.zeros((1, 1, 5, 5), np.float32),
+            "rope_cos": np.ones((1, 5, 128), np.float32),
+            "rope_sin": np.zeros((1, 5, 128), np.float32),
+        }
+        self.ports = groot_ports(5, 4, 6, 10, 12)
+        self.stage()
+
+    def stage(self):
+        (self.root / "stats.json").write_text(json.dumps(self.stats))
+        np.savez(self.root / "static.npz", **self.static)
+        for name in GROOT_ORDER:
+            directory = self.root / name
+            directory.mkdir(exist_ok=True)
+            binary = b"fake GR00T context: " + name.encode()
+            (directory / "model.bin").write_bytes(binary)
+            (directory / "abi.json").write_text("{}")
+            manifest = {
+                "context_sha256": hashlib.sha256(binary).hexdigest(),
+                "output_aliases": {
+                    f"output_{i}": alias for i, alias in enumerate(self.ports[name][1])
+                },
+            }
+            if name == "action_step":
+                # Fake export descriptor: tests do not attest real native compilation.
+                manifest["sampling"] = {
+                    **groot_sampling_values(6, 10, 4, 1000, 6.0),
+                    "context_sha256": manifest["context_sha256"],
+                    "source_sha256": {"model_config.json": "d" * 64},
+                }
+            (directory / "manifest.json").write_text(json.dumps(manifest))
+        (self.root / "bundle.json").write_text(json.dumps(self.config))
+
+    def runner(self, **overrides):
+        runtime = FakeRuntime(self.ports)
+        values = dict(
+            bundle=str(self.root / "bundle.json"),
+            checkpoint="test/groot",
+            policy_type="groot",
+            revision="",
+            state_dim=4,
+            fps=10.0,
+            guidance_horizon=3,
+            rtc_schedule="EXP",
+        )
+        values.update(overrides)
+        with patch("vla_qnn_runtime.NativeRuntime", return_value=runtime):
+            runner = QnnPolicyRunner(**values)
+            runner.load()
+        self.addCleanup(QnnFixture.close_runner, runner)
+        return runner, runtime
+
+    def payload(self, **fields):
+        images = {
+            name: encode_bgr_jpeg_b64(np.full((24, 40, 3), 40 * i, dtype=np.uint8))
+            for i, name in enumerate(self.config["camera_names"])
+        }
+        return {
+            "state": [0.25, -1.0, 0.0, 1.25],
+            "task": self.config["prompt"],
+            "images": images,
+            **fields,
+        }
+
+
+def stock_groot_chunk(previous, state, delay, stats):
+    """Expected chunk from LeRobot's own GR00T N1.7 RTC, flow loop and decoder."""
+    from types import MethodType, SimpleNamespace
+
+    from lerobot.policies.groot.groot_n1_7 import GR00TN17ActionHead
+    from lerobot.policies.groot.modeling_groot import GrootPolicy
+    from lerobot.policies.groot.processor_groot import (
+        GrootN17PackInputsStep,
+        _unnormalize_min_max,
+    )
+
+    low, high = np.asarray(stats["action.min"]), np.asarray(stats["action.max"])
+    pack = SimpleNamespace(
+        modality_config={
+            "state": {"modality_keys": ["arm", "gripper"]},
+            "action": {
+                "modality_keys": ["arm", "gripper"],
+                "action_configs": [
+                    {"rep": "relative", "type": "non_eef", "state_key": "arm"},
+                    {"rep": "absolute"},
+                ],
+            },
+        },
+        raw_stats={
+            "state": {"arm": {"min": [0.0] * 3}, "gripper": {"min": [0.0]}},
+            "action": {
+                "arm": {"min": [0.0] * 3},
+                "gripper": {"q01": low[0, 3:], "q99": high[0, 3:], "min": [0.0]},
+            },
+            "relative_action": {"arm": {"min": low[:, :3], "max": high[:, :3]}},
+        },
+        use_percentiles=True,
+        clip_outliers=True,
+    )
+    for name in (
+        "_state_groups_from_tensor",
+        "_convert_relative_action_groups_for_training",
+        "_normalize_action_groups_for_training",
+    ):
+        setattr(pack, name, MethodType(getattr(GrootN17PackInputsStep, name), pack))
+    reference = torch.tensor([state], dtype=torch.float32)
+    options, action_input = None, {}
+    if previous is not None:
+        tail = torch.as_tensor(previous, dtype=torch.float32)[None]
+        prefix = pack._normalize_action_groups_for_training(
+            pack._convert_relative_action_groups_for_training(tail, reference)
+        )[0]
+        policy = SimpleNamespace(
+            config=SimpleNamespace(
+                use_relative_actions=False,
+                rtc_config=None,
+                chunk_size=6,
+                max_action_dim=10,
+            ),
+            _groot_model=SimpleNamespace(
+                config=SimpleNamespace(
+                    action_horizon=6, max_action_dim=10, rtc_ramp_rate=6.0
+                )
+            ),
+        )
+        action_input, options = GrootPolicy._prepare_n1_7_rtc_inputs(
+            policy,
+            {"state": torch.zeros(1, 1, 12)},
+            inference_delay=delay,
+            prev_chunk_left_over=prefix,
+        )
+    times = []
+
+    def encode(actions, timestep, _embodiment):
+        times.append(int(timestep[0]))
+        return actions
+
+    head = SimpleNamespace(
+        config=SimpleNamespace(
+            action_horizon=6, add_pos_embed=False, use_alternate_vl_dit=True
+        ),
+        action_dim=10,
+        action_horizon=6,
+        num_inference_timesteps=4,
+        num_timestep_buckets=1000,
+        action_encoder=encode,
+        model=lambda hidden_states, **_kwargs: hidden_states,
+        action_decoder=lambda output, _embodiment: torch.from_numpy(
+            groot_velocity(output.numpy(), [times[-1]])
+        ),
+    )
+    noise = np.random.default_rng(265).standard_normal((1, 6, 10), dtype=np.float32)
+    with patch("torch.randn", return_value=torch.from_numpy(noise.copy())):
+        output = GR00TN17ActionHead.get_action_with_features(
+            head,
+            torch.zeros(1, 5, 10),
+            torch.zeros(1, 1, 10),
+            None,
+            SimpleNamespace(image_mask=None, backbone_attention_mask=None),
+            action_input,
+            options,
+        )
+    raw = output["action_pred"][0, :, :4].numpy()
+    arm = _unnormalize_min_max(raw[:, :3], low[:, :3], high[:, :3]) + np.asarray(
+        state[:3]
+    )
+    gripper = _unnormalize_min_max(raw[:, 3:], low[0, 3:], high[0, 3:])
+    return np.concatenate([arm, gripper], axis=1), times
+
+
+class TestQnnGroot(GrootFixture):
+    def test_chain_flow_rtc_and_decode_match_stock_groot(self):
+        runner, runtime = self.runner()
+        state = QnnFixture.ready_state(self, runner)
+        previous = np.random.default_rng(5).uniform(-1, 1, (6, 4)).astype(np.float32)
+        for carryover, delay in ((None, 0), (previous, 2), (previous, 9)):
+            with self.subTest(delay=delay, rtc=carryover is not None):
+                runtime.order.clear()
+                runner.policy.rng = np.random.default_rng(265)
+                fields = (
+                    {}
+                    if carryover is None
+                    else {
+                        "prev_chunk_left_over": carryover.tolist(),
+                        "inference_delay": min(delay, 6),
+                    }
+                )
+                result = run_inference(state, self.payload(**fields))
+                overlap = min(delay + 3, 6)
+                physical, times = stock_groot_chunk(
+                    None if carryover is None else carryover[:overlap],
+                    self.payload()["state"],
+                    min(delay, 6),
+                    self.stats,
+                )
+                # Relative-action carryover is absolute, as on the PyTorch backend.
+                np.testing.assert_allclose(
+                    result["action_chunk"], physical, rtol=0, atol=1e-6
+                )
+                self.assertEqual(result["action_chunk_raw"], result["action_chunk"])
+                self.assertEqual(
+                    runtime.order,
+                    ["vision"] * 3 + list(GROOT_ORDER[1:5]) + ["action_step"] * 4,
+                )
+                steps = runtime.models["action_step"].calls[-4:]
+                self.assertEqual([int(call["timestep"][0]) for call in steps], times)
+                self.assertEqual(times, [0, 250, 500, 750])
+                self.assertEqual(result["dt"], 0.1)
+        # Vision rows land at the image tokens in camera order, deep features alike.
+        hidden = runtime.models["backbone_0_8"].calls[-1]["hidden"][0]
+        deep = runtime.models["backbone_0_8"].calls[-1]["deep0"][0]
+        np.testing.assert_array_equal(deep[[0, 4]], 0)
+        np.testing.assert_array_equal(hidden[[0, 4]], 0)
+        self.assertEqual(len(set(hidden[1:4, 0])), 3)
+        np.testing.assert_allclose(deep[1:4, 0] - hidden[1:4, 0], 1)
+        normalized = runtime.models["observation_features"].calls[-1][
+            "normalized_state"
+        ]
+        np.testing.assert_array_equal(normalized[0, 0], [0.25, -0.5, 0, 0.5] + [0] * 8)
+
+    def test_patches_match_the_qwen_image_processor(self):
+        from transformers import Qwen2VLImageProcessor
+
+        runner, _runtime = self.runner()
+        image = torch.rand(3, 24, 40)
+        pixels = runner.policy.transform(
+            (image * 255).to(torch.uint8),
+            image_crop_size=[28, 28],
+            image_target_size=[32, 32],
+            shortest_image_edge=None,
+            crop_fraction=None,
+        )
+        processor = Qwen2VLImageProcessor(
+            patch_size=16,
+            temporal_patch_size=2,
+            merge_size=2,
+            image_mean=[0.5] * 3,
+            image_std=[0.5] * 3,
+            do_resize=False,
+        )
+        expected = processor(images=[pixels.numpy()], return_tensors="np")[
+            "pixel_values"
+        ]
+        np.testing.assert_allclose(runner.policy.patches(image), expected, atol=1e-6)
+
+    def test_incompatible_bundles_prompts_and_families_are_refused(self):
+        def staged(change):
+            self.setUp()
+            change()
+            self.stage()
+
+        cases = (
+            (lambda: self.config.update(prompt=""), "prompt"),
+            (lambda: self.config.update(normalization="QUANTILES"), "MIN_MAX"),
+            (
+                lambda: self.config.update(model_action_dim=3),
+                "model_action_dim must match request_state_dim",
+            ),
+            (
+                lambda: self.config["precision"].update(action_step="w8a16"),
+                "action_step must be fp16",
+            ),
+            (
+                lambda: self.config["device_placement"].update(vision=2),
+                "device_placement",
+            ),
+            (
+                lambda: self.config["image_transform"].update(
+                    image_target_size=[30, 30]
+                ),
+                "image_transform",
+            ),
+            (
+                lambda: self.stats.update({"action.relative": [True] * 3}),
+                "action.relative",
+            ),
+            (
+                lambda: self.static.update(image_mask=np.ones((1, 5), np.float32)),
+                "static_inputs",
+            ),
+            (lambda: self.config.update(denoising_steps=5), "sampling denoising_steps"),
+            (
+                lambda: self.ports["action_step"][0].update(
+                    timestep=((1,), np.dtype("float32"))
+                ),
+                "graph ABI",
+            ),
+        )
+        for change, message in cases:
+            with self.subTest(message=message):
+                staged(change)
+                with self.assertRaisesRegex(ValueError, message):
+                    self.runner()
+        self.setUp()
+        with self.assertRaisesRegex(ValueError, "does not match the groot QNN bundle"):
+            self.runner(policy_type="pi05")
+        runner, runtime = self.runner()
+        with self.assertRaisesRegex(ValueError, "set the Objective's prompt"):
+            run_inference(
+                QnnFixture.ready_state(self, runner), self.payload(task="pick")
+            )
+        self.assertTrue(all(not model.calls for model in runtime.models.values()))
+        self.assertFalse(runner.failed)
+
+    def test_load_warmup_and_native_failure_latch_like_pi05(self):
+        serving = self.root / "vla_serving.yaml"
+        serving.write_text(
+            yaml.safe_dump(
+                {
+                    "checkpoint": "test/groot",
+                    "backend": "qnn",
+                    "policy_class": "groot",
+                    "qnn_bundle": str(self.root / "bundle.json"),
+                    "fps": 0,
+                    "state_dim": 0,
+                    "guidance_horizon": 3,
+                }
+            )
+        )
+        with patch("sys.argv", ["vla_inference_server.py", "--config", str(serving)]):
+            args = parse_args()
+        runtime = FakeRuntime(self.ports)
+        state = ServerState()
+        with patch("vla_qnn_runtime.NativeRuntime", return_value=runtime), patch(
+            "vla_inference_server.PolicyRunner", side_effect=AssertionError("PyTorch")
+        ):
+            load_policy(state, args)
+        self.addCleanup(runtime.close)
+        self.assertEqual(state.status, "ready", state.detail)
+        self.assertEqual(state.runner.policy.family, "groot")
+        self.assertEqual(len(runtime.models["action_step"].calls), 8)  # Two warmups.
+        expected = np.random.default_rng(265).standard_normal(
+            (1, 6, 10), dtype=np.float32
+        )
+        state.bearer_key = "qnn-test-key"
+        run_inference(state, self.payload())
+        np.testing.assert_array_equal(
+            runtime.models["action_step"].calls[-4]["actions"], expected
+        )
+        runtime.models["action_step"].run = MagicMock(
+            side_effect=RuntimeError("graphExecute failed")
+        )
+        with self.assertRaisesRegex(RuntimeError, "graphExecute"):
+            run_inference(state, self.payload())
+        self.assertTrue(state.runner.failed)
+        self.assertEqual(state.status, "error")
+        self.assertIn("restart", state.detail)
+        self.assertTrue(runtime.closed)
 
 
 class TestQnnReload(QnnFixture):
@@ -1271,18 +1694,21 @@ def bare_runtime(**attributes):
     return runtime
 
 
-def platform_runtime(info_status=0, create_status=0, free_status=0):
+def platform_runtime(info_status=0, create_status=0, free_status=0, cores=1):
     """Drive NativeRuntime.device through the pinned ctypes API, with fake handles/statuses."""
     hardware = Hardware()
-    hardware.version = hardware.v1.num_cores = 1
+    hardware.version, hardware.v1.num_cores = 1, cores
     hardware.v1.cores = hardware.v1.extension = 1
     platform = Platform(1, PlatformV1(1, ctypes.pointer(hardware)))
+    created = []
 
     def info(_logger, output):
         output._obj.contents = platform
         return info_status
 
-    def create(_logger, _configs, output):
+    def create(_logger, configs, output):
+        device = configs[0].contents.platform.contents.v1.devices[0].v1
+        created.append((device.num_cores, device.cores, device.extension))
         output._obj.value = 7
         return create_status
 
@@ -1291,6 +1717,7 @@ def platform_runtime(info_status=0, create_status=0, free_status=0):
         return 0
 
     return bare_runtime(
+        created=created,
         functions={
             "platform_info": MagicMock(side_effect=info),
             "device_create": MagicMock(side_effect=create),
@@ -1298,7 +1725,7 @@ def platform_runtime(info_status=0, create_status=0, free_status=0):
             "error_message": message,
             "device_free": MagicMock(return_value=0),
             "backend_free": MagicMock(return_value=0),
-        }
+        },
     )
 
 
@@ -1472,6 +1899,37 @@ class TestNativeBurst(unittest.TestCase):
                 modes, power = self.device(environment)
                 self.assertEqual(modes, [0x10])
                 self.assertEqual(list(power), [0])
+
+    def test_multicore_device_exposes_only_its_first_core(self):
+        """IQ10 contexts are single-core; its four-core NSP must be narrowed to one."""
+        for cores, expected in ((4, (1, 1, None)), (1, (1, 1, 1))):
+            runtime = platform_runtime(cores=cores)
+            with patch.dict(os.environ, {"QNN_HTP_BURST": "0"}):
+                self.assertEqual(runtime.device(0).value, 7)
+            self.assertEqual(runtime.created, [expected])
+
+    def test_runtime_accepts_only_the_qairt_249_and_250_core_apis(self):
+        for minor, accepted in ((38, True), (39, True), (40, False)):
+            interface = Interface(6, b"HTP", ApiVersion(Version(2, minor, 0)))
+            interface.functions[:] = [1] * 51  # Never called: only nonnull.
+            provider = ctypes.pointer(interface)
+
+            def providers(output, count):
+                output._obj.contents = provider
+                count._obj.value = 1
+                return 0
+
+            library = MagicMock(
+                QnnInterface_getProviders=MagicMock(side_effect=providers)
+            )
+            with self.subTest(minor=minor), patch(
+                "vla_qnn_runtime.c.CDLL", return_value=library
+            ):
+                if accepted:
+                    self.assertEqual(NativeRuntime().api.version.core.minor, minor)
+                else:
+                    with self.assertRaisesRegex(RuntimeError, "2.38 or 2.39"):
+                        NativeRuntime()
 
     def test_burst_can_be_turned_off(self):
         modes, power = self.device({"QNN_HTP_BURST": "0"})

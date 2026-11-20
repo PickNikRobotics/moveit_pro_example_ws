@@ -3,12 +3,15 @@
 # Copyright 2026 PickNik Inc.
 # SPDX-License-Identifier: BSD-3-Clause
 
-"""Export-time sampling metadata for the supported pi0.5 integrated expert.
+"""Export-time sampling metadata for the supported compiled flow experts.
 
-Call emit_sampling() from the trusted context compiler/stager with the exact
-ONNX source used to compile that context. This reads the graph's actual index,
-conditioning-table extent and Euler constant, not serving knobs. ONNX is an
-export-only dependency; the serving consumer needs only NumPy/standard library.
+For pi0.5, call emit_sampling() from the trusted context compiler/stager with
+the exact ONNX source used to compile that context. This reads the graph's
+actual index, conditioning-table extent and Euler constant, not serving knobs.
+GR00T N1.7's action step returns a velocity and takes the discretized timestep
+as an input, so its host schedule comes from the model configuration the
+step was exported from (emit_groot_sampling()). ONNX is an export-only
+dependency; the serving consumer needs only NumPy/standard library.
 """
 
 import argparse
@@ -20,6 +23,7 @@ from pathlib import Path
 import numpy as np
 
 SCHEDULE = "uniform_euler_round_clip.v1"
+GROOT_SCHEDULE = "groot_n17_bucketed_euler.v1"
 # The retained native-RMS expert predates the descriptor. Its exporter fixes
 # 50 rows / 10 updates. No other metadata-free binary inherits that schedule.
 LEGACY_EXPERT_SHA256 = (
@@ -42,6 +46,27 @@ def sampling_values(chunk_size: int, steps: int) -> dict:
     }
 
 
+def checked_sources(value: dict, context_sha256: str, kind: str):
+    """Require a descriptor bound to the loaded context and its named sources."""
+    if not isinstance(value, dict) or value.get("context_sha256") != context_sha256:
+        raise ValueError("QNN sampling context_sha256 does not match the loaded expert")
+    sources = value.get("source_sha256")
+    if (
+        not isinstance(sources, dict)
+        or not sources
+        or any(
+            not isinstance(name, str)
+            or Path(name).name != name
+            or not isinstance(digest, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", digest)
+            for name, digest in sources.items()
+        )
+    ):
+        raise ValueError(
+            f"QNN sampling source_sha256 must identify the compiled {kind} source files"
+        )
+
+
 def validate_sampling(value, config: dict, context_sha256: str) -> dict:
     """Cross-check an export descriptor against the immutable context and bundle.
 
@@ -57,25 +82,7 @@ def validate_sampling(value, config: dict, context_sha256: str) -> dict:
             )
         value = sampling_values(50, 10)
     else:
-        if not isinstance(value, dict) or value.get("context_sha256") != context_sha256:
-            raise ValueError(
-                "QNN sampling context_sha256 does not match the loaded expert"
-            )
-        sources = value.get("source_sha256")
-        if (
-            not isinstance(sources, dict)
-            or not sources
-            or any(
-                not isinstance(name, str)
-                or Path(name).name != name
-                or not isinstance(digest, str)
-                or not re.fullmatch(r"[0-9a-f]{64}", digest)
-                for name, digest in sources.items()
-            )
-        ):
-            raise ValueError(
-                "QNN sampling source_sha256 must identify the compiled ONNX source files"
-            )
+        checked_sources(value, context_sha256, "ONNX")
     if context_sha256 == LEGACY_EXPERT_SHA256 and (
         value.get("chunk_size") != 50 or value.get("denoising_steps") != 10
     ):
@@ -316,7 +323,11 @@ def emit_sampling(source: Path, context: Path, output: Path) -> dict:
     alone. The caller must supply the source used in its successful compilation.
     Copy the returned object into that expert's manifest.json `sampling` field.
     """
-    value = inspect_sampling(source)
+    return write_sidecar(inspect_sampling(source), context, output)
+
+
+def write_sidecar(value: dict, context: Path, output: Path) -> dict:
+    """Bind a descriptor to the exact context bytes and write it once."""
     with Path(context).open("rb") as stream:
         value["context_sha256"] = hashlib.file_digest(stream, "sha256").hexdigest()
     with Path(output).open("x") as stream:
@@ -324,13 +335,128 @@ def emit_sampling(source: Path, context: Path, output: Path) -> dict:
     return value
 
 
+def groot_sampling_values(
+    chunk_size: int, action_dim: int, steps: int, buckets: int, ramp_rate: float
+) -> dict:
+    """GR00T N1.7's host flow loop: bucketed times t/steps and Euler step 1/steps."""
+    return {
+        "schema": 1,
+        "schedule": GROOT_SCHEDULE,
+        "chunk_size": chunk_size,
+        "max_action_dim": action_dim,
+        "denoising_steps": steps,
+        "timestep_buckets": buckets,
+        "timesteps": [int(i / float(steps) * buckets) for i in range(steps)],
+        "integration_dt": 1.0 / steps,
+        "rtc_ramp_rate": ramp_rate,
+        "expert_output": "velocity",
+    }
+
+
+def validate_groot_sampling(value, config: dict, context_sha256: str) -> dict:
+    """Cross-check a GR00T action-step descriptor against its context and bundle."""
+    checked_sources(value, context_sha256, "GR00T model configuration")
+    for field in ("chunk_size", "max_action_dim", "denoising_steps"):
+        if type(value.get(field)) is not int or value[field] != config[field]:
+            raise ValueError(f"QNN sampling {field} differs from the compiled bundle")
+    buckets, ramp = value.get("timestep_buckets"), value.get("rtc_ramp_rate")
+    if (
+        type(buckets) is not int
+        or buckets < value["denoising_steps"]
+        or type(ramp) not in (int, float)
+        or not np.isfinite(ramp)
+        or ramp <= 0
+    ):
+        raise ValueError("QNN sampling timestep_buckets/rtc_ramp_rate are invalid")
+    expected = groot_sampling_values(
+        value["chunk_size"],
+        value["max_action_dim"],
+        value["denoising_steps"],
+        buckets,
+        ramp,
+    )
+    if {key: value.get(key) for key in expected} != expected:
+        raise ValueError(f"QNN sampling requires the {GROOT_SCHEDULE} schedule")
+    return value
+
+
+def inspect_groot_sampling(
+    model_config: Path, policy_config: Path | None = None
+) -> dict:
+    """Read the flow schedule GR00T N1.7 runs from its model and LeRobot configs.
+
+    model_config is the GR00T N1.7 config.json the action step was exported from
+    (it holds action_horizon, max_action_dim, num_inference_timesteps,
+    num_timestep_buckets and rtc_ramp_rate). A LeRobot policy config.json
+    overrides the step count and ramp when set and caps the chunk, as LeRobot does.
+    """
+    files = {}
+
+    def read(path, role):
+        snapshot = Path(path).read_bytes()
+        files[role + "_config.json"] = hashlib.sha256(snapshot).hexdigest()
+        return json.loads(snapshot)
+
+    model = read(model_config, "model")
+    policy = {} if policy_config is None else read(policy_config, "policy")
+
+    def override(name):
+        value = policy.get(name)
+        return model.get(name) if value is None else value
+
+    chunk = min(
+        (
+            value
+            for value in (
+                model.get("action_horizon"),
+                policy.get("chunk_size"),
+                policy.get("n_action_steps"),
+            )
+            if type(value) is int and value > 0
+        ),
+        default=0,
+    )
+    steps, buckets = override("num_inference_timesteps"), model.get(
+        "num_timestep_buckets"
+    )
+    action_dim, ramp = model.get("max_action_dim"), override("rtc_ramp_rate")
+    if any(
+        type(v) is not int or v < 1 for v in (chunk, steps, buckets, action_dim)
+    ) or (type(ramp) not in (int, float) or ramp <= 0):
+        raise ValueError(
+            "GR00T config must set action_horizon, max_action_dim, "
+            "num_inference_timesteps, num_timestep_buckets and rtc_ramp_rate"
+        )
+    return {
+        **groot_sampling_values(chunk, action_dim, steps, buckets, float(ramp)),
+        "source_sha256": files,
+    }
+
+
+def emit_groot_sampling(
+    model_config: Path, policy_config: Path | None, context: Path, output: Path
+) -> dict:
+    """Emit the GR00T action-step sidecar from the configs it was exported with."""
+    return write_sidecar(
+        inspect_groot_sampling(model_config, policy_config), context, output
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--source",
-        required=True,
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument(
+        "--source", type=Path, help="pi0.5: exact ONNX source passed to the compiler"
+    )
+    source.add_argument(
+        "--groot-model-config",
         type=Path,
-        help="exact ONNX source passed to the compiler",
+        help="GR00T N1.7: model config.json the action step was exported from",
+    )
+    parser.add_argument(
+        "--groot-policy-config",
+        type=Path,
+        help="GR00T N1.7: the LeRobot checkpoint config.json, when overriding it",
     )
     parser.add_argument(
         "--context", required=True, type=Path, help="context produced from that source"
@@ -339,7 +465,12 @@ def main():
         "--output", required=True, type=Path, help="new sampling JSON sidecar"
     )
     args = parser.parse_args()
-    emit_sampling(args.source, args.context, args.output)
+    if args.source is not None:
+        emit_sampling(args.source, args.context, args.output)
+    else:
+        emit_groot_sampling(
+            args.groot_model_config, args.groot_policy_config, args.context, args.output
+        )
 
 
 if __name__ == "__main__":

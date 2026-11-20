@@ -18,9 +18,11 @@ from onnx.reference import ReferenceEvaluator
 
 from vla_qnn_export import (
     LEGACY_EXPERT_SHA256,
+    emit_groot_sampling,
     emit_sampling,
     inspect_sampling,
     sampling_values,
+    validate_groot_sampling,
     validate_sampling,
 )
 
@@ -203,6 +205,51 @@ class TestQnnExportSampling(unittest.TestCase):
         }
         with self.assertRaisesRegex(ValueError, "retained 50/10"):
             validate_sampling(value, sampling_values(16, 4), LEGACY_EXPERT_SHA256)
+
+    def test_groot_schedule_comes_from_its_model_and_policy_configs(self):
+        model = self.root / "model_config.json"
+        policy = self.root / "config.json"
+        model.write_text(
+            json.dumps(
+                {
+                    "action_horizon": 40,
+                    "max_action_dim": 132,
+                    "num_inference_timesteps": 4,
+                    "num_timestep_buckets": 1000,
+                    "rtc_ramp_rate": 6.0,
+                }
+            )
+        )
+        policy.write_text(
+            json.dumps(
+                {"chunk_size": 40, "num_inference_timesteps": 8, "rtc_ramp_rate": None}
+            )
+        )
+        output = self.root / "sampling.json"
+        value = emit_groot_sampling(model, policy, self.context, output)
+        self.assertEqual(json.loads(output.read_text()), value)
+        self.assertEqual(value["timesteps"], [0, 125, 250, 375, 500, 625, 750, 875])
+        self.assertEqual(
+            (value["integration_dt"], value["rtc_ramp_rate"]), (0.125, 6.0)
+        )
+        digest = value["context_sha256"]
+        config = {"chunk_size": 40, "max_action_dim": 132, "denoising_steps": 8}
+        self.assertIs(validate_groot_sampling(value, config, digest), value)
+        for field, change in (
+            ("context_sha256", "e" * 64),
+            ("timesteps", [0] * 8),
+            ("integration_dt", 0.25),
+            ("timestep_buckets", 4),
+            ("schedule", "uniform_euler_round_clip.v1"),
+        ):
+            with self.subTest(field=field), self.assertRaisesRegex(
+                ValueError, "sampling"
+            ):
+                validate_groot_sampling({**value, field: change}, config, digest)
+        with self.assertRaisesRegex(ValueError, "denoising_steps"):
+            validate_groot_sampling(value, {**config, "denoising_steps": 4}, digest)
+        with self.assertRaises(FileExistsError):
+            emit_groot_sampling(model, policy, self.context, output)
 
 
 if __name__ == "__main__":
