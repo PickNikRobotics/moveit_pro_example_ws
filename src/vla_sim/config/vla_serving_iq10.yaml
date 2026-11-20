@@ -1,0 +1,102 @@
+# Model-serving configuration for the vla_sim inference server on a Qualcomm
+# IQ10 (Hexagon v81). The inference_qnn_worker reads vla_serving_<VLA_QNN_HOST>.yaml,
+# so a board with `VLA_QNN_HOST: iq10` in its MoveIt Pro config serves this file
+# and every other host keeps serving vla_serving.yaml. Edits reload the worker,
+# as for vla_serving.yaml; there is no image rebuild.
+#
+# This serves the Kinova cube-stacking GR00T N1.7 fine-tune on the NPU, from a
+# compiled six-graph QNN bundle placed in src/vla_sim/models/ (see
+# docker/README.md, "Serve on the IQ10 NPU"). Every knob below has the meaning
+# documented in vla_serving.yaml.
+
+# Versioned contract advertised to MoveIt Pro Trainer. Do not change this
+# unless the inference server stops honoring the immutable revision and token
+# fields below.
+moveit_pro_trainer_handoff_version: 1
+
+# LeRobot checkpoint to serve: a Hugging Face repo id (org/name), or a local
+# directory placed in src/vla_sim/models/, which the server reads as
+# /models/<checkpoint-dir>.
+# This chooses the robot's actions, so point it only at a source you trust.
+checkpoint: PickNikRobotics/groot_n17_kinova_cube_stack_20k
+
+# Optional immutable Hub commit. Empty follows the repository's default branch.
+checkpoint_revision: "9ae9fc1b33af4baa0e0bb82ed54618a108a72716"
+
+# A Trainer output is private by default. When true, the server refuses to
+# load it unless HF_TOKEN is present in the container environment.
+checkpoint_requires_hf_token: false
+
+# LeRobot policy family (pi05 | smolvla | groot | ...). Empty reads the checkpoint's
+# config.json "type" on PyTorch; QNN reads it from the bundle (pi05 or groot).
+policy_class: groot
+
+# Inference backend: pytorch | qnn. PyTorch remains the default for every policy
+# family; qnn runs compiled pi0.5 or GR00T N1.7 graphs on the Qualcomm Hexagon HTP.
+backend: qnn
+
+# The compiled six-graph IQ10 (Hexagon v81) bundle, as the worker sees it under
+# /models. Its model_id/revision must match checkpoint/checkpoint_revision, and
+# fps/state_dim must match or be 0. The -qnn image supplies QAIRT 2.50. A QNN
+# failure parks the worker until the inference server restarts
+# (`moveit_pro run --with-inference-server` again). See docker/README.md.
+qnn_bundle: /models/groot_n17_kinova_cube_stack_20k_iq10_qnn/bundle.json
+
+# Training frame rate. The chunk plays at 1/fps seconds per step, so a wrong
+# value rescales every commanded joint velocity. Keep the objective's dt at
+# 1/fps. 0 reads the rate from train_config.json, which this checkpoint omits.
+fps: 10.0
+
+# PyTorch only: auto | cpu | cuda. auto selects a usable NVIDIA or AMD GPU.
+# QNN uses the compiled bundle's HTP device placement, never CPU/GPU fallback.
+# The ROCm image requires GPU access in auto mode; other images fall back to CPU.
+# Explicit cpu always selects CPU. Explicit cuda fails if GPU access is unavailable.
+device: auto
+
+# PyTorch only; QNN precision is fixed by the compiled bundle.
+# Hold the pi0.5 language backbone and vision tower at eight bits, most of the
+# weights: roughly 3 GiB less GPU memory for a little more time per chunk. false
+# loads every weight at full width, and a policy family other than pi0.5 ignores
+# this without saying so.
+#
+# On the stacking objective it has scored within noise of full width, over too
+# few attempts per arm to resolve a small difference. Torchao is imported only
+# when this is on, so an image built before it was a dependency serves at false
+# and reports an error on /health at true; docker/README.md has the rebuild.
+int8: false
+
+# Trained observation.state width: 7 arm joints plus 1 gripper. 0 trusts
+# config.json, which for this checkpoint reports its padded 32-dim
+# architecture width instead of the real one.
+state_dim: 8
+
+# The joint each observation.state and action value belongs to, in training
+# order, for a checkpoint without a moveit_pro_policy.json. The server builds
+# the policy's state from the robot_state by name and labels each action
+# column, so the Objective's joint order does not matter. Set both or neither.
+# The server ignores these for a MoveIt Pro Trainer checkpoint, which carries
+# its own names, and MoveIt Pro Trainer clears them when it selects one.
+# The qnn backend reads nothing from the Hub and always uses these.
+# Without names, the server matches values to joints in list order; a future
+# release removes that fallback.
+state_names: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7, robotiq_85_left_knuckle_joint]
+action_names: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7, robotiq_85_left_knuckle_joint]
+
+# Real-time-chunking soft guidance, in steps past the frozen prefix. Only used
+# for requests that leave guidance_horizon at 0; the shipped objective sets its
+# own on the ExecutePolicy port, so tune it there.
+guidance_horizon: 8
+
+# Real-time-chunking guidance-weight schedule, a lerobot RTCAttentionSchedule
+# name. An invalid value parks the server in the error state naming the valid
+# ones. GR00T does not use it, but an invalid value still parks the server;
+# groot_rtc_ramp_rate below tunes GR00T instead.
+rtc_schedule: EXP
+
+# GR00T only: how fast the guided steps after the frozen prefix move from the
+# previous chunk to the new prediction, the rate r in (1 - e^(-r t)) / (1 - e^(-r)).
+# Larger is more abrupt; lower it if ExecutePolicy rejects chunk joins for a joint
+# velocity limit. 0 uses the checkpoint's rate, or GR00T's 6 when unset (on QNN,
+# the rate the bundle was exported with); any other value below 0.01 parks the
+# server in the error state.
+groot_rtc_ramp_rate: 0

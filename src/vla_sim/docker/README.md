@@ -234,6 +234,74 @@ the same position, the server refuses a `vla_serving.yaml` whose `action_names`
 name a relative column differently from `state_names` at that position; list
 both in the same joint order.
 
+### Serve on the IQ10 NPU
+
+On a Qualcomm Dragonwing IQ10 running Ubuntu 24.04, `moveit_pro run
+--with-inference-server` serves the GR00T N1.7 Kinova cube-stacking fine-tune on
+the Hexagon v81 NPU, with no image or compose edits, after this one-time board
+setup:
+
+1. Add `VLA_QNN_HOST: iq10` to `~/.config/moveit_pro/moveit_pro_config.9.yaml`
+   (keep `MOVEIT_TARGET: ''`: the IQ10 has no `/dev/fastrpc-cdsp*`, so the
+   CLI's generic `-qnn` Runtime target does not apply to it).
+2. Put the compiled bundle in
+   `src/vla_sim/models/groot_n17_kinova_cube_stack_20k_iq10_qnn/` (the
+   `qnn_bundle` that `config/vla_serving_iq10.yaml` names).
+
+`VLA_QNN_HOST` changes three things in the workspace `docker-compose.yaml`:
+
+- The inference image is built from the `runtime-qnn` stage and tagged
+  `moveit_pro-inference_server-qnn`: Ubuntu 24.04 with CPU torch and the
+  QAIRT 2.50 runtime libraries from the hash-pinned `onnxruntime-qnn` 2.6.0
+  wheel, whose V81 skeleton FastRPC finds through `ADSP_LIBRARY_PATH`.
+- `inference_qnn_worker` joins the `inference` profile and starts as a
+  dependency of `inference_server`. It runs this server with `--unix-socket` and
+  `--config /vla_config/vla_serving_<VLA_QNN_HOST>.yaml`; a missing file is an
+  error naming its path, not a fallback to defaults. `--no-drivers` starts
+  `inference_server` with `up --no-deps`, which skips the worker, so run
+  without it.
+- `inference_server` relays its loopback port to that socket
+  (`vla_inference_forwarder.py`) instead of loading a model.
+
+The split exists because the IQ10 BSP's FastRPC serves only root clients:
+`fastrpc-rm` creates its per-session POSIX queues `0644 root`, and the client
+must `pidfd_getfd` buffers out of the root daemon. The worker therefore runs as
+root with the host IPC and PID namespaces (the queue names embed the client's
+host PID) and `CAP_SYS_PTRACE`, which the launcher refuses for the
+network-listening `inference_server`. The worker has `network_mode: none`, drops
+every other capability, sets `no-new-privileges`, runs with a read-only root
+filesystem and a process limit, and mounts the board's `libcdsprpc.so`,
+`libkiumd.so`, `liblrmc.so` and `/vendor/dsp` (the DSP shell) read-only. No
+`--privileged` and no device nodes are needed. `inference_server` keeps every
+hardening the launcher checks and stays the only listener; the worker's socket
+lives in the `vla_qnn_ipc` volume that only the two services mount, and the
+worker checks the bearer token itself.
+
+Root with the host PID namespace and `CAP_SYS_PTRACE` amounts to host root (the
+worker can read `/proc/1/root`). That is the price of this BSP's FastRPC
+contract, and it is why the worker takes no input but the bearer-checked HTTP
+API relayed from the loopback-only port. Enable `VLA_QNN_HOST` only on a board
+whose local users you trust, until the BSP offers a supported non-root FastRPC
+route.
+
+`moveit_pro run` stops only the services it names, so after Ctrl-C the worker
+outlives its relay: it exits by itself 60 s after the relay's last poll,
+releasing the NPU. `moveit_pro down` removes it at once. A worker parked after
+a native QNN failure restarts itself when the next relay connects, so rerunning
+`moveit_pro run --with-inference-server` recovers it either way.
+
+MoveIt Pro Trainer's **Configure for ExecutePolicy** writes `vla_serving.yaml`,
+which the IQ10 worker does not read: it serves compiled bundles, not PyTorch
+checkpoints. Compile a Trainer checkpoint into a bundle and point
+`vla_serving_iq10.yaml` at it instead.
+
+`/health` reports `loading` until the worker answers and then relays the
+worker's own state, for example `{"status": "ready", "device": "npu:qnn_htp",
+"qnnPrecision": {...}}`. Debug the native side with `docker compose logs
+inference_qnn_worker` (`docker logs moveit_pro-inference_qnn_worker-1`). If
+`journalctl -u fastrpc-rm` shows `Glink RM ... -11` or `CB exhausted`, the DSP
+is wedged and even host root fails: reboot the board.
+
 ### Native runtime requirements
 
 The standard inference image intentionally does **not** install QAIRT. Use a
@@ -262,11 +330,12 @@ search paths and permissions, and set:
   loaded with unlimited memlock. This is a container setting, not a host
   permission or system-library change.
 
-Hardware/library provisioning is a host deployment requirement: the shipped
-`inference_server` service does not mount QAIRT, the HTP devices or a compiled
-bundle, so `backend: qnn` through the launcher parks in `error` (launcher
-deployment is a follow-up). Do not expose a plain HTTP listener over the
-network; use the existing remote TLS proxy and inference-only bearer key.
+Hardware/library provisioning is a host deployment requirement. On the IQ10,
+`VLA_QNN_HOST` provides all of it (see "Serve on the IQ10 NPU" above). On any
+other host the shipped `inference_server` service does not mount QAIRT, the HTP
+devices or a compiled bundle, so `backend: qnn` through the launcher parks in
+`error`. Do not expose a plain HTTP listener over the network; use the existing
+remote TLS proxy and inference-only bearer key.
 
 There is no CPU/GPU neural fallback. A QNN load, warmup, native execution,
 cleanup or process-replacement failure parks the server in `error` until an
@@ -305,6 +374,8 @@ Set these in the workspace `.env`; all are optional.
 | `VLA_MODELS_DIR` | Host folder mounted at `/models`, for checkpoints stored outside the workspace. Defaults to `../models`. |
 | `VLA_CONFIG_DIR` | Host directory mounted at `/vla_config`, the one Trainer writes `vla_serving.yaml` into. Defaults to `src/<MOVEIT_CONFIG_PACKAGE>/config`; set it for a package nested elsewhere, such as `src/moveit_pro_kinova_configs/kinova_sim/config`. |
 | `VLA_TORCH_INDEX` | Package index the image installs torch from, for example `https://download.pytorch.org/whl/cpu` on a machine with no NVIDIA GPU. Defaults to PyPI for CPU/CUDA images; ignored by the pinned ROCm image. |
+| `VLA_QNN_HOST` | Set on a Qualcomm board whose FastRPC serves only root clients (`iq10`): builds the `-qnn` image, starts `inference_qnn_worker`, and serves `vla_serving_<value>.yaml`. Set it in the board's `moveit_pro_config.9.yaml`, never in a committed `.env`. See "Serve on the IQ10 NPU". |
+| `VLA_QNN_CDSPRPC_LIBRARY`, `VLA_QNN_KIUMD_LIBRARY`, `VLA_QNN_LRMC_LIBRARY`, `VLA_QNN_DSP_DIR` | Host paths of the FastRPC client libraries and DSP partition the worker mounts. Default to the IQ10 Ubuntu layout (`/usr/lib/libcdsprpc.so`, `/lib/libkiumd.so`, `/lib/liblrmc.so`, `/vendor/dsp`). |
 
 ## The HTTP contract
 
@@ -404,6 +475,11 @@ docker run --rm --network none --entrypoint python \
   moveit_pro-inference_server:latest \
   -m unittest -v test_vla_inference_server test_vla_qnn_backend
 ```
+
+Use `moveit_pro-inference_server-qnn:latest` on a QNN host. The relay's own
+tests need only the standard library and also run in colcon
+(`test_vla_inference_forwarder`); add them to the command above with
+`test_vla_inference_forwarder`.
 
 QNN tests use fake native sessions and need neither QAIRT, NPU hardware, a Hub
 connection nor checkpoint weights. `test_vla_qnn_export` additionally needs
