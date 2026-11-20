@@ -28,9 +28,10 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Resident native QNN HTP sessions for QAIRT 2.49 (core API 2.38).
+"""Resident native QNN HTP sessions for QAIRT 2.49/2.50 (core API 2.38/2.39).
 
-The ctypes layouts and function-table offsets match the QAIRT 2.49 headers.
+The ctypes layouts and function-table offsets match the QAIRT 2.49 headers;
+QAIRT 2.50 only appends entry points and enum values, so both share them.
 Only fixed, dense, unquantized float/integer IO is supported. No QAIRT library
 is opened at import time, and there is no ONNX Runtime or CPU/GPU fallback.
 """
@@ -223,7 +224,7 @@ DCVS_BURST = (1, 0, 0x10, 1, 40, 1, 1, 1, 0x80, 0x80, 0x80, 1, 0x80, 0x80, 0x80)
 def function(address, result, *args):
     """Require a real API pointer before constructing a callable C ABI pointer."""
     if not address:
-        raise RuntimeError("QNN required API pointer is null; use QAIRT 2.49")
+        raise RuntimeError("QNN required API pointer is null; use QAIRT 2.49 or 2.50")
     return c.CFUNCTYPE(result, *args)(address)
 
 
@@ -236,7 +237,7 @@ class NativeRuntime:
             self.lib = c.CDLL(library, mode=os.RTLD_NOW | os.RTLD_LOCAL)
         except OSError as exc:
             raise RuntimeError(
-                f"QNN backend requires the native QAIRT 2.49 HTP runtime; "
+                f"QNN backend requires the native QAIRT 2.49 or 2.50 HTP runtime; "
                 f"could not load '{library}': {exc}. Install or mount the board's "
                 "QAIRT libraries and set QNN_HTP_LIBRARY/LD_LIBRARY_PATH and "
                 "ADSP_LIBRARY_PATH. The standard PyTorch image does not include "
@@ -254,17 +255,17 @@ class NativeRuntime:
         if status or not providers or not 1 <= count.value <= 8 or not providers[0]:
             raise RuntimeError(
                 f"QNN provider discovery status={status}, count={count.value}; "
-                "use the native QAIRT 2.49 HTP runtime"
+                "use the native QAIRT 2.49 or 2.50 HTP runtime"
             )
         self.api = providers[0].contents
         if (
             self.api.backend_id != 6
             or self.api.version.core.major != 2
-            or self.api.version.core.minor != 38
+            or self.api.version.core.minor not in (38, 39)
         ):
             raise RuntimeError(
-                "QNN backend is not the verified HTP/core 2.38 ABI; "
-                "use the board's QAIRT 2.49 library"
+                "QNN backend is not the verified HTP/core 2.38 or 2.39 ABI; "
+                "use the board's QAIRT 2.49 or 2.50 library"
             )
         self.functions = {
             name: function(self.api.functions[slot], ERROR, *args)
@@ -345,7 +346,7 @@ class NativeRuntime:
             ]
             if (
                 len(selected) != 1
-                or selected[0].v1.num_cores != 1
+                or not 1 <= selected[0].v1.num_cores <= 16
                 or not selected[0].v1.cores
                 or not selected[0].v1.extension
             ):
@@ -353,7 +354,14 @@ class NativeRuntime:
                     f"Native QNN HTP device {index} is missing or ambiguous; "
                     "check the board's device access and platform identity"
                 )
-            platform = Platform(1, PlatformV1(1, c.pointer(selected[0])))
+            hardware = Hardware.from_buffer_copy(selected[0])
+            if hardware.v1.num_cores > 1:
+                # Contexts are compiled for one core, and a multi-core NSP (IQ10)
+                # refuses them on its full device. QAIRT's NSP-selection flow
+                # exposes only the first core and leaves the HTP extension unset.
+                hardware.v1.num_cores = 1
+                hardware.v1.extension = None
+            platform = Platform(1, PlatformV1(1, c.pointer(hardware)))
             config = DeviceConfig(1, c.pointer(platform))
             configs = (c.POINTER(DeviceConfig) * 2)(c.pointer(config), None)
             handle = HANDLE()
