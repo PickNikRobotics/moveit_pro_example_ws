@@ -89,6 +89,9 @@ ros2_control:
     - "fault_controller"
   controllers_inactive_at_startup:
     - "joint_trajectory_controller"
+  # Any controllers here will not be spawned by MoveIt Pro.
+  controllers_not_managed:
+    - "twist_controller"
 
 objectives:
   behavior_loader_plugins:
