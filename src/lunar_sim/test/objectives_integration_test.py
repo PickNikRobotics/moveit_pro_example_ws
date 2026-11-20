@@ -61,6 +61,7 @@ skip_objectives = {
     "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
     "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
     "Request Teleoperation",  # DoTeleoperateAction rejects the goal with no UI subscribed.
+    "Build Map",  # Requires operator input and scan-match thresholds.
     # Core-library objectives require operator input unavailable in headless CI.
     "Collect Planar Waypoints",  # Confirmed planar selection needs an operator.
     "Navigate Planar Waypoints",  # Confirmed selection and per-leg path approval.

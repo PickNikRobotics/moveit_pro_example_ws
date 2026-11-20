@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Build Map">
+  <BehaviorTree
+    ID="Build Map"
+    _description="Drive the lunar rover with the base controls while slam_toolbox builds a map, save it, then restore localization against the shipped map and resume navigation."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="BuildMap">
+      <!--Nothing is paused until the scan-match thresholds are set; they have no lunar default.-->
+      <Action
+        ID="ScriptCondition"
+        code="inlier_distance &gt; 0 &amp;&amp; min_inlier_fraction &gt; 0 &amp;&amp; min_inlier_fraction &lt;= 1"
+      />
+      <Control ID="Fallback" name="CheckMapping">
+        <Action
+          ID="WaitForServiceAvailable"
+          service_name="/lifecycle_manager_mapping/manage_nodes"
+          timeout="3.000000"
+        />
+        <Control ID="Sequence" name="ExplainMappingSetup">
+          <Action
+            ID="LogMessage"
+            log_level="ERROR"
+            message="The mapping lifecycle manager is not running. Build Map needs slam: false and localization: true under hardware.robot_description.urdf_params in config.yaml; rebuild lunar_sim and restart the Runtime."
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+      <Action
+        ID="WaitForUserDecision"
+        prompt="Build Map uses the front lidar. Base teleoperation does not check for collisions. Navigation and localization pause while mapping and resume against the shipped map afterward. Select Start, then use the base controls in Teleoperation beside the live map. Stop before Continue — Save Map. Abort skips saving."
+        approve_label="Start"
+        reject_label="Cancel"
+        timeout_sec="3600.000000"
+      />
+      <!--Pose of odom in the shipped map, read while beluga_amcl owns map -> odom. Odometry stays continuous while slam_toolbox owns map -> odom, so this carries the recovery pose across the mapping run.-->
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="map"
+        source_frame_id="odom"
+        transform="{map_to_odom}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{map_to_odom}"
+        pose_stamped="{map_to_odom_pose}"
+      />
+      <Action
+        ID="CallManageLifecycleNodes"
+        service_name="/lifecycle_manager_navigation/manage_nodes"
+        command="1"
+      />
+      <Action
+        ID="Script"
+        code="mapping_ready := false; localization_restored := false; map_saved := false"
+      />
+      <Decorator ID="ForceSuccess">
+        <Control ID="Parallel" success_count="1" failure_count="1">
+          <Control ID="Sequence" name="MapAndSave">
+            <Decorator ID="RetryUntilSuccessful" num_attempts="-1">
+              <Control ID="Sequence">
+                <Action ID="WaitForDuration" delay_duration="0.05" />
+                <Action ID="ScriptCondition" code="mapping_ready" />
+              </Control>
+            </Decorator>
+            <Action
+              ID="GetOccupancyGrid"
+              topic_name="/map"
+              message_timeout_sec="20"
+              message_out="{mapping_grid}"
+            />
+            <SubTree
+              ID="Request Teleoperation"
+              _collapsed="true"
+              enable_user_interaction="true"
+              initial_teleop_mode="3"
+              user_interaction_prompt="Use the base controls in Teleoperation beside the live map. Stop before Continue — Save Map; Abort skips saving. Localization resumes when this Objective ends."
+            />
+            <!--Relative paths are resolved by slam_toolbox, not the Desktop App.-->
+            <Control ID="Sequence" name="SaveMap">
+              <Action
+                ID="CallSaveMapService"
+                map_name="{map_name}"
+                service_name="/slam_toolbox/save_map"
+                response_timeout="30.000000"
+                wait_for_server_available_timeout="3.000000"
+              />
+              <Action ID="Script" code="map_saved = true" />
+              <Action
+                ID="Script"
+                code="save_message := 'Saved map prefix '..map_name..' on the Runtime; relative paths use slam_toolbox working directory.'"
+              />
+              <Action ID="LogMessage" message="{save_message}" />
+            </Control>
+          </Control>
+          <Action
+            ID="SwitchLifecycleManagers"
+            source_manager="/lifecycle_manager_localization"
+            target_manager="/lifecycle_manager_mapping"
+            reset_source="true"
+            ready="{mapping_ready}"
+            restored="{localization_restored}"
+          />
+        </Control>
+      </Decorator>
+      <!--Navigation stays paused unless localization is restored and the recovered pose passes the scan check.-->
+      <Action ID="ScriptCondition" code="localization_restored" />
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="odom"
+        source_frame_id="footprint"
+        transform="{odom_to_base}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{odom_to_base}"
+        pose_stamped="{odom_to_base_pose}"
+      />
+      <!--Both poses are odom -> frame transforms read in the same odom frame; relabel the first so TransformPoseWithPose composes map -> odom -> footprint.-->
+      <Action
+        ID="ReinterpretPoseFrame"
+        input_pose="{odom_to_base_pose}"
+        expected_input_frame_id="odom"
+        frame_id="map"
+        output_pose="{odom_to_base_as_map}"
+      />
+      <Action
+        ID="TransformPoseWithPose"
+        input_pose="{odom_to_base_as_map}"
+        transform_pose="{map_to_odom_pose}"
+        output_pose="{recovery_pose}"
+      />
+      <SubTree
+        ID="Verify Localization Recovery"
+        seed_pose="{recovery_pose}"
+        inlier_distance="{inlier_distance}"
+        min_inlier_fraction="{min_inlier_fraction}"
+      />
+      <Action
+        ID="CallManageLifecycleNodes"
+        service_name="/lifecycle_manager_navigation/manage_nodes"
+        command="2"
+      />
+      <Action ID="ScriptCondition" code="map_saved" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Build Map">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+      <input_port name="map_name" default="lunar_map" type="std::string">
+        Map filename prefix, without an extension. Relative prefixes use
+        slam_toolbox's working directory. Existing files with this prefix may be
+        overwritten.
+      </input_port>
+      <input_port name="inlier_distance" type="double">
+        A beam fits the shipped map if it lands within this distance of an
+        obstacle, metres. No lunar default: measure it first.
+      </input_port>
+      <input_port name="min_inlier_fraction" type="double">
+        Minimum fraction of front-lidar beams that must fit the shipped map
+        before navigation resumes. No lunar default: measure it first.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

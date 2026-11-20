@@ -36,7 +36,7 @@ hardware:
       # Publishes the OAK-D stereo pair and /ground_truth/odom for visual odometry. Rebuild after changing.
       - enable_vo: false
       # Map -> odom source; with neither, a static identity and nothing corrects odometry drift. Restart the Runtime after changing.
-      - slam: false  # build a map with slam_toolbox; save it with map_saver_cli
+      - slam: false  # true runs slam_toolbox at launch with no localization; leave false and use the Build Map Objective
       - localization: true  # beluga_amcl against the shipped maps/lunar_map.yaml
 
   # Additional launch file included with the persistent driver process: lidar filters, fuse, and Nav2.
