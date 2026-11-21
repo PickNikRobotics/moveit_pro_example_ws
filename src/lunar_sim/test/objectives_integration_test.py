@@ -55,8 +55,11 @@ SIM_RESETTER.register("lunar_sim", MUJOCO_RESET_HOOK)
 
 cancel_objectives: set[str] = set()
 
+
 # Non-runnable objectives are filtered out by the fixture and need not be listed here.
 skip_objectives = {
+    # Real-model VO is validated manually, not in the Objective CI suite.
+    "VO Estimation Run",
     # User input required: no primary UI is attached in headless CI.
     "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
     "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
