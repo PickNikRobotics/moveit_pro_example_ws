@@ -1,0 +1,56 @@
+runtime_launch_file:
+  package: microduck_sim
+  path: launch/runtime.launch.xml
+hardware:
+  launch_control_node: false
+  launch_robot_state_publisher: true
+  robot_description:
+    urdf:
+      package: microduck_sim
+      path: description/microduck.urdf.xacro
+    srdf:
+      package: microduck_sim
+      path: config/microduck.srdf
+  additional_driver_launch_file:
+    package: microduck_sim
+    path: launch/simulation.launch.py
+ros_global_params:
+  use_sim_time: false
+moveit_params:
+  joint_group_name: head
+  kinematics:
+    package: microduck_sim
+    path: config/kinematics.yaml
+  joint_limits:
+    package: microduck_sim
+    path: config/joint_limits.yaml
+  pose_jog:
+    package: microduck_sim
+    path: config/pose_jog.yaml
+  joint_jog:
+    package: microduck_sim
+    path: config/joint_jog.yaml
+  publish:
+    planning_scene: true
+    geometry_updates: true
+    state_updates: true
+    transforms_updates: true
+ros2_control:
+  config:
+    package: microduck_sim
+    path: config/controllers.yaml
+  controllers_active_at_startup: []
+  controllers_inactive_at_startup: []
+  controllers_not_managed: []
+objectives:
+  behavior_loader_plugins:
+    core:
+    - moveit_pro::behaviors::CoreBehaviorsLoader
+    - moveit_pro::behaviors::ConverterBehaviorsLoader
+  objective_library_paths:
+    microduck:
+      package_name: microduck_sim
+      relative_path: objectives
+  waypoints_file:
+    package_name: microduck_sim
+    relative_path: waypoints/waypoints.yaml

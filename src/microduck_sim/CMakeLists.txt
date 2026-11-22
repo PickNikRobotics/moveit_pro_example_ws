@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.22)
+project(microduck_sim)
+find_package(ament_cmake REQUIRED)
+install(DIRECTORY config description launch objectives waypoints DESTINATION share/${PROJECT_NAME})
+install(PROGRAMS script/microduck_bridge.py DESTINATION lib/${PROJECT_NAME})
+install(FILES script/policy_sim.py DESTINATION lib/${PROJECT_NAME})
+ament_package()
