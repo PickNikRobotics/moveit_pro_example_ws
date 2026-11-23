@@ -26,9 +26,9 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   find_package(ament_cmake_pytest REQUIRED)
 
-  # docker/test_vla_inference_server.py is not wired here: it needs
-  # torch/lerobot and runs inside the inference_server container instead
-  # (see docker/README.md).
+  # docker/test_vla_*.py are not wired here: they need torch/lerobot (and
+  # ONNX for the QNN export tests) and run inside the inference_server
+  # container instead (see docker/README.md).
   ament_add_pytest_test(test_get_action_chunk_adapter
     test/test_get_action_chunk_adapter.py
     TIMEOUT 60
