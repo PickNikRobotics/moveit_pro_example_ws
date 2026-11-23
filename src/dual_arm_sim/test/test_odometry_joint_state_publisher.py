@@ -40,7 +40,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from odometry_joint_state_publisher import (  # noqa: E402
     NoisyOdometry,
-    twist_in_base,
     wrap,
 )
 
@@ -137,9 +136,3 @@ def test_turn_in_place_adds_heading_error_only():
     assert math.isclose(
         statistics.pstdev(heading), PARAMS["heading_error_per_turn"], rel_tol=0.15
     )
-
-
-def test_twist_in_base_rotates_world_velocity_into_the_body_frame():
-    # Facing +y, a world +y velocity is straight ahead.
-    assert twist_in_base(0.0, 0.3, math.pi / 2) == pytest.approx((0.3, 0.0))
-    assert twist_in_base(0.3, 0.0, math.pi / 2) == pytest.approx((0.0, -0.3))

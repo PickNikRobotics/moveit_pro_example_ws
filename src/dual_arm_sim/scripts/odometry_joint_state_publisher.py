@@ -143,12 +143,6 @@ def yaw_from_quaternion(q):
     )
 
 
-def twist_in_base(vx, vy, yaw):
-    """Rotate a world-axis planar velocity into the base frame at heading yaw."""
-    cos_yaw, sin_yaw = math.cos(yaw), math.sin(yaw)
-    return vx * cos_yaw + vy * sin_yaw, -vx * sin_yaw + vy * cos_yaw
-
-
 def main():
     import rclpy
     from nav_msgs.msg import Odometry
@@ -203,11 +197,9 @@ def main():
             odom.pose.pose.position.y = y
             odom.pose.pose.orientation.z = math.sin(yaw / 2.0)
             odom.pose.pose.orientation.w = math.cos(yaw / 2.0)
-            # The simulator reports the twist along world axes; Nav2 reads it in base_link.
-            linear = truth.twist.twist.linear
-            vx, vy = twist_in_base(linear.x, linear.y, true_yaw)
-            odom.twist.twist.linear.x = vx
-            odom.twist.twist.linear.y = vy
+            # The simulator reports the twist in the base frame, which is where Nav2 reads it.
+            odom.twist.twist.linear.x = truth.twist.twist.linear.x
+            odom.twist.twist.linear.y = truth.twist.twist.linear.y
             odom.twist.twist.angular.z = truth.twist.twist.angular.z
             self._odom.publish(odom)
 
