@@ -8,7 +8,7 @@
     <Control ID="Sequence">
       <Action
         ID="WaitForUserDecision"
-        prompt="Start mapping, then use the base controls under Pose in Teleoperation. Stop before Continue to save; Abort ends mapping without saving."
+        prompt="Start mapping, then drive with the base controls under Pose. Save Map keeps the map; Discard ends mapping without saving."
         approve_label="Start"
         reject_label="Cancel"
         timeout_sec="3600"
@@ -42,15 +42,26 @@
               message_timeout_sec="20"
               message_out="{mapping_grid}"
             />
-            <SubTree
-              ID="Request Teleoperation"
-              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-              joint_trajectory_controller_name="joint_trajectory_controller"
-              execution_pipeline="jtc"
-              enable_user_interaction="true"
-              initial_teleop_mode="3"
-              user_interaction_prompt="Use Forward, Reverse, Turn left and Turn right under Pose. Stop, then Continue to save hangar_map.pgm and hangar_map.yaml in the Runtime user workspace."
-            />
+            <!--Teleoperation runs until the operator answers the map approval, which halts it.-->
+            <Control ID="Parallel" success_count="1" failure_count="1">
+              <SubTree
+                ID="Request Teleoperation"
+                controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+                joint_trajectory_controller_name="joint_trajectory_controller"
+                execution_pipeline="jtc"
+                enable_user_interaction="false"
+                initial_teleop_mode="3"
+              />
+              <Action
+                ID="WaitForUserMapApproval"
+                prompt="Switch the Mode menu to Teleoperation and drive with Forward, Reverse, Turn left and Turn right under Pose until the map covers the hangar. Stop the robot, then save hangar_map.pgm and hangar_map.yaml to the Runtime user workspace."
+                map_topic="/map"
+                robot_frame="ridgeback_base_link"
+                approve_label="Save Map"
+                reject_label="Discard"
+                timeout_sec="3600"
+              />
+            </Control>
             <Action
               ID="CallSaveMapService"
               map_name="hangar_map"

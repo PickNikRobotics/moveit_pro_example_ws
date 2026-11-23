@@ -6,13 +6,13 @@ For detailed documentation see: [MoveIt Pro Documentation](https://docs.picknik.
 
 ## Build Map
 
-Keep `hardware.robot_description.urdf_params`'s `slam` option in `config/config.yaml` set to `false` and localization enabled (the default). **Build Map** temporarily switches from localization to SLAM; it is unavailable with localization disabled or SLAM already running. It requires the paired MoveIt Pro Build Map changes (PR #22585), including the custom mapping pane and `SwitchLifecycleManagers`'s `reset_source` support.
+Keep `hardware.robot_description.urdf_params`'s `slam` option in `config/config.yaml` set to `false` and localization enabled (the default). **Build Map** temporarily switches from localization to SLAM; it is unavailable with localization disabled or SLAM already running. It requires the paired MoveIt Pro Build Map changes (PR #22585), including the `WaitForUserMapApproval` Behavior and `SwitchLifecycleManagers`'s `reset_source` support.
 
-Run **Build Map** from the Desktop App's mapping pane:
+To build a map:
 
-1. Select **Start** to pause navigation and start mapping using the front lidar.
-2. Drive with **Forward**, **Reverse**, **Turn left**, and **Turn right** under **Pose** in Teleoperation, previewing the SLAM map.
-3. Stop the robot, then select **Continue** to save `hangar_map.pgm` and `hangar_map.yaml` in the Runtime user workspace. **Abort** ends mapping without saving.
+1. Run **Build Map** and select **Start** to pause navigation and start mapping using the front lidar.
+2. Switch the **Mode** menu to **Teleoperation** and drive with **Forward**, **Reverse**, **Turn left**, and **Turn right** under **Pose**. The Desktop App opens a **Map Preview** pane with the SLAM map and the robot on it.
+3. Stop the robot, then select **Save Map** to save `hangar_map.pgm` and `hangar_map.yaml` in the Runtime user workspace. **Discard** ends mapping without saving.
 
 Localization is reset during mapping so the shipped map cannot compete with SLAM's `/map` when saving. After mapping ends, the workflow restores localization against the shipped map and refines the robot's pose; navigation resumes only if localization restoration and refinement succeed. Saving does not replace the shipped map or select the new map for navigation. A successful save alone does not establish successful recovery, and the existing scan-fit rejection remains in place.
 
