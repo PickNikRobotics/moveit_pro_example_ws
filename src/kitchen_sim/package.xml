@@ -26,7 +26,13 @@
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
+  <test_depend>ament_index_python</test_depend>
+  <test_depend>mujoco_package_uri</test_depend>
+  <test_depend>picknik_mujoco</test_depend>
+  <test_depend>python3-numpy</test_depend>
+  <test_depend>python3-yaml</test_depend>
   <test_depend>rclpy</test_depend>
+  <test_depend>xacro</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

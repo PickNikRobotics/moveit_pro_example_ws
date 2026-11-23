@@ -16,6 +16,11 @@ install(
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+  ament_add_pytest_test(
+    joint6_limits_test test/test_joint6_limits.py
+    TIMEOUT 60
+    # Launch collectors import the neighboring Objective test during collection.
+    ENV "PYTEST_ADDOPTS=-p no:launch_testing -p no:launch_ros")
   # Redirect ROS node logs into the test_results tree so the test-results CI
   # artifact ships them back too. The default ~/.ros/log/ lives on the doomed
   # container filesystem and never gets uploaded, making post-mortem of

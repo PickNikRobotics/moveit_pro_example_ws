@@ -242,7 +242,7 @@
                     <joint
                       name="fr3_joint6"
                       axis="0 0 1"
-                      range="0.5445 4.5169"
+                      range="0.4398 4.6216"
                       actuatorfrcrange="-12 12"
                     />
                     <geom
