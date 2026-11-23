@@ -17,7 +17,9 @@ dependency; the serving consumer needs only NumPy/standard library.
 import argparse
 import hashlib
 import json
+import os
 import re
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -327,11 +329,29 @@ def emit_sampling(source: Path, context: Path, output: Path) -> dict:
 
 
 def write_sidecar(value: dict, context: Path, output: Path) -> dict:
-    """Bind a descriptor to the exact context bytes and write it once."""
+    """Bind a descriptor to the exact context bytes and publish it once.
+
+    The descriptor is written to a temporary file beside the output and linked
+    into place only once complete, so a failed write leaves no partial sidecar
+    and never replaces an existing one.
+    """
     with Path(context).open("rb") as stream:
         value["context_sha256"] = hashlib.file_digest(stream, "sha256").hexdigest()
-    with Path(output).open("x") as stream:
-        stream.write(json.dumps(value, indent=2) + "\n")
+    output = Path(output)
+    descriptor, temporary = tempfile.mkstemp(
+        dir=output.parent, prefix=f".{output.name}.", suffix=".tmp"
+    )
+    try:
+        with os.fdopen(descriptor, "w") as stream:
+            # mkstemp creates the file owner-only; publish it as open() would.
+            umask = os.umask(0)
+            os.umask(umask)
+            os.fchmod(stream.fileno(), 0o666 & ~umask)
+            stream.write(json.dumps(value, indent=2) + "\n")
+        # link() fails with FileExistsError instead of replacing the output.
+        os.link(temporary, output)
+    finally:
+        os.unlink(temporary)
     return value
 
 
@@ -353,6 +373,43 @@ def groot_sampling_values(
     }
 
 
+def check_groot_schedule(steps, buckets, ramp) -> None:
+    """Refuse a GR00T flow schedule that serving cannot run."""
+    if (
+        type(steps) is not int
+        or steps < 1
+        or type(buckets) is not int
+        or buckets < steps
+        or type(ramp) not in (int, float)
+        or not np.isfinite(ramp)
+        or ramp <= 0
+    ):
+        raise ValueError(
+            "QNN sampling needs num_timestep_buckets >= num_inference_timesteps >= 1 "
+            "and a finite positive rtc_ramp_rate; timestep_buckets/rtc_ramp_rate are invalid"
+        )
+
+
+def check_groot_horizon(horizon, caps: dict) -> None:
+    """Refuse a LeRobot cap that would shorten the native action horizon.
+
+    The action step is exported at the model's full action_horizon, so a policy
+    chunk_size or n_action_steps below it would ask for a shorter chunk than
+    the graph produces. A cap above the horizon has no effect.
+    """
+    if type(horizon) is not int or horizon < 1:
+        raise ValueError("QNN sampling action_horizon must be a positive integer")
+    for name, cap in caps.items():
+        if type(cap) is not int:
+            raise ValueError(f"GR00T policy {name} ({cap!r}) must be an integer")
+        if cap < horizon:
+            raise ValueError(
+                f"GR00T policy {name} ({cap}) is below the model's action_horizon "
+                f"({horizon}); the native action step always produces {horizon} rows. "
+                "Retrain or export with a cap at or above action_horizon"
+            )
+
+
 def validate_groot_sampling(value, config: dict, context_sha256: str) -> dict:
     """Cross-check a GR00T action-step descriptor against its context and bundle."""
     checked_sources(value, context_sha256, "GR00T model configuration")
@@ -360,14 +417,18 @@ def validate_groot_sampling(value, config: dict, context_sha256: str) -> dict:
         if type(value.get(field)) is not int or value[field] != config[field]:
             raise ValueError(f"QNN sampling {field} differs from the compiled bundle")
     buckets, ramp = value.get("timestep_buckets"), value.get("rtc_ramp_rate")
-    if (
-        type(buckets) is not int
-        or buckets < value["denoising_steps"]
-        or type(ramp) not in (int, float)
-        or not np.isfinite(ramp)
-        or ramp <= 0
-    ):
-        raise ValueError("QNN sampling timestep_buckets/rtc_ramp_rate are invalid")
+    check_groot_schedule(value["denoising_steps"], buckets, ramp)
+    # Descriptors emitted before these fields existed carry neither; when
+    # present they must show the native horizon was served uncapped.
+    if "action_horizon" in value:
+        if value["action_horizon"] != value["chunk_size"]:
+            raise ValueError(
+                "QNN sampling chunk_size differs from the model's action_horizon"
+            )
+        caps = value.get("policy_caps", {})
+        if not isinstance(caps, dict):
+            raise ValueError("QNN sampling policy_caps must be a mapping")
+        check_groot_horizon(value["action_horizon"], caps)
     expected = groot_sampling_values(
         value["chunk_size"],
         value["max_action_dim"],
@@ -388,7 +449,9 @@ def inspect_groot_sampling(
     model_config is the GR00T N1.7 config.json the action step was exported from
     (it holds action_horizon, max_action_dim, num_inference_timesteps,
     num_timestep_buckets and rtc_ramp_rate). A LeRobot policy config.json
-    overrides the step count and ramp when set and caps the chunk, as LeRobot does.
+    overrides the step count and ramp when set. Its chunk_size and
+    n_action_steps must not cap the chunk below action_horizon, because the
+    action step always produces the full horizon.
     """
     files = {}
 
@@ -404,31 +467,29 @@ def inspect_groot_sampling(
         value = policy.get(name)
         return model.get(name) if value is None else value
 
-    chunk = min(
-        (
-            value
-            for value in (
-                model.get("action_horizon"),
-                policy.get("chunk_size"),
-                policy.get("n_action_steps"),
-            )
-            if type(value) is int and value > 0
-        ),
-        default=0,
-    )
+    horizon = model.get("action_horizon")
     steps, buckets = override("num_inference_timesteps"), model.get(
         "num_timestep_buckets"
     )
     action_dim, ramp = model.get("max_action_dim"), override("rtc_ramp_rate")
     if any(
-        type(v) is not int or v < 1 for v in (chunk, steps, buckets, action_dim)
+        type(v) is not int or v < 1 for v in (horizon, steps, buckets, action_dim)
     ) or (type(ramp) not in (int, float) or ramp <= 0):
         raise ValueError(
             "GR00T config must set action_horizon, max_action_dim, "
             "num_inference_timesteps, num_timestep_buckets and rtc_ramp_rate"
         )
+    caps = {
+        name: policy[name]
+        for name in ("chunk_size", "n_action_steps")
+        if policy.get(name) is not None
+    }
+    check_groot_horizon(horizon, caps)
+    check_groot_schedule(steps, buckets, ramp)
     return {
-        **groot_sampling_values(chunk, action_dim, steps, buckets, float(ramp)),
+        **groot_sampling_values(horizon, action_dim, steps, buckets, float(ramp)),
+        "action_horizon": horizon,
+        "policy_caps": caps,
         "source_sha256": files,
     }
 

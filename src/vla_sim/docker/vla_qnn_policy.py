@@ -1067,6 +1067,30 @@ class QnnGrootPolicy(BundlePolicy):
         return physical, physical if self.relative.any() else raw
 
 
+def check_relative_pairing(relative, state_names: list, action_names: list) -> None:
+    """Refuse joint names that would anchor a relative action to another joint.
+
+    QnnGrootPolicy adds and subtracts the state by column position, so each
+    relative action column must name the same joint as the state column at
+    that position. Without names, values already pair by list order.
+    """
+    if not state_names or not any(relative):
+        return
+    if len(state_names) != len(relative) or len(action_names) != len(relative):
+        return  # load_policy reports the width mismatch itself.
+    mismatched = [
+        f"{action_names[i]} (state has {state_names[i]})"
+        for i, flag in enumerate(relative)
+        if flag and action_names[i] != state_names[i]
+    ]
+    if mismatched:
+        raise ValueError(
+            "QNN GR00T relative action columns must name the same joint as the "
+            "state column at the same position; list action_names in "
+            f"state_names order in vla_serving.yaml. Mismatched: {', '.join(mismatched)}"
+        )
+
+
 def bundle_family(bundle: str) -> str:
     """Read the compiled bundle's policy family without opening anything native."""
     config = json.loads(Path(bundle).expanduser().read_text())

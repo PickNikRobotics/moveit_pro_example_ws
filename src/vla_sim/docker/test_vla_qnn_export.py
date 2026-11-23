@@ -10,6 +10,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import onnx
@@ -20,6 +21,7 @@ from vla_qnn_export import (
     LEGACY_EXPERT_SHA256,
     emit_groot_sampling,
     emit_sampling,
+    groot_sampling_values,
     inspect_sampling,
     sampling_values,
     validate_groot_sampling,
@@ -250,6 +252,87 @@ class TestQnnExportSampling(unittest.TestCase):
             validate_groot_sampling(value, {**config, "denoising_steps": 4}, digest)
         with self.assertRaises(FileExistsError):
             emit_groot_sampling(model, policy, self.context, output)
+
+    def groot_configs(self, model_fields=None, policy_fields=None):
+        model = self.root / "model_config.json"
+        policy = self.root / "config.json"
+        model.write_text(
+            json.dumps(
+                {
+                    "action_horizon": 40,
+                    "max_action_dim": 132,
+                    "num_inference_timesteps": 8,
+                    "num_timestep_buckets": 1000,
+                    "rtc_ramp_rate": 6.0,
+                    **(model_fields or {}),
+                }
+            )
+        )
+        policy.write_text(json.dumps(policy_fields or {}))
+        return model, policy
+
+    def test_groot_export_refuses_a_policy_cap_below_the_native_horizon(self):
+        output = self.root / "sampling.json"
+        for cap in ("chunk_size", "n_action_steps"):
+            with self.subTest(cap=cap), self.assertRaisesRegex(
+                ValueError,
+                f"{cap} \\(16\\) is below the model's action_horizon \\(40\\)",
+            ):
+                emit_groot_sampling(
+                    *self.groot_configs(policy_fields={cap: 16}), self.context, output
+                )
+        self.assertFalse(output.exists())
+        model, policy = self.groot_configs(
+            policy_fields={"chunk_size": 40, "n_action_steps": 40}
+        )
+        value = emit_groot_sampling(model, policy, self.context, output)
+        self.assertEqual((value["chunk_size"], value["action_horizon"]), (40, 40))
+        self.assertEqual(value["policy_caps"], {"chunk_size": 40, "n_action_steps": 40})
+        config = {"chunk_size": 40, "max_action_dim": 132, "denoising_steps": 8}
+        digest = value["context_sha256"]
+        self.assertIs(validate_groot_sampling(value, config, digest), value)
+        # Serving enforces the same rule on the recorded metadata.
+        shortened = {
+            **value,
+            **groot_sampling_values(16, 132, 8, 1000, 6.0),
+            "policy_caps": {"n_action_steps": 16},
+        }
+        with self.assertRaisesRegex(ValueError, "action_horizon"):
+            validate_groot_sampling(shortened, {**config, "chunk_size": 16}, digest)
+        capped = {**value, "policy_caps": {"n_action_steps": 16}}
+        with self.assertRaisesRegex(ValueError, "below the model's action_horizon"):
+            validate_groot_sampling(capped, config, digest)
+
+    def test_groot_export_applies_the_serving_schedule_checks(self):
+        output = self.root / "sampling.json"
+        for fields in (
+            {"num_timestep_buckets": 4},
+            {"rtc_ramp_rate": float("nan")},
+            {"rtc_ramp_rate": float("inf")},
+        ):
+            with self.subTest(fields=fields), self.assertRaisesRegex(
+                ValueError, "timestep_buckets/rtc_ramp_rate"
+            ):
+                emit_groot_sampling(
+                    *self.groot_configs(model_fields=fields), self.context, output
+                )
+        self.assertFalse(output.exists())
+
+    def test_failed_sidecar_write_leaves_nothing_and_a_retry_succeeds(self):
+        model, policy = self.groot_configs()
+        output = self.root / "sampling.json"
+        with patch("vla_qnn_export.json.dumps", side_effect=OSError("disk full")):
+            with self.assertRaisesRegex(OSError, "disk full"):
+                emit_groot_sampling(model, policy, self.context, output)
+        self.assertEqual(
+            sorted(p.name for p in self.root.iterdir() if "sampling" in p.name), []
+        )
+        value = emit_groot_sampling(model, policy, self.context, output)
+        self.assertEqual(json.loads(output.read_text()), value)
+        self.assertEqual(
+            sorted(p.name for p in self.root.iterdir() if "sampling" in p.name),
+            ["sampling.json"],
+        )
 
 
 if __name__ == "__main__":

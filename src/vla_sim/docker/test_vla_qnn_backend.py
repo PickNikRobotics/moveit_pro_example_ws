@@ -496,6 +496,16 @@ class TestQnnSelection(QnnFixture):
                 self.assertTrue(runtime.closed)
                 self.assertIsNone(state.runner)
 
+    def test_cli_backend_overrides_an_invalid_yaml_backend(self):
+        args = self.parsed_args(backend="qnnn")
+        self.assertIn("backend must be pytorch or qnn", args.config_error)
+        self.assertEqual(args.backend, "pytorch")
+        for backend in ("pytorch", "qnn"):
+            with self.subTest(backend=backend):
+                args = self.parsed_args(("--backend", backend), backend="qnnn")
+                self.assertEqual(args.config_error, "")
+                self.assertEqual(args.backend, backend)
+
     def test_default_and_cli_override_keep_pytorch_path(self):
         """CLI precedence reaches PyTorch with no QAIRT, ignoring an unused invalid bundle."""
         for unused in (str(self.bundle), 17, ["wrong"], {"path": "wrong"}):
@@ -1165,6 +1175,56 @@ def stock_groot_chunk(previous, state, delay, stats):
 
 
 class TestQnnGroot(GrootFixture):
+    def test_relative_actions_refuse_names_that_anchor_another_joint(self):
+        names = ["arm_1", "arm_2", "arm_3", "gripper"]
+        serving = self.root / "vla_serving.yaml"
+        for action_names, message in (
+            (names, None),
+            ([names[1], names[0], *names[2:]], "arm_2 \\(state has arm_1\\)"),
+        ):
+            with self.subTest(action_names=action_names):
+                serving.write_text(
+                    yaml.safe_dump(
+                        {
+                            "checkpoint": "test/groot",
+                            "backend": "qnn",
+                            "qnn_bundle": str(self.root / "bundle.json"),
+                            "fps": 10.0,
+                            "state_dim": 4,
+                            "guidance_horizon": 3,
+                            "state_names": names,
+                            "action_names": action_names,
+                        }
+                    )
+                )
+                with patch(
+                    "sys.argv", ["vla_inference_server.py", "--config", str(serving)]
+                ):
+                    args = parse_args()
+                runtime = FakeRuntime(self.ports)
+                self.addCleanup(runtime.close)
+                state = ServerState()
+                with patch("vla_qnn_runtime.NativeRuntime", return_value=runtime):
+                    load_policy(state, args)
+                if message is None:
+                    self.assertEqual(state.status, "ready", state.detail)
+                    self.assertEqual(state.action_names, names)
+                else:
+                    self.assertEqual(state.status, "error")
+                    self.assertRegex(state.detail, message)
+                    self.assertIn("state_names order", state.detail)
+                    self.assertEqual(runtime.models, {})
+
+    def test_relative_pairing_ignores_absolute_columns_and_unnamed_configs(self):
+        from vla_qnn_policy import check_relative_pairing
+
+        check_relative_pairing([True, False, False], [], [])
+        check_relative_pairing([True, False, False], ["a", "b", "c"], ["a", "c", "b"])
+        with self.assertRaisesRegex(ValueError, "state_names order"):
+            check_relative_pairing(
+                [True, True, False], ["a", "b", "c"], ["b", "a", "c"]
+            )
+
     def test_chain_flow_rtc_and_decode_match_stock_groot(self):
         runner, runtime = self.runner()
         state = QnnFixture.ready_state(self, runner)
@@ -1673,6 +1733,34 @@ class TestQnnReload(QnnFixture):
         self.assertIs(state.cleanup_runner, runner)
         self.assertFalse(state.begin_infer())
         self.assertEqual(self.watch(state), [])
+
+    def test_stalled_native_free_does_not_block_process_replacement(self):
+        runner, self.runtime = self.runner()
+        state = self.ready_state(runner)
+        freeing, finish = threading.Event(), threading.Event()
+        native_close = self.runtime.close
+
+        def close():
+            freeing.set()
+            assert finish.wait(5), "stalled free was never released"
+            native_close()
+
+        self.runtime.close = close
+        self.addCleanup(finish.set)
+        restart = MagicMock()
+        with patch("vla_inference_server.QNN_FREE_TIMEOUT_SECONDS", 0.05):
+            self.watch(state, restart)
+        restart.assert_called_once()
+        self.assertTrue(freeing.is_set())
+        self.assertFalse(runner.release_complete)
+        # The stalled free still owns the sessions, and close() never retries it.
+        self.assertFalse(runner.lock.acquire(blocking=False))
+        self.assertFalse(runner.close())
+        finish.set()
+        self.assertTrue(runner.lock.acquire(timeout=5))
+        runner.lock.release()
+        self.assertTrue(self.runtime.closed)
+        self.assertTrue(runner.release_complete)
 
     def test_reload_over_a_hung_infer_does_not_wait_for_its_sessions(self):
         runner, self.runtime = self.runner()

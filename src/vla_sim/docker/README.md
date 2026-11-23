@@ -221,9 +221,15 @@ refuses it with QNN status 1002 (`QNN_COMMON_ERROR_MEM_ALLOC`) on either HTP
 device, so an IQ9 GR00T bundle needs the FP16 action step split across two
 contexts (a follow-up). `model_action_dim` must equal `request_state_dim`.
 
-The action step is exported at the model's full `action_horizon`, so a checkpoint
-whose LeRobot `chunk_size` or `n_action_steps` is below `action_horizon` produces
-a sampling sidecar that no bundle satisfies, and the load is refused.
+The action step is exported at the model's full `action_horizon`, so the exporter
+refuses a checkpoint whose LeRobot `chunk_size` or `n_action_steps` is below
+`action_horizon`. The sidecar records `action_horizon` and those `policy_caps`,
+and the server refuses a sidecar whose recorded values break the same rule.
+
+Because the host decodes relative action columns against the state column at
+the same position, the server refuses a `vla_serving.yaml` whose `action_names`
+name a relative column differently from `state_names` at that position; list
+both in the same joint order.
 
 ### Native runtime requirements
 

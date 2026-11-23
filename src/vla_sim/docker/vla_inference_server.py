@@ -168,6 +168,10 @@ INFER_ABANDONED_SECONDS = 30.0
 # How long a reload waits for a hung /infer to release the native QNN sessions
 # before replacing the process without freeing them.
 QNN_RELEASE_TIMEOUT_SECONDS = 1.0
+# How long a reload waits for the native free itself before replacing the
+# process. A stalled free keeps the sessions owned by its own thread, and the
+# process replacement releases them.
+QNN_FREE_TIMEOUT_SECONDS = 10.0
 # How long a reload waits for a QNN load and warmup to finish, so it can free
 # the sessions that load created, before replacing the process over it.
 QNN_LOAD_ABANDONED_SECONDS = 120.0
@@ -942,7 +946,8 @@ class QnnPolicyRunner(PolicyRunner):
         """Attempt ordinary native cleanup once; never retry a partial release.
 
         @return: True only when the one attempt released all sessions. A hung
-        call or failed free keeps this runner reachable until process exit.
+        call, stalled free or failed free keeps this runner reachable until
+        process exit.
         """
         with self.cleanup_lock:
             if self.release_started:
@@ -958,15 +963,32 @@ class QnnPolicyRunner(PolicyRunner):
                     "WARNING: a hung /infer holds the QNN sessions; retaining them until process exit"
                 )
                 return False
-            try:
-                self.policy.close()
-                self.release_complete = True
-            except Exception as exc:
-                self.cleanup_error = str(exc)
-                log(f"ERROR: QNN cleanup failed: {exc}")
-                raise
-            finally:
-                self.lock.release()
+            # The free runs on its own thread so a stalled native call cannot
+            # keep the caller from replacing the process. That thread holds the
+            # runner lock, and so the sessions, until the free returns.
+            failure: list[Exception] = []
+
+            def release():
+                try:
+                    self.policy.close()
+                    self.release_complete = True
+                except Exception as exc:
+                    self.cleanup_error = str(exc)
+                    failure.append(exc)
+                finally:
+                    self.lock.release()
+
+            releaser = threading.Thread(target=release, name="qnn-release", daemon=True)
+            releaser.start()
+            releaser.join(QNN_FREE_TIMEOUT_SECONDS)
+            if releaser.is_alive():
+                log(
+                    "WARNING: freeing the QNN sessions stalled; retaining them until process exit"
+                )
+                return False
+            if failure:
+                log(f"ERROR: QNN cleanup failed: {failure[0]}")
+                raise failure[0]
             return True
 
     def warmup(self) -> tuple[float, float, int, int]:
@@ -1369,6 +1391,18 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 args.rtc_schedule,
                 args.groot_rtc_ramp_rate,
             )
+            # A compiled bundle serves offline, so its joint names come from
+            # vla_serving.yaml rather than a Hub manifest lookup. Checked
+            # before the native sessions are created.
+            state_names, action_names = validated_policy_names(
+                args.state_names, args.action_names
+            )
+            if runner.family == "groot":
+                from vla_qnn_policy import check_relative_pairing
+
+                check_relative_pairing(
+                    runner.policy.relative, state_names, action_names
+                )
             with state.activity_lock:
                 state.cleanup_runner = runner
                 if state.reloading or state.qnn_restart_required:
@@ -1381,11 +1415,6 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             state.fps = runner.policy.fps
             state.checkpoint_revision = runner.policy.config["model_revision"]
             device = runner.device
-            # A compiled bundle serves offline, so its joint names come from
-            # vla_serving.yaml rather than a Hub manifest lookup.
-            state_names, action_names = validated_policy_names(
-                args.state_names, args.action_names
-            )
         else:  # parse_args admits only pytorch or qnn.
             # Metadata resolution can download Hub files, so it stays on this
             # loader thread, after the socket binds.
@@ -1913,10 +1942,11 @@ def parse_args() -> argparse.Namespace:
         help="training fps; response dt=1/fps; 0 reads the "
         "checkpoint's train_config.json",
     )
+    # An invalid YAML backend is reported after parsing, only when --backend
+    # does not override it. argparse does not check a default against choices.
     backend = resolve_default(config.get("backend"), "pytorch")
     if backend not in ("pytorch", "qnn"):
-        config_errors.append("backend must be pytorch or qnn")
-        backend = "pytorch"
+        backend = None
     parser.add_argument(
         "--backend",
         choices=("pytorch", "qnn"),
@@ -1973,6 +2003,9 @@ def parse_args() -> argparse.Namespace:
         + " | ".join(schedule.name for schedule in RTCAttentionSchedule),
     )
     args = parser.parse_args()
+    if args.backend is None:
+        config_errors.append("backend must be pytorch or qnn")
+        args.backend = "pytorch"
     if args.backend == "qnn" and not isinstance(args.qnn_bundle, str):
         config_errors.append("qnn_bundle must be a local JSON manifest path")
         args.qnn_bundle = ""
