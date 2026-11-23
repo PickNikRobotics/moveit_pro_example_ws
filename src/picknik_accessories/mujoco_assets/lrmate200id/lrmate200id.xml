@@ -90,7 +90,7 @@
                     type="box"
                     size="0.01 0.01 0.001"
                     pos="0 0 -0.001"
-                    margin="0.02"
+                    margin="0"
                     gap="0.02"
                   />
                   <site
