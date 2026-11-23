@@ -111,7 +111,9 @@ ros2_control:
     - "joint_velocity_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
-  controllers_not_managed: []
+  controllers_not_managed:
+    - "fault_controller"
+    - "twist_controller"
   # Optionally configure remapping rules to let multiple controllers receive commands on the same topic.
   # [Optional, default=[]]
   controller_shared_topics: []
