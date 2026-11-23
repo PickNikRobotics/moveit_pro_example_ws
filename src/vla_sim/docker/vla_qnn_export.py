@@ -26,6 +26,8 @@ import numpy as np
 
 SCHEDULE = "uniform_euler_round_clip.v1"
 GROOT_SCHEDULE = "groot_n17_bucketed_euler.v1"
+# source_sha256 key of the LeRobot checkpoint config a GR00T descriptor read.
+GROOT_POLICY_SOURCE = "policy_config.json"
 # The retained native-RMS expert predates the descriptor. Its exporter fixes
 # 50 rows / 10 updates. No other metadata-free binary inherits that schedule.
 LEGACY_EXPERT_SHA256 = (
@@ -418,8 +420,20 @@ def validate_groot_sampling(value, config: dict, context_sha256: str) -> dict:
             raise ValueError(f"QNN sampling {field} differs from the compiled bundle")
     buckets, ramp = value.get("timestep_buckets"), value.get("rtc_ramp_rate")
     check_groot_schedule(value["denoising_steps"], buckets, ramp)
-    # Descriptors emitted before these fields existed carry neither; when
-    # present they must show the native horizon was served uncapped.
+    # The LeRobot policy config is the only source of the checkpoint's
+    # chunk_size and n_action_steps caps, so a descriptor exported without it
+    # cannot show that those caps leave the native horizon intact.
+    if GROOT_POLICY_SOURCE not in value["source_sha256"]:
+        raise ValueError(
+            "QNN sampling was exported without the LeRobot policy config, so its "
+            "chunk_size/n_action_steps caps are unverified; re-stage the sidecar "
+            "with vla_qnn_export.py --groot-policy-config"
+        )
+    # A descriptor emitted before action_horizon/policy_caps existed took
+    # chunk_size = min(action_horizon, policy caps). The graph ABI check pins
+    # chunk_size to the action step's rows, which the export takes from
+    # action_horizon, so a below-horizon cap cannot load. When present, the
+    # recorded fields are checked directly.
     if "action_horizon" in value:
         if value["action_horizon"] != value["chunk_size"]:
             raise ValueError(
@@ -441,15 +455,13 @@ def validate_groot_sampling(value, config: dict, context_sha256: str) -> dict:
     return value
 
 
-def inspect_groot_sampling(
-    model_config: Path, policy_config: Path | None = None
-) -> dict:
+def inspect_groot_sampling(model_config: Path, policy_config: Path) -> dict:
     """Read the flow schedule GR00T N1.7 runs from its model and LeRobot configs.
 
     model_config is the GR00T N1.7 config.json the action step was exported from
     (it holds action_horizon, max_action_dim, num_inference_timesteps,
-    num_timestep_buckets and rtc_ramp_rate). A LeRobot policy config.json
-    overrides the step count and ramp when set. Its chunk_size and
+    num_timestep_buckets and rtc_ramp_rate). The LeRobot policy config.json
+    overrides the step count and ramp when set. It is required: its chunk_size and
     n_action_steps must not cap the chunk below action_horizon, because the
     action step always produces the full horizon.
     """
@@ -461,7 +473,12 @@ def inspect_groot_sampling(
         return json.loads(snapshot)
 
     model = read(model_config, "model")
-    policy = {} if policy_config is None else read(policy_config, "policy")
+    if policy_config is None:
+        raise ValueError(
+            "GR00T export requires the LeRobot checkpoint config.json "
+            "(--groot-policy-config) to verify its chunk_size/n_action_steps caps"
+        )
+    policy = read(policy_config, "policy")
 
     def override(name):
         value = policy.get(name)
@@ -495,7 +512,7 @@ def inspect_groot_sampling(
 
 
 def emit_groot_sampling(
-    model_config: Path, policy_config: Path | None, context: Path, output: Path
+    model_config: Path, policy_config: Path, context: Path, output: Path
 ) -> dict:
     """Emit the GR00T action-step sidecar from the configs it was exported with."""
     return write_sidecar(
@@ -517,7 +534,8 @@ def main():
     parser.add_argument(
         "--groot-policy-config",
         type=Path,
-        help="GR00T N1.7: the LeRobot checkpoint config.json, when overriding it",
+        help="GR00T N1.7: the LeRobot checkpoint config.json (required with "
+        "--groot-model-config)",
     )
     parser.add_argument(
         "--context", required=True, type=Path, help="context produced from that source"
@@ -526,6 +544,8 @@ def main():
         "--output", required=True, type=Path, help="new sampling JSON sidecar"
     )
     args = parser.parse_args()
+    if args.groot_model_config is not None and args.groot_policy_config is None:
+        parser.error("--groot-model-config requires --groot-policy-config")
     if args.source is not None:
         emit_sampling(args.source, args.context, args.output)
     else:

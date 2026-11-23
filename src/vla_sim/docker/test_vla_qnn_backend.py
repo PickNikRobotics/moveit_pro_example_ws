@@ -1032,7 +1032,10 @@ class GrootFixture(unittest.TestCase):
                 manifest["sampling"] = {
                     **groot_sampling_values(6, 10, 4, 1000, 6.0),
                     "context_sha256": manifest["context_sha256"],
-                    "source_sha256": {"model_config.json": "d" * 64},
+                    "source_sha256": {
+                        "model_config.json": "d" * 64,
+                        "policy_config.json": "e" * 64,
+                    },
                 }
             (directory / "manifest.json").write_text(json.dumps(manifest))
         (self.root / "bundle.json").write_text(json.dumps(self.config))
@@ -1175,6 +1178,41 @@ def stock_groot_chunk(previous, state, delay, stats):
 
 
 class TestQnnGroot(GrootFixture):
+    def stage_legacy_sampling(self, chunk, sources):
+        """A sidecar from the exporter before action_horizon/policy_caps existed."""
+        manifest_path = self.root / "action_step" / "manifest.json"
+        manifest = json.loads(manifest_path.read_text())
+        manifest["sampling"] = {
+            **groot_sampling_values(chunk, 10, 4, 1000, 6.0),
+            "context_sha256": manifest["context_sha256"],
+            "source_sha256": {name: "d" * 64 for name in sources},
+        }
+        manifest_path.write_text(json.dumps(manifest))
+
+    def test_legacy_sidecar_with_a_below_horizon_cap_is_refused_at_load(self):
+        """A 6-row action step whose checkpoint capped n_action_steps at 3."""
+        both = ("model_config.json", "policy_config.json")
+        # The old exporter recorded chunk_size = min(action_horizon, caps) = 3.
+        self.stage_legacy_sampling(3, both)
+        with self.assertRaisesRegex(ValueError, "sampling chunk_size differs"):
+            self.runner()
+        # Relabelling the bundle to 3 rows still meets the 6-row native graph.
+        self.config["chunk_size"] = 3
+        for key in ("action.min", "action.max"):
+            self.stats[key] = self.stats[key][:3]
+        self.stage()
+        self.stage_legacy_sampling(3, both)
+        with self.assertRaisesRegex(ValueError, "graph ABI"):
+            self.runner()
+
+    def test_legacy_sidecar_loads_only_when_its_policy_caps_were_read(self):
+        self.stage_legacy_sampling(6, ("model_config.json",))
+        with self.assertRaisesRegex(ValueError, "--groot-policy-config"):
+            self.runner()
+        self.stage_legacy_sampling(6, ("model_config.json", "policy_config.json"))
+        runner, _runtime = self.runner()
+        self.assertEqual(runner.policy.sampling["chunk_size"], 6)
+
     def test_relative_actions_refuse_names_that_anchor_another_joint(self):
         names = ["arm_1", "arm_2", "arm_3", "gripper"]
         serving = self.root / "vla_serving.yaml"

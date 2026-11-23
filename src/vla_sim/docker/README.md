@@ -200,8 +200,9 @@ velocity over the bucketed flow schedule and decodes relative columns against
 the request state.
 
 The `action_step` manifest carries `sampling`, emitted at staging time from the
-GR00T model config the step was exported from, and the LeRobot checkpoint's
-config when it overrides the step count or ramp:
+GR00T model config the step was exported from and the LeRobot checkpoint's
+config, which supplies the step count and ramp overrides and the chunk caps.
+Both are required:
 
 ```bash
 python vla_qnn_export.py --groot-model-config model_config.json \
@@ -224,7 +225,9 @@ contexts (a follow-up). `model_action_dim` must equal `request_state_dim`.
 The action step is exported at the model's full `action_horizon`, so the exporter
 refuses a checkpoint whose LeRobot `chunk_size` or `n_action_steps` is below
 `action_horizon`. The sidecar records `action_horizon` and those `policy_caps`,
-and the server refuses a sidecar whose recorded values break the same rule.
+and the server refuses a sidecar whose recorded values break the same rule. The
+server also refuses a sidecar exported without the LeRobot config, whose caps
+it cannot verify; re-stage such a sidecar with `--groot-policy-config`.
 
 Because the host decodes relative action columns against the state column at
 the same position, the server refuses a `vla_serving.yaml` whose `action_names`

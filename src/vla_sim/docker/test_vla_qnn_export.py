@@ -252,6 +252,11 @@ class TestQnnExportSampling(unittest.TestCase):
             validate_groot_sampling(value, {**config, "denoising_steps": 4}, digest)
         with self.assertRaises(FileExistsError):
             emit_groot_sampling(model, policy, self.context, output)
+        with self.assertRaisesRegex(ValueError, "--groot-policy-config"):
+            emit_groot_sampling(model, None, self.context, self.root / "other.json")
+        unverified = {**value, "source_sha256": {"model_config.json": "d" * 64}}
+        with self.assertRaisesRegex(ValueError, "--groot-policy-config"):
+            validate_groot_sampling(unverified, config, digest)
 
     def groot_configs(self, model_fields=None, policy_fields=None):
         model = self.root / "model_config.json"
