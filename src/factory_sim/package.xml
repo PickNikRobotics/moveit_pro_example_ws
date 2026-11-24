@@ -44,6 +44,8 @@
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>rclpy</test_depend>
 
+  <depend>moveit_robot_model</depend>
+  <depend>moveit_collision</depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

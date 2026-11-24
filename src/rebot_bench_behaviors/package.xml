@@ -29,6 +29,7 @@
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_clang_tidy</test_depend>
+  <depend>moveit_robot_model</depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

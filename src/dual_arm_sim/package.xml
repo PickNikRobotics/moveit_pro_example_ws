@@ -49,7 +49,6 @@
   <test_depend>behaviortree_cpp_picknik</test_depend>
   <test_depend>controller_manager_msgs</test_depend>
   <test_depend>geometry_msgs</test_depend>
-  <test_depend>moveit_pro_base</test_depend>
   <test_depend>moveit_pro_behavior_interface</test_depend>
   <test_depend>moveit_pro_task_constructor_core</test_depend>
   <test_depend>moveit_studio_agent_msgs</test_depend>
@@ -67,6 +66,8 @@
   <test_depend>rclpy</test_depend>
   <test_depend>tinyxml2_vendor</test_depend>
 
+  <test_depend>moveit_collision</test_depend>
+  <test_depend>moveit_model_loading</test_depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

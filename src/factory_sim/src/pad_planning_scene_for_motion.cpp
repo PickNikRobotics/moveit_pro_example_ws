@@ -30,8 +30,8 @@
 #include <factory_sim/pad_planning_scene_for_motion.hpp>
 #include <map>
 #include <moveit_msgs/msg/planning_scene.hpp>
-#include <moveit_pro_base/robot_model/robot_model.hpp>
 #include <moveit_pro_behavior_interface/get_required_ports.hpp>
+#include <moveit_robot_model/robot_model.hpp>
 namespace factory_sim
 {
 BT::PortsList PadPlanningSceneForMotion::providedPorts()
