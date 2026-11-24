@@ -1,6 +1,6 @@
 upstream:
   repository: https://github.com/clearpathrobotics/clearpath_common.git
-  commit: ca416eaf752e1db86fb1c725122dc5a33c758170
+  commit: aafb717151a263a5f7a39231a79f59590772953e
   branch: jazzy
 vendored_paths:
   - LICENSE
