@@ -168,6 +168,10 @@ INFER_ABANDONED_SECONDS = 30.0
 # How long a reload waits for a hung /infer to release the native QNN sessions
 # before replacing the process without freeing them.
 QNN_RELEASE_TIMEOUT_SECONDS = 1.0
+# How long a reload waits for the native free itself before replacing the
+# process. A stalled free keeps the sessions owned by its own thread, and the
+# process replacement releases them.
+QNN_FREE_TIMEOUT_SECONDS = 10.0
 # How long a reload waits for a QNN load and warmup to finish, so it can free
 # the sessions that load created, before replacing the process over it.
 QNN_LOAD_ABANDONED_SECONDS = 120.0
@@ -531,6 +535,16 @@ def request_camera_names(slot_keys: list, native_map: dict) -> list:
     return [slot_to_native.get(slot, slot) for slot in slot_keys]
 
 
+def validate_groot_rtc_ramp_rate(rate: float) -> None:
+    """Refuse a GR00T RTC ramp rate that freezes or inverts the guided blend."""
+    if rate != 0 and not rate >= GROOT_RTC_RAMP_RATE_MIN:
+        raise ValueError(
+            f"groot_rtc_ramp_rate in vla_serving.yaml (or --groot-rtc-ramp-rate) "
+            f"is {rate:g}, expected 0 for the checkpoint's own rate "
+            f"or at least {GROOT_RTC_RAMP_RATE_MIN:g}"
+        )
+
+
 class PolicyRunner:
     """Owns the loaded policy and serializes inference calls.
 
@@ -544,6 +558,8 @@ class PolicyRunner:
     predict_action_chunk, so it skips LeRobot's RTC processor; _configure_groot_rtc
     sets up its carryover handling.
     """
+
+    warmup_prompt = "warmup"
 
     def __init__(
         self,
@@ -565,15 +581,7 @@ class PolicyRunner:
 
         # Resolve before the slow checkpoint load so a schedule typo fails fast.
         schedule = resolve_rtc_schedule(rtc_schedule)
-        if (
-            groot_rtc_ramp_rate != 0
-            and not groot_rtc_ramp_rate >= GROOT_RTC_RAMP_RATE_MIN
-        ):
-            raise ValueError(
-                f"groot_rtc_ramp_rate in vla_serving.yaml (or --groot-rtc-ramp-rate) "
-                f"is {groot_rtc_ramp_rate:g}, expected 0 for the checkpoint's own rate "
-                f"or at least {GROOT_RTC_RAMP_RATE_MIN:g}"
-            )
+        validate_groot_rtc_ramp_rate(groot_rtc_ramp_rate)
         self.is_groot = policy_type == "groot"
 
         # LeRobot 0.6.0's pi0.5 loader reads the config at `revision` but
@@ -794,10 +802,10 @@ class PolicyRunner:
         images = {key: torch.zeros(3, 224, 224) for key in self.expected_camera_keys()}
         state = [0.0] * self.expected_state_dim()
         start = time.perf_counter()
-        chunk, _ = self.infer(images, state, "warmup", None, 0, 0)
+        chunk, _ = self.infer(images, state, self.warmup_prompt, None, 0, 0)
         cold_s = time.perf_counter() - start
         start = time.perf_counter()
-        self.infer(images, state, "warmup", None, 0, 0)
+        self.infer(images, state, self.warmup_prompt, None, 0, 0)
         steady_s = time.perf_counter() - start
         return cold_s, steady_s, chunk.shape[0], chunk.shape[1]
 
@@ -807,7 +815,7 @@ class QnnReloadCancelled(RuntimeError):
 
 
 class QnnPolicyRunner(PolicyRunner):
-    """Native pi0.5 backend behind the same inference/warmup/HTTP interface."""
+    """Native pi0.5 or GR00T backend behind the same inference/warmup/HTTP interface."""
 
     def __init__(
         self,
@@ -819,27 +827,38 @@ class QnnPolicyRunner(PolicyRunner):
         fps: float,
         guidance_horizon: int,
         rtc_schedule: str,
+        groot_rtc_ramp_rate: float = 0.0,
     ):
-        if policy_type not in ("", "pi05"):
-            raise ValueError("the QNN backend supports pi05 only; GR00T uses PyTorch")
+        if policy_type not in ("", "pi05", "groot"):
+            raise ValueError("the QNN backend supports pi05 and groot only")
         if not bundle:
             raise ValueError("set qnn_bundle in vla_serving.yaml (or --qnn-bundle)")
-        from vla_qnn_policy import QnnPolicy
+        from vla_qnn_policy import QnnGrootPolicy, QnnPolicy, bundle_family
 
+        self.family = bundle_family(bundle)
+        if policy_type not in ("", self.family):
+            raise ValueError(
+                f"policy_class {policy_type} does not match the {self.family} QNN bundle"
+            )
         self.device = "npu:qnn_htp"
         self.lock = threading.Lock()
         self.guidance_horizon = guidance_horizon
-        self.policy = QnnPolicy(
-            bundle,
-            checkpoint,
-            revision,
-            state_dim,
-            fps,
-            RTCConfig(
-                enabled=True,
-                prefix_attention_schedule=resolve_rtc_schedule(rtc_schedule),
-            ),
-        )
+        schedule = resolve_rtc_schedule(rtc_schedule)
+        if self.family == "groot":
+            validate_groot_rtc_ramp_rate(groot_rtc_ramp_rate)
+            self.policy = QnnGrootPolicy(
+                bundle, checkpoint, revision, state_dim, fps, groot_rtc_ramp_rate
+            )
+        else:
+            self.policy = QnnPolicy(
+                bundle,
+                checkpoint,
+                revision,
+                state_dim,
+                fps,
+                RTCConfig(enabled=True, prefix_attention_schedule=schedule),
+            )
+        self.warmup_prompt = self.policy.warmup_prompt
         self.state_dim = self.policy.config["request_state_dim"]
         self.request_names = self.policy.config["camera_names"]
         self.int8 = False
@@ -927,7 +946,8 @@ class QnnPolicyRunner(PolicyRunner):
         """Attempt ordinary native cleanup once; never retry a partial release.
 
         @return: True only when the one attempt released all sessions. A hung
-        call or failed free keeps this runner reachable until process exit.
+        call, stalled free or failed free keeps this runner reachable until
+        process exit.
         """
         with self.cleanup_lock:
             if self.release_started:
@@ -943,15 +963,32 @@ class QnnPolicyRunner(PolicyRunner):
                     "WARNING: a hung /infer holds the QNN sessions; retaining them until process exit"
                 )
                 return False
-            try:
-                self.policy.close()
-                self.release_complete = True
-            except Exception as exc:
-                self.cleanup_error = str(exc)
-                log(f"ERROR: QNN cleanup failed: {exc}")
-                raise
-            finally:
-                self.lock.release()
+            # The free runs on its own thread so a stalled native call cannot
+            # keep the caller from replacing the process. That thread holds the
+            # runner lock, and so the sessions, until the free returns.
+            failure: list[Exception] = []
+
+            def release():
+                try:
+                    self.policy.close()
+                    self.release_complete = True
+                except Exception as exc:
+                    self.cleanup_error = str(exc)
+                    failure.append(exc)
+                finally:
+                    self.lock.release()
+
+            releaser = threading.Thread(target=release, name="qnn-release", daemon=True)
+            releaser.start()
+            releaser.join(QNN_FREE_TIMEOUT_SECONDS)
+            if releaser.is_alive():
+                log(
+                    "WARNING: freeing the QNN sessions stalled; retaining them until process exit"
+                )
+                return False
+            if failure:
+                log(f"ERROR: QNN cleanup failed: {failure[0]}")
+                raise failure[0]
             return True
 
     def warmup(self) -> tuple[float, float, int, int]:
@@ -1342,7 +1379,7 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 raise QnnReloadCancelled(
                     "QNN load not admitted during reload or restart-required failure"
                 )
-            log(f"loading pi05 compiled QNN bundle '{args.qnn_bundle}' ...")
+            log(f"loading compiled QNN bundle '{args.qnn_bundle}' ...")
             runner = QnnPolicyRunner(
                 args.qnn_bundle,
                 args.checkpoint,
@@ -1352,7 +1389,20 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 args.fps,
                 args.guidance_horizon,
                 args.rtc_schedule,
+                args.groot_rtc_ramp_rate,
             )
+            # A compiled bundle serves offline, so its joint names come from
+            # vla_serving.yaml rather than a Hub manifest lookup. Checked
+            # before the native sessions are created.
+            state_names, action_names = validated_policy_names(
+                args.state_names, args.action_names
+            )
+            if runner.family == "groot":
+                from vla_qnn_policy import check_relative_pairing
+
+                check_relative_pairing(
+                    runner.policy.relative, state_names, action_names
+                )
             with state.activity_lock:
                 state.cleanup_runner = runner
                 if state.reloading or state.qnn_restart_required:
@@ -1365,11 +1415,6 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             state.fps = runner.policy.fps
             state.checkpoint_revision = runner.policy.config["model_revision"]
             device = runner.device
-            # A compiled bundle serves offline, so its joint names come from
-            # vla_serving.yaml rather than a Hub manifest lookup.
-            state_names, action_names = validated_policy_names(
-                args.state_names, args.action_names
-            )
         else:  # parse_args admits only pytorch or qnn.
             # Metadata resolution can download Hub files, so it stays on this
             # loader thread, after the socket binds.
@@ -1897,15 +1942,16 @@ def parse_args() -> argparse.Namespace:
         help="training fps; response dt=1/fps; 0 reads the "
         "checkpoint's train_config.json",
     )
+    # An invalid YAML backend is reported after parsing, only when --backend
+    # does not override it. argparse does not check a default against choices.
     backend = resolve_default(config.get("backend"), "pytorch")
     if backend not in ("pytorch", "qnn"):
-        config_errors.append("backend must be pytorch or qnn")
-        backend = "pytorch"
+        backend = None
     parser.add_argument(
         "--backend",
         choices=("pytorch", "qnn"),
         default=backend,
-        help="inference backend: pytorch (default) or native QNN HTP (pi05 only)",
+        help="inference backend: pytorch (default) or native QNN HTP (pi05 or groot)",
     )
     bundle = resolve_default(config.get("qnn_bundle"), "")
     parser.add_argument(
@@ -1957,6 +2003,9 @@ def parse_args() -> argparse.Namespace:
         + " | ".join(schedule.name for schedule in RTCAttentionSchedule),
     )
     args = parser.parse_args()
+    if args.backend is None:
+        config_errors.append("backend must be pytorch or qnn")
+        args.backend = "pytorch"
     if args.backend == "qnn" and not isinstance(args.qnn_bundle, str):
         config_errors.append("qnn_bundle must be a local JSON manifest path")
         args.qnn_bundle = ""
