@@ -288,7 +288,11 @@ def test_reload_cleanup_observes_native_failure_but_not_healthy_cancellation(
 
     worker = threading.Thread(target=infer, name="test-infer")
     watcher = threading.Thread(target=watch, name="test-watcher")
-    with patch.object(model, "run", side_effect=execute):
+    # Cleanup must succeed here, so its lock wait is bounded by release_native's
+    # own wait rather than the production one-second timeout.
+    with patch.object(model, "run", side_effect=execute), patch(
+        "vla_inference_server.QNN_RELEASE_TIMEOUT_SECONDS", 5.0
+    ):
         try:
             worker.start()
             assert entered.wait(5)
@@ -361,7 +365,11 @@ def test_healthy_load_finishing_during_abandoned_reload_is_not_native_failure(
 
     loader = threading.Thread(target=load_policy, args=(state, args))
     watcher = threading.Thread(target=watch)
-    with bundle.native(runtime):
+    # Cleanup must succeed here, so its lock wait is bounded by release_load's
+    # own wait rather than the production one-second timeout.
+    with bundle.native(runtime), patch(
+        "vla_inference_server.QNN_RELEASE_TIMEOUT_SECONDS", 5.0
+    ):
         try:
             loader.start()
             assert loading.wait(5)
