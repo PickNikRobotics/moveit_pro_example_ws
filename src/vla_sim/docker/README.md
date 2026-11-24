@@ -247,6 +247,12 @@ setup:
 2. Put the compiled bundle in
    `src/vla_sim/models/groot_n17_kinova_cube_stack_20k_iq10_qnn/` (the
    `qnn_bundle` that `config/vla_serving_iq10.yaml` names).
+3. If the active robot configuration package (`MOVEIT_CONFIG_PACKAGE`) is not
+   `vla_sim`, also set `VLA_CONFIG_DIR` to the directory holding
+   `vla_serving_iq10.yaml`, for example
+   `/home/<user>/moveit_pro/moveit_pro_example_ws/src/vla_sim/config`. The
+   worker mounts `src/<MOVEIT_CONFIG_PACKAGE>/config` otherwise, and refuses to
+   start without the file.
 
 `VLA_QNN_HOST` changes three things in the workspace `docker-compose.yaml`:
 
@@ -274,8 +280,9 @@ filesystem and a process limit, and mounts the board's `libcdsprpc.so`,
 `libkiumd.so`, `liblrmc.so` and `/vendor/dsp` (the DSP shell) read-only. No
 `--privileged` and no device nodes are needed. `inference_server` keeps every
 hardening the launcher checks and stays the only listener; the worker's socket
-lives in the `vla_qnn_ipc` volume that only the two services mount, and the
-worker checks the bearer token itself.
+lives in the `vla_qnn_ipc` volume that only the two services mount. The relay
+checks the bearer token before it reads a POST body, and the worker checks it
+again.
 
 Root with the host PID namespace and `CAP_SYS_PTRACE` amounts to host root (the
 worker can read `/proc/1/root`). That is the price of this BSP's FastRPC

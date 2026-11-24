@@ -1893,8 +1893,8 @@ def parse_args() -> argparse.Namespace:
             raise FileNotFoundError(
                 f"{config_path} does not exist: the QNN worker serves "
                 "vla_serving_<VLA_QNN_HOST>.yaml from the active robot "
-                "configuration package's config directory, so check "
-                "VLA_QNN_HOST and MOVEIT_CONFIG_PACKAGE"
+                "configuration package's config directory (or VLA_CONFIG_DIR), "
+                "so check VLA_QNN_HOST, MOVEIT_CONFIG_PACKAGE and VLA_CONFIG_DIR"
             )
         config = parse_serving_config(config_path, content)
     except Exception as exc:

@@ -34,6 +34,7 @@ Why the server is split on a QNN host: README.md, "Serve on the IQ10 NPU".
 Standard library only, so the relay never loads torch.
 """
 
+import hmac
 import http.client
 import json
 import os
@@ -47,6 +48,7 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 WORKER_SOCKET_ENV = "VLA_QNN_WORKER_SOCKET"
+INFERENCE_KEY_ENV = "MOVEIT_INFERENCE_KEY"
 WORKER_SERVICE = "inference_qnn_worker"
 LISTEN_PORT = 8973
 
@@ -234,7 +236,15 @@ def keep_worker_alive(link: WorkerLink, period: float = WORKER_KEEPALIVE_SECONDS
         time.sleep(period)
 
 
-def make_handler(link: WorkerLink):
+def bearer_matches(header: str, key: str) -> bool:
+    """The worker's bearer check: constant time, and a blank key matches nothing."""
+    scheme, _, token = header.partition(" ")
+    if not key or scheme.lower() != "bearer" or not token.strip():
+        return False
+    return hmac.compare_digest(token.strip().encode(), key.encode())
+
+
+def make_handler(link: WorkerLink, bearer_key: str):
     class Handler(BaseHTTPRequestHandler):
         timeout = CLIENT_SOCKET_TIMEOUT_SECONDS
 
@@ -258,6 +268,18 @@ def make_handler(link: WorkerLink):
         def _relay(self, method: str) -> None:
             body = None
             if method == "POST":
+                # Checked before the body is read, so an unauthenticated client
+                # cannot make the relay buffer it. The worker checks again.
+                if not bearer_matches(
+                    self.headers.get("Authorization", ""), bearer_key
+                ):
+                    self._send_json(
+                        401,
+                        {
+                            "error": f"{self.path} requires {INFERENCE_KEY_ENV} as a bearer token"
+                        },
+                    )
+                    return
                 try:
                     length = int(self.headers.get("Content-Length", 0))
                 except ValueError:
@@ -325,7 +347,12 @@ def main() -> int:
         log(f"FATAL: {WORKER_SOCKET_ENV} is not set")
         return 2
     link = WorkerLink(socket_path)
-    httpd = ThreadingHTTPServer(("0.0.0.0", LISTEN_PORT), make_handler(link))
+    bearer_key = os.environ.get(INFERENCE_KEY_ENV, "").strip()
+    if not bearer_key:
+        log(f"WARNING: {INFERENCE_KEY_ENV} is blank; every POST is refused")
+    httpd = ThreadingHTTPServer(
+        ("0.0.0.0", LISTEN_PORT), make_handler(link, bearer_key)
+    )
     httpd.daemon_threads = True
     threading.Thread(target=keep_worker_alive, args=(link,), daemon=True).start()
     log(

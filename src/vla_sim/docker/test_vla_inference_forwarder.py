@@ -47,6 +47,7 @@ from unittest.mock import MagicMock, patch
 
 import vla_inference_forwarder as forwarder
 from vla_inference_forwarder import (
+    INFERENCE_KEY_ENV,
     RELAY_ID,
     RELAY_ID_HEADER,
     WORKER_KEEPALIVE_SECONDS,
@@ -54,10 +55,14 @@ from vla_inference_forwarder import (
     WORKER_RELOAD_GRACE_SECONDS,
     WORKER_STARTUP_GRACE_SECONDS,
     WorkerLink,
+    bearer_matches,
     keep_worker_alive,
     main,
     make_handler,
 )
+
+KEY = "test-key"
+UNAUTHORIZED_ERROR = {"error": "/infer requires MOVEIT_INFERENCE_KEY as a bearer token"}
 
 
 class FakeClock:
@@ -106,6 +111,7 @@ class FakeWorker:
     def __init__(self, socket_path: str) -> None:
         self.requests: list = []
         self.relay_ids: list = []
+        self.authorizations: list = []
         self.infer_status = 200
         self.infer_content_type = "application/json"
         self.early_reply: tuple[int, bytes] | None = None
@@ -123,6 +129,7 @@ class FakeWorker:
                 worker.relay_ids.append(
                     ("GET", self.path, self.headers.get(RELAY_ID_HEADER))
                 )
+                worker.authorizations.append(self.headers.get("Authorization"))
                 worker.requests.append(("GET", self.path, None))
                 self._reply(200, "application/json", FakeWorker.HEALTH_BODY)
 
@@ -130,6 +137,7 @@ class FakeWorker:
                 worker.relay_ids.append(
                     ("POST", self.path, self.headers.get(RELAY_ID_HEADER))
                 )
+                worker.authorizations.append(self.headers.get("Authorization"))
                 if worker.early_reply is not None:
                     worker.requests.append(("POST", self.path, None))
                     code, body = worker.early_reply
@@ -175,9 +183,9 @@ class RelayTestCase(unittest.TestCase):
         self.addCleanup(quiet.stop)
 
     def _start_relay(
-        self, link: WorkerLink, client_timeout: float | None = None
+        self, link: WorkerLink, client_timeout: float | None = None, key: str = KEY
     ) -> ThreadingHTTPServer:
-        handler = make_handler(link)
+        handler = make_handler(link, key)
         if client_timeout is not None:
             handler.timeout = client_timeout
         httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler)
@@ -189,9 +197,9 @@ class RelayTestCase(unittest.TestCase):
         self.addCleanup(httpd.shutdown)
         return httpd
 
-    def _connect(self, httpd: ThreadingHTTPServer):
+    def _connect(self, httpd: ThreadingHTTPServer, timeout: float = 10):
         connection = http.client.HTTPConnection(
-            "127.0.0.1", httpd.server_address[1], timeout=10
+            "127.0.0.1", httpd.server_address[1], timeout=timeout
         )
         self.addCleanup(connection.close)
         return connection
@@ -201,6 +209,34 @@ class RelayTestCase(unittest.TestCase):
         response = connection.getresponse()
         payload = response.read()
         return response, payload
+
+
+class TestBearerMatches(unittest.TestCase):
+
+    def test_scheme_is_case_insensitive(self) -> None:
+        self.assertTrue(bearer_matches(f"bearer {KEY}", KEY))
+        self.assertTrue(bearer_matches(f"BEARER {KEY}", KEY))
+
+    def test_whitespace_around_the_token_is_stripped(self) -> None:
+        self.assertTrue(bearer_matches(f"Bearer   {KEY}  ", KEY))
+
+    def test_wrong_missing_or_other_scheme_is_false(self) -> None:
+        for header in (
+            "",
+            "Bearer",
+            "Bearer ",
+            "Bearer test-keY",
+            "Bearer test-key-2",
+            KEY,
+            f"Basic {KEY}",
+        ):
+            with self.subTest(header=header):
+                self.assertFalse(bearer_matches(header, KEY))
+
+    def test_blank_key_matches_nothing(self) -> None:
+        for header in ("", "Bearer ", "Bearer x", f"Bearer {KEY}"):
+            with self.subTest(header=header):
+                self.assertFalse(bearer_matches(header, ""))
 
 
 class TestWorkerLinkHealth(unittest.TestCase):
@@ -276,6 +312,12 @@ class TestRelayWithWorker(RelayTestCase):
         self.assertEqual(response.getheader("Content-Type"), "application/json")
         self.assertEqual(self.worker.requests[-1][:2], ("GET", "/health"))
 
+    def test_get_health_is_relayed_without_authorization(self) -> None:
+        response, payload = self._request(self.conn, "GET", "/health")
+        self.assertEqual(response.status, 200)
+        self.assertEqual(payload, FakeWorker.HEALTH_BODY)
+        self.assertEqual(self.worker.authorizations, [None])
+
     def test_post_infer_forwards_body_and_authorization(self) -> None:
         body = json.dumps({"state": [0.1, 0.2], "task": "stack"}).encode()
         response, payload = self._request(
@@ -284,16 +326,70 @@ class TestRelayWithWorker(RelayTestCase):
             "/infer",
             body=body,
             headers={
-                "Authorization": "Bearer secret-key",
+                "Authorization": f"Bearer {KEY}",
                 "Content-Type": "application/json",
             },
         )
         self.assertEqual(response.status, 200)
         echo = json.loads(payload)
         self.assertEqual(echo["path"], "/infer")
-        self.assertEqual(echo["authorization"], "Bearer secret-key")
+        self.assertEqual(echo["authorization"], f"Bearer {KEY}")
         self.assertEqual(echo["body"], {"state": [0.1, 0.2], "task": "stack"})
         self.assertEqual(self.worker.requests[-1][2], body)
+
+    def test_post_without_a_valid_bearer_is_401_and_never_reaches_worker(self) -> None:
+        body = b'{"state": [0.1]}'
+        for name, headers in (
+            ("missing", {}),
+            ("empty", {"Authorization": ""}),
+            ("basic scheme", {"Authorization": f"Basic {KEY}"}),
+            ("empty token", {"Authorization": "Bearer "}),
+            ("wrong token", {"Authorization": "Bearer wrong-key"}),
+        ):
+            with self.subTest(name):
+                response, payload = self._request(
+                    self.conn, "POST", "/infer", body=body, headers=headers
+                )
+                self.assertEqual(response.status, 401)
+                self.assertEqual(json.loads(payload), UNAUTHORIZED_ERROR)
+        self.assertEqual(self.worker.requests, [])
+
+    def test_unauthorized_post_is_refused_before_the_body_is_read(self) -> None:
+        relay = self._start_relay(self.link, client_timeout=2)
+        for name, headers in (
+            ("missing", {}),
+            ("wrong token", {"Authorization": "Bearer wrong-key"}),
+        ):
+            with self.subTest(name):
+                conn = self._connect(relay, timeout=3)
+                response, payload = self._request(
+                    conn,
+                    "POST",
+                    "/infer",
+                    headers={
+                        **headers,
+                        "Content-Length": str(forwarder.MAX_BODY_BYTES),
+                    },
+                )
+                self.assertEqual(response.status, 401)
+                self.assertEqual(json.loads(payload), UNAUTHORIZED_ERROR)
+        self.assertEqual(self.worker.requests, [])
+
+    def test_blank_relay_key_refuses_every_post(self) -> None:
+        relay = self._start_relay(self.link, key="")
+        conn = self._connect(relay)
+        for token in ("Bearer anything", "Bearer ", "Bearer test-key", ""):
+            with self.subTest(token=token):
+                response, payload = self._request(
+                    conn,
+                    "POST",
+                    "/infer",
+                    body=b"{}",
+                    headers={"Authorization": token},
+                )
+                self.assertEqual(response.status, 401)
+                self.assertEqual(json.loads(payload), UNAUTHORIZED_ERROR)
+        self.assertEqual(self.worker.requests, [])
 
     def test_worker_error_statuses_pass_through(self) -> None:
         for status in (400, 401, 500):
@@ -305,7 +401,7 @@ class TestRelayWithWorker(RelayTestCase):
                     "POST",
                     "/infer",
                     body=b"{}",
-                    headers={"Authorization": "Bearer x"},
+                    headers={"Authorization": f"Bearer {KEY}"},
                 )
                 self.assertEqual(response.status, status)
                 self.assertEqual(
@@ -321,7 +417,10 @@ class TestRelayWithWorker(RelayTestCase):
                 self.conn,
                 "POST",
                 "/infer",
-                headers={"Content-Length": "17", "Authorization": "Bearer x"},
+                headers={
+                    "Content-Length": "17",
+                    "Authorization": f"Bearer {KEY}",
+                },
             )
         self.assertEqual(response.status, 413)
         self.assertIn("error", json.loads(payload))
@@ -334,7 +433,10 @@ class TestRelayWithWorker(RelayTestCase):
                     self.conn,
                     "POST",
                     "/infer",
-                    headers={"Content-Length": value},
+                    headers={
+                        "Content-Length": value,
+                        "Authorization": f"Bearer {KEY}",
+                    },
                 )
                 self.assertEqual(response.status, 400)
                 self.assertIn("error", json.loads(payload))
@@ -351,7 +453,7 @@ class TestRelayWithWorker(RelayTestCase):
             "/infer",
             body=body,
             headers={
-                "Authorization": "Bearer wrong",
+                "Authorization": f"Bearer {KEY}",
                 "Content-Type": "application/json",
             },
         )
@@ -367,7 +469,8 @@ class TestRelayWithWorker(RelayTestCase):
         ) as sock:
             sock.sendall(
                 b"POST /infer HTTP/1.0\r\nContent-Length: 1000\r\n"
-                b"Authorization: Bearer x\r\n\r\n0123456789"
+                + f"Authorization: Bearer {KEY}\r\n\r\n".encode()
+                + b"0123456789"
             )
             sock.shutdown(socket.SHUT_WR)
             raw = read_until_close(sock)
@@ -397,7 +500,7 @@ class TestRelayWithWorker(RelayTestCase):
             "POST",
             "/infer",
             body=b"{}",
-            headers={"Authorization": "Bearer x"},
+            headers={"Authorization": f"Bearer {KEY}"},
         )
         run_keepalive_once(self.link)
         self.assertEqual(
@@ -418,7 +521,7 @@ class TestRelayWithWorker(RelayTestCase):
                 "POST",
                 "/infer",
                 body=body,
-                headers={"Authorization": "Bearer x"},
+                headers={"Authorization": f"Bearer {KEY}"},
             )
         self.assertEqual(response.status, 200)
         self.assertEqual(json.loads(payload)["body"], "x" * 14)
@@ -431,7 +534,7 @@ class TestRelayWithWorker(RelayTestCase):
                 "POST",
                 "/infer",
                 body=b"x" * 17,
-                headers={"Authorization": "Bearer x"},
+                headers={"Authorization": f"Bearer {KEY}"},
             )
         self.assertEqual(response.status, 413)
         self.assertIn("error", json.loads(payload))
@@ -461,7 +564,7 @@ class TestRelayWithoutWorker(RelayTestCase):
             "POST",
             "/infer",
             body=b"{}",
-            headers={"Authorization": "Bearer x"},
+            headers={"Authorization": f"Bearer {KEY}"},
         )
         self.assertEqual(response.status, 503)
         self.assertIn("error", json.loads(payload))
@@ -512,6 +615,28 @@ class TestMain(unittest.TestCase):
         thread_class.assert_called_once()
         self.assertIs(thread_class.call_args.kwargs["target"], keep_worker_alive)
         thread_class.return_value.start.assert_called_once()
+
+    def test_main_passes_the_env_key_to_make_handler(self) -> None:
+        for value, expected in (("  env-key ", "env-key"), ("", "")):
+            with self.subTest(value=value):
+                env = {
+                    forwarder.WORKER_SOCKET_ENV: "/tmp/w.sock",
+                    INFERENCE_KEY_ENV: value,
+                }
+                with patch.dict(os.environ, env), patch.object(
+                    forwarder, "make_handler"
+                ) as make_handler, patch.object(
+                    forwarder, "ThreadingHTTPServer"
+                ), patch.object(
+                    forwarder, "log"
+                ) as log, patch.object(
+                    forwarder.threading, "Thread"
+                ):
+                    self.assertEqual(main(), 0)
+                make_handler.assert_called_once()
+                self.assertEqual(make_handler.call_args.args[1], expected)
+                warned = any("WARNING" in call.args[0] for call in log.call_args_list)
+                self.assertEqual(warned, expected == "")
 
 
 class TestKeepWorkerAlive(unittest.TestCase):
@@ -575,9 +700,10 @@ sys.exit(int(sys.argv[2 + runs - 1]) if 2 + runs - 1 < len(sys.argv) else 0)
 
     def test_restart_exit_code_matches_the_server(self) -> None:
         # vla_inference_server.py imports torch, so compare the source text.
-        server_source = open(
+        with open(
             os.path.join(os.path.dirname(__file__), "vla_inference_server.py")
-        ).read()
+        ) as source:
+            server_source = source.read()
         self.assertIn(
             f"QNN_WORKER_RESTART_EXIT_CODE = {forwarder.RESTART_EXIT_CODE}",
             server_source,
