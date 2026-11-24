@@ -69,9 +69,12 @@ from vla_qnn_policy import (
     FOUR_GRAPH_ORDER,
     GROOT_ABI,
     GROOT_ORDER,
+    GROOT_SPLIT_ABI,
+    GROOT_SPLIT_ORDER,
     SIX_GRAPH_ABI,
     SIX_GRAPH_ORDER,
     graph_ports,
+    bundle_family,
     groot_ports,
     guide_native_update,
     prepare_rtc,
@@ -196,8 +199,16 @@ class FakeModel:
             alias = self.source_outputs[int(name.split("_")[1])]
             if alias == "action_emb":
                 result[name] = expert_update(feed["x_t"])
+            elif alias == "action_hidden":
+                # Split action step: carry the actions to the second half.
+                hidden = np.zeros(spec["shape"], dtype=spec["dtype"])
+                hidden[:, 1:, : feed["actions"].shape[-1]] = feed["actions"]
+                result[name] = hidden
             elif alias == "velocity":
-                result[name] = groot_velocity(feed["actions"], feed["timestep"])
+                actions = feed.get("actions")
+                if actions is None:
+                    actions = feed["action_hidden"][:, 1:, : spec["shape"][-1]]
+                result[name] = groot_velocity(actions, feed["timestep"])
             elif "patches" in feed:  # Vision: one distinct value per camera/output.
                 index = self.source_outputs.index(alias)
                 value = feed["patches"].mean() + index
@@ -952,15 +963,23 @@ class TestQnnInference(QnnFixture):
 
 
 class GrootFixture(unittest.TestCase):
-    """A tiny GR00T N1.7 bundle: 3 cameras of 32x32 pixels, 5 tokens, 6x10 actions."""
+    """A tiny GR00T N1.7 bundle: 3 cameras of 32x32 pixels, 5 tokens, 6x10 actions.
+
+    split selects the seven-graph ABI, whose action step is two graphs.
+    """
+
+    split = False
 
     def setUp(self):
+        self.order = GROOT_SPLIT_ORDER if self.split else GROOT_ORDER
+        self.steps = self.order[5:]
+        self.last = self.order[-1]
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.root = Path(directory.name)
         self.config = {
             "schema": 1,
-            "graph_abi": GROOT_ABI,
+            "graph_abi": GROOT_SPLIT_ABI if self.split else GROOT_ABI,
             "model_id": "test/groot",
             "model_revision": "c" * 40,
             "camera_names": ["overview", "scene", "wrist"],
@@ -984,9 +1003,9 @@ class GrootFixture(unittest.TestCase):
             "noise_seed": 265,
             "stats": "stats.json",
             "static_inputs": "static.npz",
-            "graphs": {name: name for name in GROOT_ORDER},
-            "device_placement": {name: 0 for name in GROOT_ORDER},
-            "precision": {name: "fp16" for name in GROOT_ORDER},
+            "graphs": {name: name for name in self.order},
+            "device_placement": {name: 0 for name in self.order},
+            "precision": {name: "fp16" for name in self.order},
         }
         rng = np.random.default_rng(3)
         # Relative arm columns have per-step stats; the absolute gripper's repeat.
@@ -1009,13 +1028,13 @@ class GrootFixture(unittest.TestCase):
             "rope_cos": np.ones((1, 5, 128), np.float32),
             "rope_sin": np.zeros((1, 5, 128), np.float32),
         }
-        self.ports = groot_ports(5, 4, 6, 10, 12)
+        self.ports = groot_ports(5, 4, 6, 10, 12, split=self.split)
         self.stage()
 
     def stage(self):
         (self.root / "stats.json").write_text(json.dumps(self.stats))
         np.savez(self.root / "static.npz", **self.static)
-        for name in GROOT_ORDER:
+        for name in self.order:
             directory = self.root / name
             directory.mkdir(exist_ok=True)
             binary = b"fake GR00T context: " + name.encode()
@@ -1027,7 +1046,7 @@ class GrootFixture(unittest.TestCase):
                     f"output_{i}": alias for i, alias in enumerate(self.ports[name][1])
                 },
             }
-            if name == "action_step":
+            if name == self.last:
                 # Fake export descriptor: tests do not attest real native compilation.
                 manifest["sampling"] = {
                     **groot_sampling_values(6, 10, 4, 1000, 6.0),
@@ -1180,7 +1199,7 @@ def stock_groot_chunk(previous, state, delay, stats):
 class TestQnnGroot(GrootFixture):
     def stage_legacy_sampling(self, chunk, sources):
         """A sidecar from the exporter before action_horizon/policy_caps existed."""
-        manifest_path = self.root / "action_step" / "manifest.json"
+        manifest_path = self.root / self.last / "manifest.json"
         manifest = json.loads(manifest_path.read_text())
         manifest["sampling"] = {
             **groot_sampling_values(chunk, 10, 4, 1000, 6.0),
@@ -1294,9 +1313,9 @@ class TestQnnGroot(GrootFixture):
                 self.assertEqual(result["action_chunk_raw"], result["action_chunk"])
                 self.assertEqual(
                     runtime.order,
-                    ["vision"] * 3 + list(GROOT_ORDER[1:5]) + ["action_step"] * 4,
+                    ["vision"] * 3 + list(GROOT_ORDER[1:5]) + list(self.steps) * 4,
                 )
-                steps = runtime.models["action_step"].calls[-4:]
+                steps = runtime.models[self.last].calls[-4:]
                 self.assertEqual([int(call["timestep"][0]) for call in steps], times)
                 self.assertEqual(times, [0, 250, 500, 750])
                 self.assertEqual(result["dt"], 0.1)
@@ -1351,8 +1370,8 @@ class TestQnnGroot(GrootFixture):
                 "model_action_dim must match request_state_dim",
             ),
             (
-                lambda: self.config["precision"].update(action_step="w8a16"),
-                "action_step must be fp16",
+                lambda: self.config["precision"].update({self.steps[0]: "w8a16"}),
+                f"{self.steps[0]} must be fp16",
             ),
             (
                 lambda: self.config["device_placement"].update(vision=2),
@@ -1374,7 +1393,7 @@ class TestQnnGroot(GrootFixture):
             ),
             (lambda: self.config.update(denoising_steps=5), "sampling denoising_steps"),
             (
-                lambda: self.ports["action_step"][0].update(
+                lambda: self.ports[self.last][0].update(
                     timestep=((1,), np.dtype("float32"))
                 ),
                 "graph ABI",
@@ -1422,16 +1441,16 @@ class TestQnnGroot(GrootFixture):
         self.addCleanup(runtime.close)
         self.assertEqual(state.status, "ready", state.detail)
         self.assertEqual(state.runner.policy.family, "groot")
-        self.assertEqual(len(runtime.models["action_step"].calls), 8)  # Two warmups.
+        self.assertEqual(len(runtime.models[self.last].calls), 8)  # Two warmups.
         expected = np.random.default_rng(265).standard_normal(
             (1, 6, 10), dtype=np.float32
         )
         state.bearer_key = "qnn-test-key"
         run_inference(state, self.payload())
         np.testing.assert_array_equal(
-            runtime.models["action_step"].calls[-4]["actions"], expected
+            runtime.models[self.steps[0]].calls[-4]["actions"], expected
         )
-        runtime.models["action_step"].run = MagicMock(
+        runtime.models[self.last].run = MagicMock(
             side_effect=RuntimeError("graphExecute failed")
         )
         with self.assertRaisesRegex(RuntimeError, "graphExecute"):
@@ -1440,6 +1459,60 @@ class TestQnnGroot(GrootFixture):
         self.assertEqual(state.status, "error")
         self.assertIn("restart", state.detail)
         self.assertTrue(runtime.closed)
+
+
+class TestQnnGrootSplit(TestQnnGroot):
+    """Every GR00T contract again, with the action step split across two graphs."""
+
+    split = True
+
+    def test_split_halves_chain_through_the_seam_each_flow_step(self):
+        runner, runtime = self.runner()
+        self.assertEqual(bundle_family(str(self.root / "bundle.json")), "groot")
+        self.assertEqual(runner.policy.order, GROOT_SPLIT_ORDER)
+        state = QnnFixture.ready_state(self, runner)
+        runtime.order.clear()
+        run_inference(state, self.payload())
+        first, second = (runtime.models[name] for name in self.steps)
+        self.assertEqual(len(first.calls), 4)
+        self.assertEqual(len(second.calls), 4)
+        # The first half takes the noisy actions; the second half only the seam.
+        self.assertNotIn("actions", second.calls[-1])
+        self.assertEqual(
+            [int(c["timestep"][0]) for c in first.calls],
+            [int(c["timestep"][0]) for c in second.calls],
+        )
+
+    def test_split_seam_and_graph_names_must_match_the_seven_graph_abi(self):
+        def staged(change):
+            self.setUp()
+            change()
+            self.stage()
+
+        cases = (
+            (
+                lambda: self.ports["action_step_0"][1].update(
+                    action_hidden=((1, 6, 1536), np.dtype("float32"))
+                ),
+                "graph ABI",
+            ),
+            (
+                lambda: self.ports["action_step_1"][0].update(
+                    state_features=((1, 1, 1536), np.dtype("float32"))
+                ),
+                "graph ABI",
+            ),
+            (lambda: self.config.update(graph_abi=GROOT_ABI), "graph directories"),
+            (
+                lambda: self.config["precision"].update(action_step_1="w8a16"),
+                "action_step_1 must be fp16",
+            ),
+        )
+        for change, message in cases:
+            with self.subTest(message=message):
+                staged(change)
+                with self.assertRaisesRegex(ValueError, message):
+                    self.runner()
 
 
 class TestQnnReload(QnnFixture):
