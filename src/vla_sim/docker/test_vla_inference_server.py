@@ -1780,7 +1780,6 @@ class TestRelayWatchdog(unittest.TestCase):
         self.assertEqual(self.watchdog._last_contact, self.now)
 
     def test_note_relay_reports_only_a_different_relay(self) -> None:
-        """An empty id never counts; a different non-empty id from the last one does."""
         self.assertFalse(self.watchdog.note_relay(""))
         self.assertFalse(self.watchdog.note_relay("relay-a"))
         self.assertFalse(self.watchdog.note_relay("relay-a"))
@@ -1819,7 +1818,6 @@ class TestRelayRestartOnNewRelay(unittest.TestCase):
         self.addCleanup(httpd.shutdown)
 
     def _get_health(self, relay_id: str) -> bytes:
-        """One request from a relay process named relay_id; returns the raw response."""
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.addCleanup(client.close)
         client.settimeout(5)
@@ -1832,7 +1830,6 @@ class TestRelayRestartOnNewRelay(unittest.TestCase):
         return raw
 
     def test_new_relay_restarts_a_parked_worker_exactly_once(self) -> None:
-        """Relay A is the first contact; relay B replaces it and restarts the parked worker."""
         state = ServerState()
         state.qnn_restart_required = True
         self._serve(state)
@@ -1845,7 +1842,6 @@ class TestRelayRestartOnNewRelay(unittest.TestCase):
         self.restart.assert_called_once_with()
 
     def test_healthy_worker_is_not_restarted_by_a_new_relay(self) -> None:
-        """Without a parked QNN failure, a relay change never restarts the worker."""
         state = ServerState()
         self.assertFalse(state.qnn_restart_required)
         self._serve(state)
@@ -1886,7 +1882,6 @@ class TestUnixSocketListener(unittest.TestCase):
         self.assertEqual(self._mode(), 0o666)
 
     def test_bind_leaves_the_process_umask_unchanged(self) -> None:
-        """The temporary umask used for the bind is restored; the mode stays 0666."""
         previous = os.umask(0o027)
         self.addCleanup(os.umask, previous)
         self._bind()
@@ -1896,7 +1891,6 @@ class TestUnixSocketListener(unittest.TestCase):
         self.assertEqual(self._mode(), 0o666)
 
     def test_stale_socket_file_is_replaced(self) -> None:
-        """A socket left by a dead process does not block the next bind."""
         stale = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         stale.bind(self.socket_path)
         stale.close()
@@ -1908,7 +1902,6 @@ class TestUnixSocketListener(unittest.TestCase):
         self.assertEqual(self._mode(), 0o666)
 
     def test_health_answers_over_the_unix_socket(self) -> None:
-        """GET /health over the socket reaches make_handler and answers 200 JSON."""
         self._bind()
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.addCleanup(client.close)
@@ -1924,7 +1917,6 @@ class TestUnixSocketListener(unittest.TestCase):
         self.assertEqual(json.loads(body), {"status": "loading"})
 
     def test_parse_args_accepts_unix_socket(self) -> None:
-        """--unix-socket is parsed; without it the TCP listener stays the default."""
         missing_config = os.path.join(os.path.dirname(self.socket_path), "none.yaml")
         argv = ["vla_inference_server.py", "--config", missing_config]
         with patch("sys.argv", argv + ["--unix-socket", self.socket_path]):
@@ -1934,12 +1926,7 @@ class TestUnixSocketListener(unittest.TestCase):
             self.assertEqual(parse_args().unix_socket, "")
 
     def test_worker_socket_env_dispatches_to_the_forwarder(self) -> None:
-        """With VLA_QNN_WORKER_SOCKET set, running the server file runs the relay.
-
-        A stub forwarder stands in for the real one so no port is bound. It
-        reports whether torch was already imported at dispatch time; the relay
-        half must never load it.
-        """
+        """Stub forwarder: no port is bound; the relay path must not import torch."""
         stub_dir = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, stub_dir, True)
         Path(stub_dir, "vla_inference_forwarder.py").write_text(
@@ -1968,10 +1955,7 @@ class TestUnixSocketListener(unittest.TestCase):
 
 
 class TestUnixSocketConfigPath(unittest.TestCase):
-    """A missing --config is an error only for the QNN worker (--unix-socket)."""
-
     def test_missing_config_with_unix_socket_is_a_config_error(self) -> None:
-        """The error names the missing path and the VLA_QNN_HOST setting to check."""
         with tempfile.TemporaryDirectory() as tmp:
             missing = os.path.join(tmp, "vla_serving_wrong.yaml")
             argv = [
@@ -1988,7 +1972,6 @@ class TestUnixSocketConfigPath(unittest.TestCase):
         self.assertIn("VLA_QNN_HOST", args.config_error)
 
     def test_missing_config_without_unix_socket_is_not_an_error(self) -> None:
-        """Without --unix-socket a missing config still means built-in defaults."""
         with tempfile.TemporaryDirectory() as tmp:
             missing = os.path.join(tmp, "vla_serving_wrong.yaml")
             with patch("sys.argv", ["vla_inference_server.py", "--config", missing]):

@@ -28,34 +28,10 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Relay the confined inference_server port to the QNN NPU worker, and supervise it.
+"""Relay inference_server's port to the QNN NPU worker's socket; supervise the worker.
 
-On a Qualcomm host whose FastRPC stack only serves root clients (the IQ10
-Ubuntu BSP: fastrpc-rm creates its per-session POSIX queues 0644 root, and the
-client must pidfd_getfd buffers out of the root daemon), the model cannot run
-inside the non-root, capability-free `inference_server` container. The
-workspace compose then splits the server in two:
-
-- `inference_qnn_worker` runs vla_inference_server.py as root with host IPC/PID
-  and CAP_SYS_PTRACE, but with no network at all. It listens only on a Unix
-  socket in a volume shared with this container.
-- `inference_server` keeps every hardening the launcher checks and is the only
-  half that listens on the network. It runs this module, which forwards each
-  request verbatim to the worker socket and the worker's response back.
-
-The worker still checks the bearer token itself; this relay never reads it.
-/health keeps the launcher's loading|ready|error contract: `loading` until the
-worker socket first answers, the worker's own /health once it does, and
-`error` naming the worker if it never comes up or stops answering.
-
-The worker runs under `supervise_worker`: FastRPC keys its sessions by host
-PID, so the worker cannot reload by re-executing itself in place (the new image
-inherits the PID and its device creation fails with QNN status 14001). The
-supervisor runs the server as a child instead and starts a fresh child, with a
-fresh PID, each time the server exits to reload.
-
-Only the standard library is imported, so the relay starts in well under a
-second and never loads torch, and the supervisor costs a few megabytes.
+Why the server is split on a QNN host: README.md, "Serve on the IQ10 NPU".
+Standard library only, so the relay never loads torch.
 """
 
 import http.client
@@ -74,58 +50,36 @@ WORKER_SOCKET_ENV = "VLA_QNN_WORKER_SOCKET"
 WORKER_SERVICE = "inference_qnn_worker"
 LISTEN_PORT = 8973
 
-# A request larger than this is refused here rather than relayed; the same
-# limit as the worker's own /infer (MAX_BODY_BYTES in vla_inference_server.py).
+# Matches MAX_BODY_BYTES in vla_inference_server.py.
 MAX_BODY_BYTES = 32 * 1024 * 1024
 
-# One native chunk takes well under a second on the NPU; ExecutePolicy's
-# adapter gives up after 9 s. A worker answer slower than this is a hang.
 WORKER_TIMEOUT_SECONDS = 30.0
-
-# Bounds a stalled client read, as REQUEST_SOCKET_TIMEOUT_SECONDS does in the
-# worker's handler.
 CLIENT_SOCKET_TIMEOUT_SECONDS = 30.0
-
-# How long the worker may take to create its socket before /health turns from
-# `loading` into `error`. Covers the image start and the bundle's native load
-# (about 15 s for the six-context GR00T bundle) with a wide margin.
 WORKER_STARTUP_GRACE_SECONDS = 300.0
-
-# A serving-YAML edit makes the worker replace its own process and reload the
-# bundle, closing its socket meanwhile. A worker that answered before reads as
-# `loading` for this long after its last answer before it reads as `error`.
+# A reloading worker closes its socket, so a worker that answered before reads
+# as `loading`, not `error`, for this long after its last answer.
 WORKER_RELOAD_GRACE_SECONDS = 180.0
 
-# The relay polls the worker's /health this often. Besides keeping /health
-# fresh, the polls tell the worker its relay is alive: the worker exits after
-# a minute without one (RELAY_SILENCE_EXIT_SECONDS in vla_inference_server.py),
-# which is how it stops when `moveit_pro run` stops only this service. Each
-# poll is bounded well inside that minute, so one stuck poll cannot outlast it.
+# The polls also keep the worker alive: it exits after RELAY_SILENCE_EXIT_SECONDS
+# (vla_inference_server.py) without one, so each poll must stay well inside that.
 WORKER_KEEPALIVE_SECONDS = 5.0
 WORKER_KEEPALIVE_TIMEOUT_SECONDS = 5.0
 
-# Names this relay process to the worker on every request. A worker parked
-# after a native QNN failure restarts itself when a new relay connects, so
-# rerunning `moveit_pro run --with-inference-server` within the worker's exit
-# minute still recovers it (RELAY_ID_HEADER in vla_inference_server.py).
+# Matches RELAY_ID_HEADER in vla_inference_server.py.
 RELAY_ID_HEADER = "X-VLA-Relay-Id"
 RELAY_ID = uuid.uuid4().hex
 
-# Shown when the worker never comes up. `moveit_pro run --no-drivers` starts
-# inference_server with `up --no-deps`, which skips its worker dependency.
 WORKER_START_HINT = (
     f"{WORKER_SERVICE} starts as a dependency of inference_server, which "
     "`moveit_pro run --no-drivers` skips; run without --no-drivers, or start it "
     f"with `docker start moveit_pro-{WORKER_SERVICE}-1` after one full run"
 )
 
-# Headers forwarded in each direction. Hop-by-hop headers are not.
 REQUEST_HEADERS = ("Authorization", "Content-Type", "Content-Length", "Accept")
 RESPONSE_HEADERS = ("Content-Type", "Content-Length")
 
 
-# Set in the supervised worker child. Its restart_process() exits with
-# RESTART_EXIT_CODE instead of re-executing in place.
+# Match QNN_WORKER_CHILD_ENV and QNN_WORKER_RESTART_EXIT_CODE in vla_inference_server.py.
 WORKER_CHILD_ENV = "VLA_QNN_WORKER_CHILD"
 RESTART_EXIT_CODE = 75
 
@@ -135,11 +89,11 @@ def log(message: str) -> None:
 
 
 def supervise_worker(argv: list[str]) -> int:
-    """Run the QNN worker as a child process, restarting it fresh on each reload.
+    """Run the QNN worker as a child, starting a fresh process on each reload exit.
 
-    Returns the exit code of the first child that exits for any other reason,
-    including the clean exit after its relay stops. SIGTERM and SIGINT are
-    passed on to the child, so `docker stop` stops it as before.
+    FastRPC keys sessions by host PID, so the worker cannot reload by
+    re-executing in place. Returns the first other exit code; SIGTERM and
+    SIGINT are passed to the child.
     """
     environment = {**os.environ, WORKER_CHILD_ENV: "1"}
     child: subprocess.Popen | None = None
@@ -247,9 +201,8 @@ class WorkerLink:
                     headers={**headers, RELAY_ID_HEADER: RELAY_ID},
                 )
             except (BrokenPipeError, ConnectionResetError):
-                # The worker answers 401/413/503 without reading the body and
-                # closes, so a large body fails mid-send. Its answer is already
-                # in the socket buffer; read it rather than report the worker gone.
+                # The worker answers early errors without reading the body, so
+                # a large body fails mid-send with the answer already buffered.
                 if connection.sock is None:
                     raise
             response = connection.getresponse()
@@ -277,7 +230,6 @@ def keep_worker_alive(link: WorkerLink, period: float = WORKER_KEEPALIVE_SECONDS
                 "GET", "/health", {}, None, timeout=WORKER_KEEPALIVE_TIMEOUT_SECONDS
             )
         except OSError as exc:
-            # Not up yet, or reloading; /health reports it.
             link.mark_unreachable(f"{type(exc).__name__}: {exc}")
         time.sleep(period)
 
@@ -362,7 +314,6 @@ def make_handler(link: WorkerLink):
             self._relay("POST")
 
         def log_message(self, *args):
-            # The worker logs each request; one line per poll here is noise.
             pass
 
     return Handler

@@ -28,8 +28,7 @@ if(BUILD_TESTING)
 
   # The other docker/test_vla_*.py are not wired here: they need torch/lerobot
   # (and ONNX for the QNN export tests) and run inside the inference_server
-  # container instead (see docker/README.md). The relay's tests need only the
-  # standard library.
+  # container instead (see docker/README.md).
   ament_add_pytest_test(test_vla_inference_forwarder
     docker/test_vla_inference_forwarder.py
     TIMEOUT 60

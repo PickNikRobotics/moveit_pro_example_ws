@@ -57,10 +57,9 @@ fine, so a bare `python vla_inference_server.py --checkpoint <dir-or-hf-id>`
 still works for development; a malformed file or value parks the server in
 the error state.
 
-On a Qualcomm host whose NPU serves only root clients, the workspace compose
-runs this file twice: as the root, network-less `inference_qnn_worker` with
-`--unix-socket`, and as the confined `inference_server`, which then only relays
-its port to that socket (vla_inference_forwarder.py) and never imports torch.
+On a QNN host the compose file also runs this file as the relay
+(VLA_QNN_WORKER_SOCKET) and the supervised NPU worker (--unix-socket); both are
+dispatched before the heavy imports below (vla_inference_forwarder.py).
 """
 
 import os
@@ -1226,8 +1225,7 @@ def watched_file_signature(path: str) -> tuple[int, int, int] | None:
     return (metadata.st_ino, metadata.st_size, metadata.st_mtime_ns)
 
 
-# The supervised QNN worker child (vla_inference_forwarder.supervise_worker)
-# reloads by exiting with this code, so its supervisor starts a fresh process.
+# Match WORKER_CHILD_ENV and RESTART_EXIT_CODE in vla_inference_forwarder.py.
 QNN_WORKER_CHILD_ENV = "VLA_QNN_WORKER_CHILD"
 QNN_WORKER_RESTART_EXIT_CODE = 75
 
@@ -1235,9 +1233,9 @@ QNN_WORKER_RESTART_EXIT_CODE = 75
 def restart_process() -> None:
     """Replace this process so model memory is released before reloading.
 
-    A supervised QNN worker exits instead: FastRPC keys its sessions by host
-    PID, which an in-place exec keeps, so the reloaded image could not create
-    the HTP device. Its supervisor starts a fresh process with a new PID.
+    A supervised QNN worker exits instead: FastRPC keys sessions by host PID,
+    which an in-place exec keeps, and the reloaded image then fails to create
+    the HTP device.
     """
     if os.environ.get(QNN_WORKER_CHILD_ENV) == "1":
         sys.stdout.flush()
@@ -1892,9 +1890,6 @@ def parse_args() -> argparse.Namespace:
         if content is not None:
             config_revision = hashlib.sha256(content).hexdigest()
         elif bootstrap_args.unix_socket:
-            # The QNN worker's config is chosen per board (VLA_QNN_HOST), so a
-            # missing one is a wrong host value or config package, not a
-            # request for built-in defaults.
             raise FileNotFoundError(
                 f"{config_path} does not exist: the QNN worker serves "
                 "vla_serving_<VLA_QNN_HOST>.yaml from the active robot "
@@ -2118,24 +2113,18 @@ class ThreadingUnixHTTPServer(
     daemon_threads = True
 
     def get_request(self):
-        # AF_UNIX peers have no address; BaseHTTPRequestHandler logs
-        # client_address[0], so give it a printable one.
+        # AF_UNIX peers have no address, but BaseHTTPRequestHandler logs one.
         request, _ = super().get_request()
         return request, ("unix", 0)
 
 
-# The QNN worker serves only its relay, and `moveit_pro run` stops only the
-# services it names on exit, which leaves a dependency like the worker running
-# and holding the NPU. The relay polls the worker every few seconds, so a
-# worker that hears nothing for this long has lost its relay and exits.
-# Twelve relay polls (WORKER_KEEPALIVE_SECONDS, each bounded by
-# WORKER_KEEPALIVE_TIMEOUT_SECONDS, in vla_inference_forwarder.py).
+# `moveit_pro run` leaves the worker running when it stops the relay, so the
+# worker exits once the relay's polls (WORKER_KEEPALIVE_SECONDS in
+# vla_inference_forwarder.py) stop for this long.
 RELAY_SILENCE_EXIT_SECONDS = 60.0
-# Grace before the first relay contact (the relay may start after the worker).
 RELAY_FIRST_CONTACT_SECONDS = 600.0
 RELAY_WATCHDOG_PERIOD_SECONDS = 5.0
-# Each relay process sends its own id on every request (RELAY_ID_HEADER in
-# vla_inference_forwarder.py).
+# Matches RELAY_ID_HEADER in vla_inference_forwarder.py.
 RELAY_ID_HEADER = "X-VLA-Relay-Id"
 
 
@@ -2184,11 +2173,8 @@ def track_relay_contact(
 ):
     """The handler class with every connection counted as relay contact.
 
-    A native QNN failure parks the server until an explicit restart. The
-    worker outlives a stopped relay by up to RELAY_SILENCE_EXIT_SECONDS, so a
-    `moveit_pro run --with-inference-server` started within that minute would
-    meet the parked worker; a request from a new relay process therefore
-    restarts a parked worker instead.
+    A worker parked after a native QNN failure restarts when a new relay
+    connects, since it can outlive the old relay by RELAY_SILENCE_EXIT_SECONDS.
     """
 
     class RelayTrackedHandler(handler):
@@ -2217,21 +2203,15 @@ def watch_relay(watchdog: RelayWatchdog, period: float = RELAY_WATCHDOG_PERIOD_S
         reason = watchdog.expired_reason()
         if reason:
             log(f"exiting: {reason}; the inference_server relay has stopped")
-            # The native sessions are released with the process, as they are
-            # for restart_process(); no restart policy brings the worker back
-            # until the next `moveit_pro run --with-inference-server`.
             os._exit(0)
 
 
 def bind_unix_http_server(path: str, handler) -> ThreadingUnixHTTPServer:
-    """Bind the HTTP handler to a Unix socket any user of its directory can reach.
+    """Bind the HTTP handler to a Unix socket, replacing a stale one.
 
-    The socket is world-connectable (0666) so the relay, which runs as the host
-    user, can reach a root worker without the worker needing CAP_CHOWN. Access
-    control is the directory: the compose file puts it in the private
-    vla_qnn_ipc volume that only the relay and the worker mount, and the worker
-    still checks the bearer token on /infer and /status. A stale socket left by
-    a previous process (or by restart_process) is replaced.
+    The socket is 0666 so the non-root relay can reach a root worker without
+    CAP_CHOWN; access control is the private vla_qnn_ipc volume only those two
+    mount, plus the bearer token.
     """
     try:
         if stat.S_ISSOCK(os.lstat(path).st_mode):

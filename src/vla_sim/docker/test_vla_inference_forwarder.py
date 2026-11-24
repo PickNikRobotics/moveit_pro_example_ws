@@ -79,7 +79,6 @@ class StopKeepalive(Exception):
 
 
 def run_keepalive_once(link) -> MagicMock:
-    """Run one pass of keep_worker_alive; returns the replaced sleep mock."""
     fake_time = MagicMock()
     fake_time.sleep.side_effect = StopKeepalive
     with patch.object(forwarder, "time", fake_time):
@@ -96,13 +95,10 @@ def read_until_close(sock: socket.socket) -> bytes:
 
 
 class FakeWorker:
-    """Stands in for inference_qnn_worker: echoes each request as JSON.
+    """Stands in for inference_qnn_worker: echoes each /infer request as JSON.
 
-    The status and Content-Type of the next /infer reply are set by the test;
-    /health always returns HEALTH_BODY verbatim. With early_reply set, /infer
-    answers that (status, body) without reading the request body and closes,
-    as the real worker does for 401/413/503.
-    relay_ids records (method, path, X-VLA-Relay-Id) for every request.
+    early_reply answers without reading the request body and closes, as the
+    real worker does for 401/413/503.
     """
 
     HEALTH_BODY = b'{"status": "ready", "from": "worker"}'
@@ -174,7 +170,6 @@ class RelayTestCase(unittest.TestCase):
     """Runs the relay's handler on a loopback TCP port in front of a link."""
 
     def setUp(self) -> None:
-        # The relay logs each worker answer; keep the test output quiet.
         quiet = patch.object(forwarder, "log")
         quiet.start()
         self.addCleanup(quiet.stop)
@@ -219,14 +214,12 @@ class TestWorkerLinkHealth(unittest.TestCase):
         self.link = WorkerLink("/nonexistent/worker.sock", clock=self.clock)
 
     def test_loading_before_startup_grace_elapses(self) -> None:
-        """A worker that never answered reads as loading until the grace is over."""
         self.clock.now = 1000.0 + WORKER_STARTUP_GRACE_SECONDS - 1
         self.assertEqual(
             self.link.unreachable_health("FileNotFoundError"), {"status": "loading"}
         )
 
     def test_error_after_startup_grace_names_the_worker(self) -> None:
-        """Past the startup grace the body is an error that names the worker service."""
         self.clock.now = 1000.0 + WORKER_STARTUP_GRACE_SECONDS
         health = self.link.unreachable_health("FileNotFoundError")
         self.assertEqual(health["status"], "error")
@@ -236,7 +229,7 @@ class TestWorkerLinkHealth(unittest.TestCase):
         self.assertIn("--no-drivers", health["detail"])
 
     def test_answer_then_loading_within_reload_grace(self) -> None:
-        """After one good answer, a socket gap reads as loading (serving-YAML reload)."""
+        """A gap after a good answer is a serving-YAML reload, so it reads as loading."""
         self.link.mark_reachable()
         self.clock.now += WORKER_RELOAD_GRACE_SECONDS - 1
         self.assertEqual(
@@ -245,7 +238,6 @@ class TestWorkerLinkHealth(unittest.TestCase):
         )
 
     def test_answer_then_error_after_reload_grace(self) -> None:
-        """A worker silent past the reload grace is an error that names the worker."""
         self.link.mark_reachable()
         self.clock.now += WORKER_RELOAD_GRACE_SECONDS
         health = self.link.unreachable_health("ConnectionRefusedError")
@@ -254,7 +246,6 @@ class TestWorkerLinkHealth(unittest.TestCase):
         self.assertIn("stopped answering", health["detail"])
 
     def test_reload_grace_is_measured_from_the_last_answer(self) -> None:
-        """Each answer restarts the reload window, so a busy worker never reads as stopped."""
         self.link.mark_reachable()
         self.clock.now += WORKER_RELOAD_GRACE_SECONDS - 1
         self.link.mark_reachable()
@@ -266,7 +257,6 @@ class TestWorkerLinkHealth(unittest.TestCase):
 
 
 class TestRelayWithWorker(RelayTestCase):
-    """The relay in front of a live fake worker on a Unix socket."""
 
     def setUp(self) -> None:
         super().setUp()
@@ -280,7 +270,6 @@ class TestRelayWithWorker(RelayTestCase):
         self.conn = self._connect(self.relay)
 
     def test_get_health_is_returned_verbatim(self) -> None:
-        """GET /health passes the worker's body and status through unchanged."""
         response, payload = self._request(self.conn, "GET", "/health")
         self.assertEqual(response.status, 200)
         self.assertEqual(payload, FakeWorker.HEALTH_BODY)
@@ -288,7 +277,6 @@ class TestRelayWithWorker(RelayTestCase):
         self.assertEqual(self.worker.requests[-1][:2], ("GET", "/health"))
 
     def test_post_infer_forwards_body_and_authorization(self) -> None:
-        """POST /infer reaches the worker with its body and bearer token intact."""
         body = json.dumps({"state": [0.1, 0.2], "task": "stack"}).encode()
         response, payload = self._request(
             self.conn,
@@ -308,7 +296,6 @@ class TestRelayWithWorker(RelayTestCase):
         self.assertEqual(self.worker.requests[-1][2], body)
 
     def test_worker_error_statuses_pass_through(self) -> None:
-        """Non-200 statuses and their Content-Type come back to the client unchanged."""
         for status in (400, 401, 500):
             with self.subTest(status=status):
                 self.worker.infer_status = status
@@ -328,7 +315,6 @@ class TestRelayWithWorker(RelayTestCase):
                 self.assertEqual(json.loads(payload)["path"], "/infer")
 
     def test_body_over_limit_is_refused_locally(self) -> None:
-        """A declared body above MAX_BODY_BYTES gets 413 and never reaches the worker."""
         with patch.object(forwarder, "MAX_BODY_BYTES", 16):
             # Only the header is sent: the relay refuses on the declared length.
             response, payload = self._request(
@@ -342,7 +328,6 @@ class TestRelayWithWorker(RelayTestCase):
         self.assertEqual(self.worker.requests, [])
 
     def test_invalid_or_negative_content_length_is_400(self) -> None:
-        """A non-numeric or negative Content-Length is rejected before the worker."""
         for value in ("abc", "-1"):
             with self.subTest(content_length=value):
                 response, payload = self._request(
@@ -356,11 +341,8 @@ class TestRelayWithWorker(RelayTestCase):
         self.assertEqual(self.worker.requests, [])
 
     def test_early_worker_answer_is_relayed_not_503(self) -> None:
-        """A worker that answers 401 without reading a large body has that answer relayed.
-
-        Regression: the send of the ~2 MB body failed with BrokenPipeError once
-        the worker closed, and the relay answered 503 and dropped the 401.
-        """
+        """Regression: an early 401 was replaced by a 503 when the ~2 MB body send hit
+        BrokenPipeError after the worker closed."""
         self.worker.early_reply = (401, b'{"error": "unauthorized", "from": "worker"}')
         body = b'"' + b"x" * (2 * 1024 * 1024) + b'"'
         response, payload = self._request(
@@ -379,7 +361,6 @@ class TestRelayWithWorker(RelayTestCase):
         )
 
     def test_short_body_is_400_and_never_reaches_worker(self) -> None:
-        """Fewer body bytes than Content-Length, then EOF, is 400 and is not forwarded."""
         relay = self._start_relay(self.link, client_timeout=2)
         with socket.create_connection(
             ("127.0.0.1", relay.server_address[1]), timeout=10
@@ -396,7 +377,6 @@ class TestRelayWithWorker(RelayTestCase):
         self.assertEqual(self.worker.requests, [])
 
     def test_non_ascii_request_path_is_400_and_relay_survives(self) -> None:
-        """A raw non-ASCII request line gets 400 and the relay keeps serving."""
         with socket.create_connection(
             ("127.0.0.1", self.relay.server_address[1]), timeout=10
         ) as sock:
@@ -411,7 +391,6 @@ class TestRelayWithWorker(RelayTestCase):
         self.assertEqual(payload, FakeWorker.HEALTH_BODY)
 
     def test_every_forwarded_request_carries_the_relay_id(self) -> None:
-        """Relayed requests and the keepalive poll all name this relay process."""
         self._request(self.conn, "GET", "/health")
         self._request(
             self.conn,
@@ -431,7 +410,6 @@ class TestRelayWithWorker(RelayTestCase):
         )
 
     def test_body_exactly_at_the_limit_is_relayed(self) -> None:
-        """A body of exactly MAX_BODY_BYTES reaches the worker unchanged."""
         body = b'"' + b"x" * 14 + b'"'
         self.assertEqual(len(body), 16)
         with patch.object(forwarder, "MAX_BODY_BYTES", len(body)):
@@ -447,7 +425,6 @@ class TestRelayWithWorker(RelayTestCase):
         self.assertEqual(self.worker.requests[-1][2], body)
 
     def test_body_one_byte_over_the_limit_is_413(self) -> None:
-        """MAX_BODY_BYTES + 1 is refused with 413 and never reaches the worker."""
         with patch.object(forwarder, "MAX_BODY_BYTES", 16):
             response, payload = self._request(
                 self.conn,
@@ -462,7 +439,6 @@ class TestRelayWithWorker(RelayTestCase):
 
 
 class TestRelayWithoutWorker(RelayTestCase):
-    """The relay while the worker socket does not exist."""
 
     def setUp(self) -> None:
         super().setUp()
@@ -475,13 +451,11 @@ class TestRelayWithoutWorker(RelayTestCase):
         self.conn = self._connect(self.relay)
 
     def test_health_is_loading_during_startup(self) -> None:
-        """/health answers 200 loading while the worker has not yet opened its socket."""
         response, payload = self._request(self.conn, "GET", "/health")
         self.assertEqual(response.status, 200)
         self.assertEqual(json.loads(payload), {"status": "loading"})
 
     def test_infer_is_503_with_json_error(self) -> None:
-        """/infer fails fast with 503 and a JSON error when the worker is absent."""
         response, payload = self._request(
             self.conn,
             "POST",
@@ -493,7 +467,6 @@ class TestRelayWithoutWorker(RelayTestCase):
         self.assertIn("error", json.loads(payload))
 
     def test_health_turns_to_error_after_startup_grace(self) -> None:
-        """Once the startup grace is over, /health reports error naming the worker."""
         self.clock.now = WORKER_STARTUP_GRACE_SECONDS + 1
         response, payload = self._request(self.conn, "GET", "/health")
         self.assertEqual(response.status, 200)
@@ -503,10 +476,8 @@ class TestRelayWithoutWorker(RelayTestCase):
 
 
 class TestMain(unittest.TestCase):
-    """main() refuses to start without a worker socket path."""
 
     def test_unset_or_blank_socket_env_returns_nonzero_without_binding(self) -> None:
-        """Unset, empty, or whitespace-only VLA_QNN_WORKER_SOCKET exits 2 and never binds."""
         for value in (None, "", "   "):
             with self.subTest(value=value):
                 with patch.dict(os.environ), patch.object(
@@ -520,10 +491,8 @@ class TestMain(unittest.TestCase):
                 server_class.assert_not_called()
 
     def test_socket_env_binds_the_relay_port(self) -> None:
-        """With a socket path set, main() serves on LISTEN_PORT and relays to that path."""
         fake_server = MagicMock()
-        # The keepalive thread is stubbed out: a real one would poll the missing
-        # socket every few seconds for the rest of the test run.
+        # Stub the keepalive thread; a real one would poll the missing socket all run.
         with patch.dict(
             os.environ, {forwarder.WORKER_SOCKET_ENV: "/tmp/w.sock"}
         ), patch.object(
@@ -546,15 +515,12 @@ class TestMain(unittest.TestCase):
 
 
 class TestKeepWorkerAlive(unittest.TestCase):
-    """keep_worker_alive: the poll's bound, and how a failed poll is reported."""
-
     def setUp(self) -> None:
         quiet = patch.object(forwarder, "log")
         quiet.start()
         self.addCleanup(quiet.stop)
 
     def test_poll_is_bounded_and_paced(self) -> None:
-        """Each poll uses WORKER_KEEPALIVE_TIMEOUT_SECONDS, then waits WORKER_KEEPALIVE_SECONDS."""
         link = MagicMock()
         link.forward.return_value = (200, {}, b"{}")
         sleep = run_keepalive_once(link)
@@ -565,7 +531,6 @@ class TestKeepWorkerAlive(unittest.TestCase):
         sleep.assert_called_once_with(WORKER_KEEPALIVE_SECONDS)
 
     def test_oserror_marks_the_worker_unreachable(self) -> None:
-        """A failed poll (OSError) calls mark_unreachable with the reason."""
         link = MagicMock()
         link.forward.side_effect = FileNotFoundError(2, "No such file or directory")
         run_keepalive_once(link)
@@ -574,7 +539,6 @@ class TestKeepWorkerAlive(unittest.TestCase):
 
 
 class TestSuperviseWorker(unittest.TestCase):
-    """The worker supervisor restarts its child only for a reload exit."""
 
     CHILD = """
 import os, sys

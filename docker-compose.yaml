@@ -62,7 +62,6 @@ services:
   # below is a host setting.
   inference_server:
     # One suffix selects both the build stage and this tag, so a cached image built for another accelerator is never reused.
-    # VLA_QNN_HOST (see inference_qnn_worker below) appends -qnn on Qualcomm hosts.
     image: ${COMPOSE_PROJECT_NAME:-moveit_pro}-inference_server${MOVEIT_INFERENCE_IMAGE_SUFFIX:-}${VLA_QNN_HOST:+-qnn}:latest
     # Declared here too, so a launcher whose compose file carries no
     # inference_server skeleton still gates this service instead of building
@@ -94,17 +93,13 @@ services:
       # (torch cache-dir setup) working when the host uid differs.
       - HOME=/tmp
       - USER=vla
-      # Set only on a QNN host: this container then relays its port to the
-      # NPU worker's socket instead of loading a model itself.
       - VLA_QNN_WORKER_SOCKET=${VLA_QNN_HOST:+/run/vla_qnn/worker.sock}
-    # Starts the NPU worker with this service on a QNN host; elsewhere the
-    # worker's profile is inactive and required: false skips it.
+    # required: false skips the worker where its profile is inactive (non-QNN hosts).
     depends_on:
       inference_qnn_worker:
         condition: service_started
         required: false
     volumes:
-      # The NPU worker's socket (QNN hosts only; an unused empty volume elsewhere).
       - vla_qnn_ipc:/run/vla_qnn
       # Hub downloads (checkpoints, tokenizers) persist here across restarts.
       # The default is a workspace-owned folder that exists in every clone, so
@@ -130,45 +125,18 @@ services:
       # test suite (see src/vla_sim/docker/README.md).
       - ${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/docker:/app:ro
 
-  # The Hexagon NPU half of the inference server on a Qualcomm IQ10 (and other
-  # boards whose FastRPC stack serves only root clients). Off unless the host
-  # sets VLA_QNN_HOST, e.g. once in ~/.config/moveit_pro/moveit_pro_config.9.yaml:
-  #
-  #   VLA_QNN_HOST: iq10
-  #
-  # On such a board fastrpc-rm creates its per-session POSIX queues 0644 root,
-  # and the client must pidfd_getfd buffers out of that root daemon, so the
-  # model can only run as root with the host's IPC and PID namespaces and
-  # CAP_SYS_PTRACE. The launcher rightly refuses all of that on the
-  # network-listening inference_server, so the server is split: this worker
-  # runs the model with no network at all and answers only on a Unix socket,
-  # and inference_server keeps its full hardening and relays its loopback port
-  # to that socket (vla_inference_forwarder.py). `moveit_pro run
-  # --with-inference-server` starts both (not with --no-drivers, which starts
-  # inference_server with `up --no-deps`). No --privileged and no device nodes
-  # are needed: FastRPC reaches the DSP through the host daemon.
-  #
-  # Root with the host PID namespace and CAP_SYS_PTRACE amounts to host root
-  # (it can reach /proc/1/root). That is the cost of this BSP's FastRPC
-  # contract; the worker's only input is the bearer-checked HTTP API the relay
-  # forwards from the loopback-only inference_server port. Until the BSP offers
-  # a non-root FastRPC route, enable VLA_QNN_HOST only on a board you trust
-  # every local user of.
-  #
-  # Only Qualcomm arm64 hosts: there is no -rocm-qnn stage, and the QAIRT
-  # wheel the -qnn stage installs is aarch64-only.
+  # The Hexagon NPU half of the inference server, as root with host IPC/PID and
+  # CAP_SYS_PTRACE, which amounts to host root. Off unless the host sets
+  # VLA_QNN_HOST; design and security trade-off: src/vla_sim/docker/README.md,
+  # "Serve on the IQ10 NPU".
   inference_qnn_worker:
-    # The second entry is "inference" only when VLA_QNN_HOST is set, so the
-    # launcher's inference profile starts this service only on a QNN host.
-    # Keep the first entry: with the second empty and no other entry, Compose
+    # Keep the first entry: with only the second, empty off a QNN host, Compose
     # treats the service as unprofiled and starts it on every host.
     profiles: ["inference-qnn", "${VLA_QNN_HOST:+inference}"]
-    # Built by inference_server (same tag); never pulled.
+    # Built by inference_server (same tag).
     image: ${COMPOSE_PROJECT_NAME:-moveit_pro}-inference_server${MOVEIT_INFERENCE_IMAGE_SUFFIX:-}${VLA_QNN_HOST:+-qnn}:latest
     pull_policy: never
     init: true
-    # The board's serving config: VLA_QNN_HOST=iq10 serves
-    # src/vla_sim/config/vla_serving_iq10.yaml (backend: qnn and its bundle).
     command:
       - --unix-socket
       - /run/vla_qnn/worker.sock
@@ -176,15 +144,11 @@ services:
       - /vla_config/vla_serving_${VLA_QNN_HOST:-}.yaml
     user: "0:0"
     network_mode: none
-    # FastRPC talks to fastrpc-rm over host POSIX message queues whose names
-    # embed the client's host PID.
     ipc: host
     pid: host
     cap_drop:
       - ALL
     cap_add:
-      # pidfd_getfd() on the root FastRPC daemon; without it every DSP memory
-      # allocation fails.
       - SYS_PTRACE
     security_opt:
       - no-new-privileges:true
@@ -192,17 +156,13 @@ services:
     tmpfs:
       - /tmp
     pids_limit: 512
-    # The native weight mappings of a multi-GB context exceed Docker's 8 MiB
-    # default memlock limit.
     ulimits:
       memlock:
         soft: -1
         hard: -1
     environment:
-      # The worker checks the bearer token itself; the relay forwards it.
       - MOVEIT_INFERENCE_KEY=${MOVEIT_INFERENCE_KEY:-}
-      # The QNN path reads only the local bundle; a root process must not
-      # write root-owned files into the shared Hub cache.
+      # A root process must not write root-owned files into the shared Hub cache.
       - HF_HUB_OFFLINE=1
       - HF_HOME=/hf
       - HOME=/tmp
@@ -213,10 +173,8 @@ services:
       - ${VLA_MODELS_DIR:-${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/models}:/models:ro
       - ${VLA_CONFIG_DIR:-${MOVEIT_HOST_USER_WORKSPACE:-.}/src/${MOVEIT_CONFIG_PACKAGE:-vla_sim}/config}:/vla_config:ro
       - ${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/docker:/app:ro
-      # The board's FastRPC client and the libraries it links, which must
-      # match the host kernel and DSP firmware, and the DSP partition holding
-      # fastrpc_shell_unsigned. create_host_path: false makes a missing host
-      # file fail `up` instead of Docker creating an empty directory in its place.
+      # create_host_path: false makes a missing host file fail `up` instead of
+      # Docker creating a root-owned empty directory in its place.
       - type: bind
         source: ${VLA_QNN_CDSPRPC_LIBRARY:-/usr/lib/libcdsprpc.so}
         target: /usr/lib/libcdsprpc.so
