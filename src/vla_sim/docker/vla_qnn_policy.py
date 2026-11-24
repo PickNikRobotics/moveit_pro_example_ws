@@ -34,7 +34,9 @@ Neural execution is exclusively native QnnGraph_execute. pi0.5 bundles use the
 four-graph or six-graph ABI whose expert returns an already-integrated Euler
 update; RTC adds only stock LeRobot's residual correction to that update.
 GR00T N1.7 bundles use a six-graph ABI whose action step returns a velocity
-that the host integrates with the stock flow schedule and RTC blend.
+that the host integrates with the stock flow schedule and RTC blend, or a
+seven-graph ABI that splits that action step into two contexts at a DiT-block
+residual, for boards whose HTP cannot allocate the whole FP16 step.
 """
 
 import hashlib
@@ -66,6 +68,10 @@ GROOT_ORDER = (
     "observation_features",
     "action_step",
 )
+GROOT_SPLIT_ABI = "groot.n17.seven_graphs.euler.v1"
+GROOT_SPLIT_STEPS = ("action_step_0", "action_step_1")
+GROOT_SPLIT_ORDER = (*GROOT_ORDER[:-1], *GROOT_SPLIT_STEPS)
+GROOT_ORDERS = {GROOT_ABI: GROOT_ORDER, GROOT_SPLIT_ABI: GROOT_SPLIT_ORDER}
 # Cosmos-Reason2 (Qwen3-VL) image patching and widths of the GR00T N1.7 graphs.
 PATCH, TEMPORAL_PATCH, MERGE = 16, 2, 2
 HIDDEN, STATE_HIDDEN, ROPE = 2048, 1536, 128
@@ -194,17 +200,19 @@ def validate_common(config: dict, order: tuple) -> None:
 
 
 def validate_groot_bundle(config: dict) -> tuple[str, ...]:
-    """Refuse a GR00T N1.7 bundle outside the compiled six-graph contract."""
+    """Refuse a GR00T N1.7 bundle outside the compiled six- or seven-graph contract."""
     if (
         not isinstance(config, dict)
         or type(config.get("schema")) is not int
         or config["schema"] != 1
-        or config.get("graph_abi") != GROOT_ABI
+        or config.get("graph_abi") not in GROOT_ORDERS
     ):
         raise ValueError(
-            f"QNN GR00T bundle must be schema=1 with graph_abi {GROOT_ABI}"
+            f"QNN GR00T bundle must be schema=1 with graph_abi {GROOT_ABI} "
+            f"or {GROOT_SPLIT_ABI}"
         )
-    validate_common(config, GROOT_ORDER)
+    order = GROOT_ORDERS[config["graph_abi"]]
+    validate_common(config, order)
     for field in ("max_state_dim", "max_action_dim"):
         if type(config.get(field)) is not int or not 1 <= config[field] <= 4096:
             raise ValueError(f"QNN {field} must be the compiled padded width")
@@ -246,19 +254,20 @@ def validate_groot_bundle(config: dict) -> tuple[str, ...]:
     precision = config.get("precision")
     if (
         not isinstance(precision, dict)
-        or set(precision) != set(GROOT_ORDER)
+        or set(precision) != set(order)
         or any(value not in ("fp16", "w8a16", "w4a16") for value in precision.values())
     ):
         raise ValueError("QNN precision must name fp16, w8a16 or w4a16 for every graph")
-    if precision["action_step"] != "fp16":
-        raise ValueError(
-            "QNN GR00T precision action_step must be fp16: a quantized action step "
-            "drifts enough to trip ExecutePolicy's joint limits"
-        )
+    for name in order[order.index("observation_features") + 1 :]:
+        if precision[name] != "fp16":
+            raise ValueError(
+                f"QNN GR00T precision {name} must be fp16: a quantized action step "
+                "drifts enough to trip ExecutePolicy's joint limits"
+            )
     for field in ("stats", "static_inputs"):
         if not isinstance(config.get(field), str) or not config[field]:
             raise ValueError(f"QNN bundle must name a local {field} path")
-    return GROOT_ORDER
+    return order
 
 
 def prepare_rtc(payload: dict, chunk_size: int, action_dim: int) -> tuple:
@@ -778,9 +787,18 @@ class QnnPolicy(BundlePolicy):
 
 
 def groot_ports(
-    tokens: int, patches: int, chunk_size: int, action_dim: int, state_dim: int
+    tokens: int,
+    patches: int,
+    chunk_size: int,
+    action_dim: int,
+    state_dim: int,
+    split: bool = False,
 ) -> dict:
-    """GR00T N1.7 six-graph seams at the export's fixed token/patch/chunk extents."""
+    """GR00T N1.7 graph seams at the export's fixed token/patch/chunk extents.
+
+    With split, the action step is two graphs joined at a DiT-block residual:
+    the state token plus one token per chunk row, at the DiT width.
+    """
     f32, i32 = np.dtype("float32"), np.dtype("int32")
     sequence = ((1, tokens, HIDDEN), f32)
     image = ((patches // MERGE**2, HIDDEN), f32)
@@ -791,6 +809,26 @@ def groot_ports(
     }
     deep = {f"deep{i}": sequence for i in range(3)}
     actions = ((1, chunk_size, action_dim), f32)
+    step_inputs = {
+        "timestep": ((1,), i32),
+        "vl_features": sequence,
+        "image_mask": ((1, tokens), f32),
+        "valid_mask": ((1, tokens), f32),
+    }
+    state = {"state_features": ((1, 1, STATE_HIDDEN), f32)}
+    if split:
+        hidden = {"action_hidden": ((1, 1 + chunk_size, STATE_HIDDEN), f32)}
+        steps = {
+            "action_step_0": ({"actions": actions, **step_inputs, **state}, hidden),
+            "action_step_1": ({**hidden, **step_inputs}, {"velocity": actions}),
+        }
+    else:
+        steps = {
+            "action_step": (
+                {"actions": actions, **step_inputs, **state},
+                {"velocity": actions},
+            )
+        }
     return {
         "vision": (
             {"patches": ((patches, 3 * TEMPORAL_PATCH * PATCH * PATCH), f32)},
@@ -812,17 +850,7 @@ def groot_ports(
             },
             {"vl_features": sequence, "state_features": ((1, 1, STATE_HIDDEN), f32)},
         ),
-        "action_step": (
-            {
-                "actions": actions,
-                "timestep": ((1,), i32),
-                "vl_features": sequence,
-                "state_features": ((1, 1, STATE_HIDDEN), f32),
-                "image_mask": ((1, tokens), f32),
-                "valid_mask": ((1, tokens), f32),
-            },
-            {"velocity": actions},
-        ),
+        **steps,
     }
 
 
@@ -931,6 +959,7 @@ class QnnGrootPolicy(BundlePolicy):
             self.config["chunk_size"],
             self.config["max_action_dim"],
             self.config["max_state_dim"],
+            split=self.order == GROOT_SPLIT_ORDER,
         )
 
     def patches(self, image: torch.Tensor) -> np.ndarray:
@@ -1048,13 +1077,12 @@ class QnnGrootPolicy(BundlePolicy):
             "valid_mask": static["valid_mask"],
         }
         for timestep in self.sampling["timesteps"]:
-            velocity = self.sessions["action_step"].run(
-                {
-                    **step,
-                    "actions": actions,
-                    "timestep": np.asarray([timestep], dtype=np.int32),
-                }
-            )["velocity"]
+            feed = {
+                **step,
+                "actions": actions,
+                "timestep": np.asarray([timestep], dtype=np.int32),
+            }
+            velocity = self.action_step(feed)
             actions = actions + dt * velocity * strength
         if not np.isfinite(actions).all():
             raise RuntimeError("QNN GR00T flow integration returned nonfinite actions")
@@ -1065,6 +1093,18 @@ class QnnGrootPolicy(BundlePolicy):
         if not np.isfinite(physical).all():
             raise RuntimeError("QNN GR00T action decoding returned nonfinite actions")
         return physical, physical if self.relative.any() else raw
+
+    def action_step(self, feed):
+        """One flow-step velocity from the whole or the two-piece action step."""
+        if self.order == GROOT_ORDER:
+            return self.sessions["action_step"].run(feed)["velocity"]
+        first, second = (self.sessions[name] for name in GROOT_SPLIT_STEPS)
+        hidden = first.run(feed)["action_hidden"]
+        rest = {
+            key: feed[key]
+            for key in ("timestep", "vl_features", "image_mask", "valid_mask")
+        }
+        return second.run({**rest, "action_hidden": hidden})["velocity"]
 
 
 def check_relative_pairing(relative, state_names: list, action_names: list) -> None:
@@ -1096,6 +1136,6 @@ def bundle_family(bundle: str) -> str:
     config = json.loads(Path(bundle).expanduser().read_text())
     return (
         "groot"
-        if isinstance(config, dict) and config.get("graph_abi") == GROOT_ABI
+        if isinstance(config, dict) and config.get("graph_abi") in GROOT_ORDERS
         else "pi05"
     )

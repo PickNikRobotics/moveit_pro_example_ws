@@ -179,9 +179,11 @@ export separately before deployment.
 
 `graph_abi: groot.n17.six_graphs.euler.v1` chains `vision` (once per camera),
 `tokens`, `backbone_0_8`, `backbone_8_16`, `observation_features` and
-`action_step`. The manifest carries the shared identity, camera, timing,
-`graphs`, `device_placement` and `precision` (`fp16`, `w8a16` or `w4a16` per
-graph, with `action_step` required to be `fp16`) fields, plus `prompt`,
+`action_step`. `groot.n17.seven_graphs.euler.v1` is the same chain with the
+action step split into `action_step_0` and `action_step_1` (below). The manifest
+carries the shared identity, camera, timing, `graphs`, `device_placement` and
+`precision` (`fp16`, `w8a16` or `w4a16` per graph, with every action-step graph
+required to be `fp16`) fields, plus `prompt`,
 `max_state_dim`, `max_action_dim`, `chunk_size`, `denoising_steps`,
 `image_transform` (the checkpoint's default N1.7 transform),
 `normalization: MIN_MAX`, `action_mapping: {mode: trained_min_max}`, `stats` and
@@ -199,7 +201,8 @@ clipped min-max state normalization. The host integrates each `action_step`
 velocity over the bucketed flow schedule and decodes relative columns against
 the request state.
 
-The `action_step` manifest carries `sampling`, emitted at staging time from the
+The `action_step` manifest (`action_step_1` in a split bundle) carries
+`sampling`, emitted at staging time from the
 GR00T model config the step was exported from and the LeRobot checkpoint's
 config, which supplies the step count and ramp overrides and the chunk caps.
 Both are required:
@@ -215,12 +218,21 @@ carryover to the new state; frozen rows stay fixed and the rest ramp in at
 `groot_rtc_ramp_rate` (0 uses the exported rate).
 
 The action step must be compiled at FP16, and the server refuses a bundle whose
-`action_step` precision is anything else: a W8A16 action step drifts far enough
-from the checkpoint to trip ExecutePolicy's joint limits. A single FP16
+precision for any action-step graph is anything else: a W8A16 action step
+drifts far enough from the checkpoint to trip ExecutePolicy's joint limits. A single FP16
 action-step context (about 2.2 GB) loads on the IQ10 but not on the IQ9, which
 refuses it with QNN status 1002 (`QNN_COMMON_ERROR_MEM_ALLOC`) on either HTP
-device, so an IQ9 GR00T bundle needs the FP16 action step split across two
-contexts (a follow-up). `model_action_dim` must equal `request_state_dim`.
+device, so an IQ9 GR00T bundle uses the seven-graph ABI. Like the backbone
+split, its two action-step graphs come from an offline export, not from a tool
+in this repository: the FP32 action-step ONNX split at the residual after DiT
+block 16, with weights unchanged, joined by one FP32 `action_hidden` seam of
+`[1, 1 + chunk_size, 1536]` (the state token plus one token per chunk row), and
+each half compiled FP16 (about 1.1 GB). The bundle's graph contract is:
+`action_step_0` takes the six
+action-step inputs and returns `action_hidden`; `action_step_1` takes
+`action_hidden`, `timestep`, `vl_features`, `image_mask` and `valid_mask` and
+returns `velocity`. The host runs both once per flow step. `model_action_dim`
+must equal `request_state_dim`.
 
 The action step is exported at the model's full `action_horizon`, so the exporter
 refuses a checkpoint whose LeRobot `chunk_size` or `n_action_steps` is below
