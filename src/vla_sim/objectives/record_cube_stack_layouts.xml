@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Record Cube-Stack Layouts">
+  <!-- LoopString splits the semicolon-separated keyframe_names it receives from the caller. The dataset is converted once, after the last layout, because ConvertDataset refuses to start while a conversion is running. -->
+  <BehaviorTree
+    ID="Record Cube-Stack Layouts"
+    _description="Record one oracle demonstration from each keyframe in keyframe_names into one Trainer dataset and convert it to a LeRobot dataset."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Decorator
+        ID="LoopString"
+        queue="{keyframe_names}"
+        value="{keyframe_name}"
+      >
+        <SubTree
+          ID="Record Cube-Stack Episode"
+          _collapsed="true"
+          dataset_name="{dataset_name}"
+          task="{task}"
+          held_cube_frame="{held_cube_frame}"
+          target_cube_frame="{target_cube_frame}"
+          keyframe_name="{keyframe_name}"
+        />
+      </Decorator>
+      <Action
+        ID="ConvertDataset"
+        name="Convert to LeRobot dataset"
+        dataset_name="{dataset_name}"
+        robot_type="kinova_gen3"
+      />
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Record Cube-Stack Layouts">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Data Recording" />
+      </MetadataFields>
+      <input_port
+        name="keyframe_names"
+        default="gen_red_on_green_0"
+        type="std::string"
+      >
+        Semicolon-separated names of the keyframes to record, one episode each.
+      </input_port>
+      <input_port
+        name="task"
+        default="stack the red cube on the green cube"
+        type="std::string"
+      >
+        The prompt every episode is labeled with. It must match the layouts.
+      </input_port>
+      <input_port
+        name="held_cube_frame"
+        default="cube_red_tf"
+        type="std::string"
+      >
+        The TF frame of the cube the oracle picks up.
+      </input_port>
+      <input_port
+        name="target_cube_frame"
+        default="cube_green_tf"
+        type="std::string"
+      >
+        The TF frame of the cube the oracle stacks it on.
+      </input_port>
+      <input_port
+        name="dataset_name"
+        default="cubestack_layouts"
+        type="std::string"
+      >
+        The Trainer dataset the episodes accumulate into.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

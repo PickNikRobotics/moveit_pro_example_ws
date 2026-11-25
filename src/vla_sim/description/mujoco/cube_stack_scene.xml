@@ -195,4 +195,6 @@
        1 gripper); the arm actuators carry the SAME home angles as qpos, so they
        hold that pose from tick 1. The gripper holds 0 (open). -->
   <include file="keyframes.xml" />
+  <!-- Generated layouts for recording more demonstrations. Included after keyframes.xml so `default` stays key 0, the state the simulator starts in. -->
+  <include file="keyframes_generated.xml" />
 </mujoco>

@@ -34,6 +34,20 @@ Recording uses the `vla_sim` Training Config, which MoveIt Pro creates from the 
 - `observation.state`: every joint in `/joint_states`, including the Robotiq linkage joints, so it is wider than the 8 joints the policy commands.
 - `action`: `/joint_commands` from [`script/joint_command_bridge.py`](script/joint_command_bridge.py): `joint_1`..`joint_7` and `robotiq_85_left_knuckle_joint`.
 
+The published cube-stacking dataset keeps only those 8 joints in `observation.state`. [`script/select_state_joints.py`](script/select_state_joints.py) writes a copy of a converted dataset whose state holds just the `action` joints, in `action` order, with `meta/info.json`, `meta/stats.json` and the per-episode statistics narrowed to match; videos are hard-linked, not re-encoded. Pass `--joints` to keep a different set. It refuses to overwrite an existing destination:
+
+```bash
+ros2 run vla_sim select_state_joints.py ~/.local/share/moveit_pro/trainer/recordings/cubestack_oracle-lerobot ~/datasets/cubestack_oracle-lerobot-8
+```
+
+To merge the copy with the published dataset through LeRobot's `aggregate_datasets`, add `--like <published-dataset-dir>`. LeRobot only merges datasets whose feature metadata is identical, and a converted dataset differs in two ways: Trainer adds `fps` to the per-frame index features, and its videos have no encoder `info` block. `--like` first checks that both datasets have the same fps, robot type, feature keys, and per-feature dtype, shape and names, and that every mp4 matches the reference's codec, pixel format, fps and resolution, which it reads with PyAV. It then takes the reference's feature metadata. Encoder settings are written as null because an mp4 does not record them. It also computes any quantile statistics (`q01`..`q99`) the reference has and the copy lacks, so the merged dataset keeps them. On any other difference it exits and names it.
+
 [`description/mujoco/keyframes.xml`](description/mujoco/keyframes.xml) holds the layouts: 360 `train_*` and 150 `eval_*`, each followed by a comment naming the prompt it was drawn for.
+
+For more data than 60 episodes per prompt, each of the six `Record Generated Cube-Stack <held> On <target>` Objectives records 300 more layouts for its prompt into `cubestack_gen_<held>_on_<target>`, through `Record Cube-Stack Layouts`, which records any semicolon-separated list of keyframes with a given prompt, cube frames, and dataset. The layouts are the `gen_<held>_on_<target>_*` keys of [`description/mujoco/keyframes_generated.xml`](description/mujoco/keyframes_generated.xml), drawn by [`script/generate_cube_stack_layouts.py`](script/generate_cube_stack_layouts.py) from the evaluation trials' area, spacing, and yaw range. No layout has every cube within 2 cm and 0.1 rad of the same cube in an `eval_*` or `train_*` key, an evaluation trial 0 to 299 at seed 0, or another generated layout. The script writes the keyframes and the six Objectives together, so rerun it rather than editing either; `--layouts-out` also writes the layouts as JSON lines, keyed by keyframe name:
+
+```bash
+python3 src/vla_sim/script/generate_cube_stack_layouts.py --count 300 --seed 1 --layouts-out gen_layouts.jsonl
+```
 
 For detailed documentation see: [MoveIt Pro Documentation](https://docs.picknik.ai/)

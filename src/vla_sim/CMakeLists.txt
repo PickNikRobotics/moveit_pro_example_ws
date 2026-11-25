@@ -19,6 +19,7 @@ install(
 install(PROGRAMS
   script/get_action_chunk_adapter.py
   script/joint_command_bridge.py
+  script/select_state_joints.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -54,8 +55,18 @@ if(BUILD_TESTING)
     TIMEOUT 60
   )
 
+  ament_add_pytest_test(test_select_state_joints
+    test/test_select_state_joints.py
+    TIMEOUT 60
+  )
+
   ament_add_pytest_test(test_gripper_named_states
     test/test_gripper_named_states.py
+    TIMEOUT 60
+  )
+
+  ament_add_pytest_test(test_generate_cube_stack_layouts
+    test/test_generate_cube_stack_layouts.py
     TIMEOUT 60
   )
 
