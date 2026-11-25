@@ -30,9 +30,9 @@
 #include <algorithm>
 #include <cmath>
 #include <moveit_msgs/msg/robot_state.hpp>
-#include <moveit_pro_base/robot_model/robot_model.hpp>
 #include <moveit_pro_behavior_interface/get_required_ports.hpp>
 #include <moveit_pro_behavior_interface/metadata_fields.hpp>
+#include <moveit_robot_model/robot_model.hpp>
 
 namespace rebot_bench_behaviors
 {

@@ -27,8 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 #include <rebot_bench_behaviors/plan_to_joint_goal_from_bounded_start.hpp>
 
-#include <moveit_pro_base/robot_model/robot_model.hpp>
 #include <moveit_pro_behavior_interface/metadata_fields.hpp>
+#include <moveit_robot_model/robot_model.hpp>
 #include <rebot_bench_behaviors/clamp_robot_state_to_bounds.hpp>
 #include <utility>
 

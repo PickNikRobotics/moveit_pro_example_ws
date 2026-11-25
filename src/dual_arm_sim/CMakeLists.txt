@@ -36,7 +36,8 @@ if(BUILD_TESTING)
     SORT_BLOCKS_XML="${CMAKE_CURRENT_SOURCE_DIR}/objectives/sort_blocks.xml")
   find_package(ament_index_cpp REQUIRED)
   find_package(moveit_pro_behavior_interface REQUIRED)
-  find_package(moveit_pro_base REQUIRED)
+  find_package(moveit_collision REQUIRED)
+  find_package(moveit_model_loading REQUIRED)
   find_package(moveit_pro_task_constructor_core REQUIRED)
   find_package(nlohmann_json REQUIRED)
   find_package(pluginlib REQUIRED)
@@ -69,8 +70,8 @@ if(BUILD_TESTING)
     NAV_RESET_XML="${CMAKE_CURRENT_SOURCE_DIR}/objectives/reset_mujoco_sim_for_navigation.xml")
   target_link_libraries(block_transfer_plan_probe PRIVATE
     moveit_pro_behavior_interface::behavior_context
-    moveit_pro_base::robot_model_loader
-    moveit_pro_base::moveit_pro_base_planning_scene
+    moveit_model_loading::moveit_model_loading_robot_model_loader
+    moveit_collision::moveit_collision_planning_scene
     moveit_pro_task_constructor_core::moveit_pro_task_constructor_core
     pluginlib::pluginlib nlohmann_json::nlohmann_json tinyxml2::tinyxml2
     ament_index_cpp::ament_index_cpp ${moveit_studio_agent_msgs_TARGETS})

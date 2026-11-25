@@ -71,7 +71,7 @@
   <test_depend>behaviortree_cpp_picknik</test_depend>
   <test_depend>controller_manager_msgs</test_depend>
   <test_depend>moveit_msgs</test_depend>
-  <test_depend>moveit_pro_base</test_depend>
+  <test_depend>moveit_pro_base_py</test_depend>
   <test_depend>moveit_pro_behavior_interface</test_depend>
   <test_depend>moveit_studio_internal_msgs</test_depend>
   <test_depend>rclcpp</test_depend>
@@ -86,6 +86,7 @@
   <test_depend>shape_msgs</test_depend>
   <test_depend>xacro</test_depend>
 
+  <test_depend>moveit_robot_model</test_depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 project(rebot_bench_behaviors)
 find_package(moveit_pro_package REQUIRED)
 moveit_pro_package()
-set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_pro_behavior_interface trajectory_msgs std_srvs pluginlib cv_bridge sensor_msgs moveit_msgs geometry_msgs moveit_studio_vision_msgs ament_index_cpp)
+set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_robot_model moveit_pro_behavior_interface trajectory_msgs std_srvs pluginlib cv_bridge sensor_msgs moveit_msgs geometry_msgs moveit_studio_vision_msgs ament_index_cpp)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc calib3d)
 find_package(yaml-cpp REQUIRED)
 find_package(moveit_pro_behavior REQUIRED)
@@ -13,7 +13,7 @@ add_library(${PROJECT_NAME} SHARED src/record_rebot_trajectory.cpp src/anchor_tr
   src/hold_gripper_in_trajectory.cpp
   src/call_rebot_leader_service.cpp src/register_behaviors.cpp src/draw_place_spot.cpp src/fit_cube_to_mask.cpp src/is_cube_stacked.cpp src/is_joint_at_least.cpp src/load_motion_scales.cpp
   src/report_unreachable_cube.cpp src/plan_to_joint_goal_from_bounded_start.cpp)
-target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} yaml-cpp::yaml-cpp moveit_pro_behavior::plan_to_joint_goal)
+target_link_libraries(${PROJECT_NAME} moveit_robot_model::moveit_robot_model_robot_model ${OpenCV_LIBS} yaml-cpp::yaml-cpp moveit_pro_behavior::plan_to_joint_goal)
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(${PROJECT_NAME} ${THIS_PACKAGE_INCLUDE_DEPENDS})
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets LIBRARY DESTINATION lib ARCHIVE DESTINATION lib RUNTIME DESTINATION bin)

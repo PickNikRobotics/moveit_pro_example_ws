@@ -48,8 +48,8 @@
 #include <factory_sim/is_bracket_pick_start_current.hpp>
 #include <factory_sim/is_lookahead_enabled.hpp>
 #include <factory_sim/pad_planning_scene_for_motion.hpp>
+#include <moveit_collision/planning_scene/planning_scene.hpp>
 #include <moveit_msgs/msg/planning_scene.hpp>
-#include <moveit_pro_base/planning_scene/planning_scene.hpp>
 #include <moveit_pro_behavior/behaviors/core/repeat_unless_failure_each_tick.hpp>
 #include <moveit_pro_behavior/behaviors/mtc_task_setup/setup_mtc_from_solution.hpp>
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>

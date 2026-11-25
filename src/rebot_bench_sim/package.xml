@@ -59,7 +59,6 @@
   <test_depend>behaviortree_cpp_picknik</test_depend>
   <test_depend>tinyxml2_vendor</test_depend>
   <test_depend>yaml-cpp</test_depend>
-  <test_depend>moveit_pro_base</test_depend>
   <test_depend>moveit_pro_base_py</test_depend>
   <test_depend>urdf</test_depend>
   <test_depend>srdfdom</test_depend>
@@ -70,6 +69,9 @@
   <test_depend>std_srvs</test_depend>
   <test_depend>moveit_msgs</test_depend>
 
+  <test_depend>moveit_collision</test_depend>
+  <test_depend>moveit_robot_model</test_depend>
+  <test_depend>moveit_robot_state</test_depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

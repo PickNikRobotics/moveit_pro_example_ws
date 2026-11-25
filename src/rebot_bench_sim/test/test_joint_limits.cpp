@@ -29,8 +29,8 @@
 #include <srdfdom/model.h>
 #include <urdf_parser/urdf_parser.h>
 #include <yaml-cpp/yaml.h>
-#include <moveit_pro_base/robot_model/robot_model.hpp>
-#include <moveit_pro_base/robot_state/robot_state.hpp>
+#include <moveit_robot_model/robot_model.hpp>
+#include <moveit_robot_state/robot_state.hpp>
 
 #include <fstream>
 #include <iterator>

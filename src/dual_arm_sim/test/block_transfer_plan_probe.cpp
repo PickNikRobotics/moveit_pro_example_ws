@@ -45,8 +45,8 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
-#include <moveit_pro_base/planning_scene/planning_scene.hpp>
-#include <moveit_pro_base/robot_model_loader/robot_model_loader.hpp>
+#include <moveit_collision/planning_scene/planning_scene.hpp>
+#include <moveit_model_loading/robot_model_loader/robot_model_loader.hpp>
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 #include <moveit_studio_agent_msgs/srv/get_waypoints.hpp>

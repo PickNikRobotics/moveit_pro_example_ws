@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.22)
 project(factory_sim)
 
 find_package(ament_cmake REQUIRED)
+find_package(moveit_robot_model REQUIRED)
+find_package(moveit_collision REQUIRED)
 find_package(picknik_accessories REQUIRED)
 find_package(moveit_pro_behavior_interface REQUIRED)
 find_package(pluginlib REQUIRED)
@@ -15,6 +17,7 @@ add_library(factory_pick_behaviors SHARED src/is_bracket_pick_start_current.cpp
             src/pad_planning_scene_for_motion.cpp
             src/is_lookahead_enabled.cpp
             src/register_pick_behaviors.cpp)
+target_link_libraries(factory_pick_behaviors moveit_robot_model::moveit_robot_model_robot_model)
 target_compile_features(factory_pick_behaviors PUBLIC cxx_std_20)
 target_include_directories(
   factory_pick_behaviors
@@ -69,7 +72,7 @@ if(BUILD_TESTING)
   target_compile_definitions(test_parallel_pick PRIVATE
     FACTORY_OBJECTIVES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/objectives"
     FACTORY_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}")
-  target_link_libraries(test_parallel_pick factory_pick_behaviors
+  target_link_libraries(test_parallel_pick moveit_collision::moveit_collision_planning_scene factory_pick_behaviors
                         moveit_pro_behavior::setup_mtc_from_solution
                         moveit_pro_behavior::repeat_unless_failure_each_tick
                         moveit_pro_test_utils::test_utils)
