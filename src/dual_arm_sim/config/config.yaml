@@ -103,6 +103,9 @@ objectives:
     mujoco_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/mujoco"
+    navigation_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/navigation"
     custom_objectives:
       package_name: "dual_arm_sim"
       relative_path: "objectives"

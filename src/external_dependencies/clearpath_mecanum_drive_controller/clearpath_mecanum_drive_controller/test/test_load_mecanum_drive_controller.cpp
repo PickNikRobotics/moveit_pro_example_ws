@@ -18,6 +18,7 @@
 #include <array>
 #include <cmath>
 #include <cstdlib>
+#include <future>
 #include <limits>
 #include <memory>
 #include <mutex>
@@ -25,6 +26,7 @@
 #include <optional>
 #include <shared_mutex>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "clearpath_mecanum_drive_controller/clearpath_mecanum_drive_controller.hpp"
@@ -1067,6 +1069,10 @@ TEST(MecanumDriveControllerParameters, RuntimeChangesToSnapshottedParametersAreR
     rclcpp::NodeOptions().parameter_overrides(valid_controller_parameters());
   ASSERT_EQ(controller.init(controller_params), controller_interface::return_type::OK);
   ASSERT_EQ(controller.configure().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+  std::vector<hardware_interface::StateInterface::ConstSharedPtr> state_interface_handles;
+  const std::vector<hardware_interface::CommandInterface::SharedPtr> command_interfaces =
+    assign_controller_interfaces(controller, &state_interface_handles);
+  ASSERT_EQ(command_interfaces.size(), clearpath_mecanum_drive_controller::NR_CMD_ITFS);
   ASSERT_EQ(
     controller.get_node()->activate().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
 
@@ -1590,6 +1596,138 @@ TEST(GeneratedParameterValidation, RejectsInvalidSnapshottedNumericValues)
   }
   rclcpp::shutdown();
 }
+
+#ifdef ROS_DISTRO_JAZZY
+TEST(MecanumDriveControllerActivation, RegressionRejectsIncorrectWheelInterfaceCount)
+{
+  // GIVEN absent, incomplete, or excess wheel command interfaces.
+  for (const std::size_t count : { 0U, 3U, 5U })
+  {
+    clearpath_mecanum_drive_controller::MecanumDriveController controller;
+    std::vector<hardware_interface::CommandInterface::SharedPtr> handles;
+    std::vector<hardware_interface::LoanedCommandInterface> commands;
+    for (std::size_t index = 0; index < count; ++index)
+    {
+      auto handle = std::make_shared<hardware_interface::CommandInterface>(
+        "wheel_" + std::to_string(index), "velocity");
+      ASSERT_TRUE(handle->set_value(0.5));
+      commands.emplace_back(handle, []() {});
+      handles.push_back(std::move(handle));
+    }
+    controller.assign_interfaces(std::move(commands), {});
+
+    // WHEN activation cannot establish the four-wheel stopping contract.
+    const controller_interface::CallbackReturn result =
+      controller.on_activate(rclcpp_lifecycle::State{});
+
+    // THEN it fails before accessing missing interfaces or changing inherited commands.
+    EXPECT_EQ(result, controller_interface::CallbackReturn::ERROR);
+    for (const auto & handle : handles)
+    {
+      EXPECT_EQ(handle->get_optional<double>(), 0.5);
+    }
+  }
+}
+
+class MecanumDriveControllerActivationRegression : public ::testing::TestWithParam<bool>
+{
+};
+
+TEST_P(MecanumDriveControllerActivationRegression, RejectedStopWriteReturnsError)
+{
+  // GIVEN newly acquired wheel interfaces with inherited commands and one rejected write.
+  rclcpp::init(0, nullptr);
+  clearpath_mecanum_drive_controller::MecanumDriveController controller;
+  controller_interface::ControllerInterfaceParams params;
+  params.controller_name = "activation_rejected_stop";
+  params.controller_manager_update_rate = 100;
+  std::vector<rclcpp::Parameter> parameters = valid_controller_parameters();
+  parameters.emplace_back("use_stamped_vel", GetParam());
+  params.node_options = rclcpp::NodeOptions().parameter_overrides(parameters);
+  ASSERT_EQ(controller.init(params), controller_interface::return_type::OK);
+  ASSERT_EQ(controller.configure().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+  std::vector<hardware_interface::StateInterface::ConstSharedPtr> state_handles;
+  const std::vector<hardware_interface::CommandInterface::SharedPtr> commands =
+    assign_controller_interfaces(controller, &state_handles);
+  ASSERT_EQ(commands.size(), clearpath_mecanum_drive_controller::NR_CMD_ITFS);
+  for (const auto & command : commands)
+  {
+    ASSERT_TRUE(command->set_value(0.5));
+  }
+
+  // WHEN activation attempts to stop every wheel while the second interface rejects writes.
+  // A helper thread holds the lock so the activating thread never try-locks a mutex it already owns.
+  std::promise<void> lock_held;
+  std::promise<void> release_lock;
+  std::thread lock_holder([&mutex = commands[1]->get_mutex(), &lock_held, release = release_lock.get_future()]() {
+    std::unique_lock<std::shared_mutex> rejected_write_lock(mutex);
+    lock_held.set_value();
+    release.wait();
+  });
+  lock_held.get_future().wait();
+  const controller_interface::CallbackReturn result = controller.on_activate(rclcpp_lifecycle::State{});
+  release_lock.set_value();
+  lock_holder.join();
+
+  // THEN activation fails closed and every writable wheel is stopped.
+  EXPECT_EQ(result, controller_interface::CallbackReturn::ERROR);
+  for (std::size_t index = 0; index < commands.size(); ++index)
+  {
+    EXPECT_EQ(commands[index]->get_optional<double>(), index == 1 ? 0.5 : 0.0);
+  }
+  rclcpp::shutdown();
+}
+
+TEST_P(MecanumDriveControllerActivationRegression, ClearsInheritedCommandsBeforeFirstReference)
+{
+  // GIVEN an inactive controller acquiring another owner's nonzero wheel commands.
+  rclcpp::init(0, nullptr);
+  clearpath_mecanum_drive_controller::MecanumDriveController controller;
+  controller_interface::ControllerInterfaceParams params;
+  params.controller_name = "activation_inherited_commands";
+  params.controller_manager_update_rate = 100;
+  std::vector<rclcpp::Parameter> parameters = valid_controller_parameters();
+  parameters.emplace_back("use_stamped_vel", GetParam());
+  params.node_options = rclcpp::NodeOptions().parameter_overrides(parameters);
+  ASSERT_EQ(controller.init(params), controller_interface::return_type::OK);
+  ASSERT_EQ(controller.configure().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE);
+  std::vector<hardware_interface::StateInterface::ConstSharedPtr> state_handles;
+  const std::vector<hardware_interface::CommandInterface::SharedPtr> commands =
+    assign_controller_interfaces(controller, &state_handles);
+  const std::vector<hardware_interface::CommandInterface::SharedPtr> references =
+    controller.export_reference_interfaces();
+  ASSERT_EQ(references.size(), 3U);
+  for (const auto & command : commands)
+  {
+    ASSERT_TRUE(command->set_value(0.5));
+  }
+
+  // WHEN activation occurs without receiving a movement reference.
+  ASSERT_EQ(
+    controller.on_activate(rclcpp_lifecycle::State{}), controller_interface::CallbackReturn::SUCCESS);
+
+  // THEN every wheel is stopped before the first update and remains stopped while waiting.
+  for (const auto & command : commands)
+  {
+    EXPECT_EQ(command->get_optional<double>(), 0.0);
+  }
+  EXPECT_EQ(
+    controller.update_and_write_commands(
+      controller.get_node()->now(), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+  for (const auto & command : commands)
+  {
+    EXPECT_EQ(command->get_optional<double>(), 0.0);
+  }
+  rclcpp::shutdown();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+  ReferenceFormats, MecanumDriveControllerActivationRegression, ::testing::Bool(),
+  [](const ::testing::TestParamInfo<bool> & info) {
+    return info.param ? "Stamped" : "Unstamped";
+  });
+#endif
 
 TEST(GeneratedParameterValidation, AcceptsSafeNumericBoundaries)
 {

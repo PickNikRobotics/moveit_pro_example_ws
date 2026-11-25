@@ -61,12 +61,12 @@ skip_objectives = {
     # Real-model VO is validated manually, not in the Objective CI suite.
     "VO Estimation Run",
     # User input required: no primary UI is attached in headless CI.
-    "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
-    "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
+    "Navigate to Clicked Point",  # GetPlanarPoseFromUser + WaitForUserPathApproval.
+    "Navigate to Clicked Point with Replanning",  # GetPlanarPoseFromUser.
     "Request Teleoperation",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     # Core-library objectives require operator input unavailable in headless CI.
     "Collect Planar Waypoints",  # Confirmed planar selection needs an operator.
-    "Navigate Planar Waypoints",  # Confirmed selection and per-leg path approval.
+    "Navigate Queued Waypoints",  # Confirmed planar collection + per-leg path approval require an operator.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     "Vector Subtrees Example",  # Looks up the `world` frame, which lunar_sim's TF tree does not have.

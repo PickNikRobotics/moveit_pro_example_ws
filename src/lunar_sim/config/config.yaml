@@ -140,6 +140,9 @@ objectives:
     mujoco_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/mujoco"
+    navigation_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/navigation"
     lunar_sim_objectives:
       package_name: "lunar_sim"
       relative_path: "objectives"

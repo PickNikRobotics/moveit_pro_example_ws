@@ -384,6 +384,10 @@ bool MecanumDriveController::on_set_chained_mode(bool chained_mode)
 controller_interface::CallbackReturn MecanumDriveController::on_activate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  if (command_interfaces_.size() != NR_CMD_ITFS)
+  {
+    return controller_interface::CallbackReturn::ERROR;
+  }
   last_limited_reference_.fill(0.0);
   has_last_applied_reference_stamp_ = false;
   current_reference_is_new_ = true;
@@ -395,7 +399,9 @@ controller_interface::CallbackReturn MecanumDriveController::on_activate(
   {
     reset_controller_reference_unstamped_msg(*(input_ref_unstamped_.readFromRT()));
   }
-  return controller_interface::CallbackReturn::SUCCESS;
+  // Newly claimed wheel interfaces may retain commands from their previous owner.
+  return stop_wheels() ? controller_interface::CallbackReturn::SUCCESS :
+                         controller_interface::CallbackReturn::ERROR;
 }
 
 controller_interface::CallbackReturn MecanumDriveController::on_deactivate(
