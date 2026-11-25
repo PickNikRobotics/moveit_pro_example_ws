@@ -119,6 +119,7 @@
             margin="0.0"
             point_cloud="{selected_cloud}"
             projection_mode="SURFACE"
+            output_frame="world"
             coverage_path="{coverage_path}"
             region_cloud="{surface_cloud}"
           />
