@@ -374,7 +374,7 @@ BT::NodeStatus PlanJointSplineThroughPoses::tick()
   {
     if (robot_model->hasJointModel(seed_joint_state.name[i]))
     {
-      state.setJointPositions(seed_joint_state.name[i], { seed_joint_state.position[i] });
+      state.setJointPositions(seed_joint_state.name[i], Eigen::VectorXd::Constant(1, seed_joint_state.position[i]));
     }
   }
   state.update();

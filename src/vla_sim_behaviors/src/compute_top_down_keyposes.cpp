@@ -248,7 +248,7 @@ BT::NodeStatus ComputeTopDownKeyposes::tick()
   {
     if (robot_model->hasJointModel(seed_joint_state.name[i]))
     {
-      seed_state.setJointPositions(seed_joint_state.name[i], { seed_joint_state.position[i] });
+      seed_state.setJointPositions(seed_joint_state.name[i], Eigen::VectorXd::Constant(1, seed_joint_state.position[i]));
     }
   }
   seed_state.update();

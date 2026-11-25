@@ -7,7 +7,8 @@
 
        This file includes the robot (gen3_7dof.xml, robotiq variant),
        which sets <compiler meshdir="assets">, then adds the task
-       environment, the two external cameras, and a keyframe.
+       environment, the two external cameras, and the keyframes in
+       keyframes.xml.
 
        Coordinates: Kinova base at the world origin (z=0.02), reaching
        toward +x. A flat table is centered at (0.5, 0.0) with its top at
@@ -142,7 +143,7 @@
          friction so a top-down pad grasp holds; the Robotiq pads (friction 5.0,
          priority 1) win the contact friction.
          Declaration order (red, green, blue) fixes the freejoint qpos order the
-         keyframe below depends on. -->
+         keyframes in keyframes.xml depend on. -->
     <body name="cube_red" pos="0.44 -0.12 0.115">
       <freejoint name="cube_red_free" />
       <geom

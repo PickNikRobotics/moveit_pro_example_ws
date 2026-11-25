@@ -1,23 +1,64 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Collect Cube-Stack Demonstration">
   <!--
-    Records from an eval layout, keeping the training layouts and their datasets
-    to the per-prompt sweeps.
+    Records from an eval layout, keeping the training layouts and their datasets to
+    the per-prompt sweeps. Unlike Record Cube-Stack Episode, an unfinished
+    demonstration fails this Objective. robot_type matches the published
+    cube-stacking dataset; the Training Config seeded from the robot calls it `gen3`.
   -->
   <BehaviorTree
     ID="Collect Cube-Stack Demonstration"
-    _description="Record one oracle demonstration of stacking the red cube on the green cube."
+    _description="Record one oracle demonstration of stacking the red cube on the green cube and convert it to a LeRobot dataset."
     _favorite="true"
   >
     <Control ID="Sequence" name="root">
       <SubTree
-        ID="Record Cube-Stack Episode"
-        dataset_name="cubestack_oracle"
-        task="stack the red cube on the green cube"
-        held_cube_frame="cube_red_tf"
-        target_cube_frame="cube_green_tf"
+        ID="Prepare Cube-Stack Scene"
+        _collapsed="true"
         keyframe_name="eval_0"
       />
+      <Control ID="Fallback" name="RecordWithCleanup">
+        <Control ID="Sequence" name="RecordAndConvert">
+          <Action
+            ID="RecordEpisode"
+            name="Start Trainer recording"
+            dataset_name="cubestack_oracle"
+            task="stack the red cube on the green cube"
+            config_name="vla_sim"
+            num_episodes="1"
+          />
+          <Action ID="WaitForEpisodeStart" timeout="30.0" />
+          <!--Hold still across the frames straddling the start marker.-->
+          <Action ID="WaitForDuration" delay_duration="0.5" />
+          <SubTree
+            ID="Execute Cube-Stack Oracle"
+            _collapsed="true"
+            held_cube_frame="cube_red_tf"
+            target_cube_frame="cube_green_tf"
+          />
+          <Action ID="SaveEpisode" name="Keep finished demonstration" />
+          <!--Let the saved episode finish updating in Trainer before the
+               session closes.-->
+          <Action
+            ID="WaitForDuration"
+            name="Let episode finish saving"
+            delay_duration="1.0"
+          />
+          <Action ID="StopRecording" name="Finish recording session" />
+          <Action
+            ID="ConvertDataset"
+            name="Convert to LeRobot dataset"
+            dataset_name="cubestack_oracle"
+            robot_type="kinova_gen3"
+          />
+        </Control>
+        <!--Cleanup, not a forced success: StopRecording discards the unsaved
+             attempt and AlwaysFailure preserves the failed result.-->
+        <Control ID="Sequence" name="DiscardFailedAttempt">
+          <Action ID="StopRecording" name="Discard unsaved attempt" />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
     </Control>
   </BehaviorTree>
 
@@ -25,7 +66,7 @@
     <SubTree ID="Collect Cube-Stack Demonstration">
       <MetadataFields>
         <Metadata runnable="true" />
-        <Metadata subcategory="Application - VLA Examples" />
+        <Metadata subcategory="Application - Data Recording" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

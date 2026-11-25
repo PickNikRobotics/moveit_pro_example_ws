@@ -1,53 +1,64 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Record Cube-Stack Episode">
   <!--
-    One recording session per episode, so the scene reset happens outside any
-    recording window. Sessions sharing a dataset name accumulate into one
-    dataset.
-
-    An episode that never opens, or a demonstration the oracle cannot finish, is
-    left unsaved and the tree still succeeds, so a sweep over keyframes loses the
-    attempt rather than the run.
+    One recording session per episode keeps the scene reset outside any recording
+    window; sessions sharing a dataset name accumulate into one dataset. A
+    demonstration the oracle cannot finish is discarded and the tree still succeeds,
+    so a sweep over keyframes loses the attempt rather than the run, while a reset or
+    recording that cannot start fails it. `config_name` names the Training Config
+    MoveIt Pro seeds from the running robot, which supplies the cameras, fps, and
+    `/joint_states` and `/joint_commands` topics.
   -->
   <BehaviorTree
     ID="Record Cube-Stack Episode"
-    _description="Record one oracle demonstration from a keyframe into a dataset."
+    _description="Record one oracle demonstration from a keyframe into a Trainer dataset, discarding it if the oracle does not finish."
     _favorite="false"
   >
     <Control ID="Sequence" name="root">
-      <SubTree ID="Prepare Cube-Stack Scene" keyframe_name="{keyframe_name}" />
+      <SubTree
+        ID="Prepare Cube-Stack Scene"
+        _collapsed="true"
+        keyframe_name="{keyframe_name}"
+      />
       <Action
         ID="RecordEpisode"
+        name="Start Trainer recording"
         dataset_name="{dataset_name}"
         task="{task}"
+        config_name="vla_sim"
         num_episodes="1"
         recording_id="{recording_id}"
       />
       <!--
-        Everything between RecordEpisode and StopRecording sits under this Fallback, so a
-        session that opens is always closed. Leaving one open stalls the whole sweep: the
-        next episode's RecordEpisode finds the Trainer already recording.
+        Everything after RecordEpisode sits under this Fallback, so a session that
+        opens is always closed. Leaving one open stalls the whole sweep: the next
+        episode's RecordEpisode finds the Trainer already recording.
       -->
-      <Control ID="Fallback" name="save_only_what_finished">
-        <Control ID="Sequence" name="demonstration">
+      <Control ID="Fallback" name="RecordWithCleanup">
+        <Control ID="Sequence" name="RecordDemonstration">
           <Action ID="WaitForEpisodeStart" timeout="30.0" />
           <!--Hold still across the frames straddling the start marker.-->
           <Action ID="WaitForDuration" delay_duration="0.5" />
           <SubTree
             ID="Execute Cube-Stack Oracle"
+            _collapsed="true"
             held_cube_frame="{held_cube_frame}"
             target_cube_frame="{target_cube_frame}"
           />
-          <Action ID="SaveEpisode" />
+          <Action ID="SaveEpisode" name="Keep finished demonstration" />
+          <!--Let the saved episode finish updating in Trainer before the
+               session closes.-->
+          <Action
+            ID="WaitForDuration"
+            name="Let episode finish saving"
+            delay_duration="1.0"
+          />
+          <Action ID="StopRecording" name="Finish recording session" />
         </Control>
-        <Action ID="AlwaysSuccess" />
+        <!--StopRecording never snapshots an unsaved episode, so this discards
+             the unfinished attempt. It succeeds when no session is active.-->
+        <Action ID="StopRecording" name="Discard unfinished attempt" />
       </Control>
-      <!--
-        Saving rolls the bag to a fresh split. Hold long enough for that split to
-        take frames, so the converter reads a finalized file.
-      -->
-      <Action ID="WaitForDuration" delay_duration="1.0" />
-      <Action ID="StopRecording" />
     </Control>
   </BehaviorTree>
 
@@ -55,7 +66,7 @@
     <SubTree ID="Record Cube-Stack Episode">
       <MetadataFields>
         <Metadata runnable="false" />
-        <Metadata subcategory="Application - VLA Examples" />
+        <Metadata subcategory="Application - Data Recording" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
