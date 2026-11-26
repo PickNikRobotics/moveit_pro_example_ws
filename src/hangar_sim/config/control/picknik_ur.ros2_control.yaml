@@ -9,8 +9,6 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
     force_torque_sensor_broadcaster:
       type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
-    platform_velocity_controller:
-      type: clearpath_mecanum_drive_controller/MecanumDriveController
     platform_velocity_controller_nav2:
       type: clearpath_mecanum_drive_controller/MecanumDriveController
     platform_velocity_controller_base_jog:
@@ -23,8 +21,6 @@ controller_manager:
       type: velocity_force_controller/VelocityForceController
     arm_only_velocity_force_controller:
       type: velocity_force_controller/VelocityForceController
-    joint_velocity_controller:
-      type: joint_velocity_controller/JointVelocityController
     arm_only_joint_velocity_controller:
       type: joint_velocity_controller/JointVelocityController
 
@@ -34,63 +30,6 @@ vacuum_gripper:
     joint: suction_cup
     allow_stalling: true
     stall_timeout: 0.01
-
-platform_velocity_controller:
-  ros__parameters:
-    use_sim_time: False
-    interface_name: velocity
-    command_joint_names: ["front_left_wheel", "rear_left_wheel", "rear_right_wheel", "front_right_wheel"]
-    reference_joint_names: ["linear_x_joint", "linear_y_joint", "rotational_yaw_joint"]
-    body_frame_control: false
-    body_frame_yaw_joint: "rotational_yaw_joint"
-    front_left_wheel_command_joint_name: "front_left_wheel"
-    front_right_wheel_command_joint_name: "front_right_wheel"
-    rear_right_wheel_command_joint_name: "rear_right_wheel"
-    rear_left_wheel_command_joint_name: "rear_left_wheel"
-
-    # Hull rolling radius (perimeter/2*pi = 75.630 mm), NOT the sphere-peak
-    # radius (75.9002 mm) or the static ride height (75.0889 mm). See the
-    # wheel-geometry comment in hangar_sim/description/hangar_scene.xml.
-    kinematics.wheels_radius: 0.0756
-    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.59
-    wheel_separation_multiplier: 1.0
-    wheel_radius_multiplier: 1.0
-
-    publish_rate: 50.0
-    reference_timeout: 0.5
-    use_stamped_vel: False
-
-    pose_covariance_diagonal: [0.1, 0.1, 1000000.0, 1000000.0, 1000000.0, 0.5]
-    twist_covariance_diagonal: [0.1, 0.1, 0.1, 1000000.0, 1000000.0, 0.5]
-
-    command_timeout: 5.0
-
-    base_frame_id: "ridgeback_base_link"
-    odom_frame_id: "odom"
-    enable_odom_tf: false
-
-    # Velocity and acceleration limits
-    # Whenever a min_* is unspecified, default to -max_*
-    linear.x.has_velocity_limits: true
-    linear.x.has_acceleration_limits: true
-    linear.x.max_velocity: 1.3
-    linear.x.min_velocity: -1.3
-    linear.x.max_acceleration: 1.0
-    linear.x.min_acceleration: -1.0
-
-    linear.y.has_velocity_limits: true
-    linear.y.has_acceleration_limits: true
-    linear.y.max_velocity: 1.3
-    linear.y.min_velocity: -1.3
-    linear.y.max_acceleration: 1.0
-    linear.y.min_acceleration: -1.0
-
-    angular.z.has_velocity_limits: true
-    angular.z.has_acceleration_limits: true
-    angular.z.max_velocity: 4.0
-    angular.z.min_velocity: -4.0
-    angular.z.max_acceleration: 2.0
-    angular.z.min_acceleration: -2.0
 
 platform_velocity_controller_nav2:
   ros__parameters:
@@ -160,7 +99,7 @@ platform_velocity_controller_base_jog:
     rear_right_wheel_command_joint_name: "rear_right_wheel"
     rear_left_wheel_command_joint_name: "rear_left_wheel"
 
-    # Hull rolling radius; see platform_velocity_controller above.
+    # Hull rolling radius; see platform_velocity_controller_nav2 above.
     kinematics.wheels_radius: 0.0756
     kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.59
     wheel_separation_multiplier: 1.0
@@ -217,9 +156,6 @@ joint_state_broadcaster:
       - front_right_wheel
       - rear_left_wheel
       - rear_right_wheel
-      - linear_x_joint
-      - linear_y_joint
-      - rotational_yaw_joint
     interfaces:
       - position
       - velocity
@@ -234,42 +170,19 @@ joint_trajectory_controller:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
-      - linear_x_joint
-      - linear_y_joint
-      - rotational_yaw_joint
+      - front_left_wheel
+      - rear_left_wheel
+      - rear_right_wheel
+      - front_right_wheel
     command_interfaces:
       - velocity
     state_interfaces:
       - position
       - velocity
-    command_joints:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-      - platform_velocity_controller/linear_x_joint
-      - platform_velocity_controller/linear_y_joint
-      - platform_velocity_controller/rotational_yaw_joint
     state_publish_rate: 100.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: true
     open_loop_control: false # this is closed loop
-    # Workaround for PickNikRobotics/moveit_pro#20766: trajectory generation
-    # leaves sub-epsilon terminal-velocity residuals that Jazzy's JTC rejects
-    # by default — measured ~1e-4 on `linear_x_joint` from the MTC Cartesian
-    # approach in "ML Move Boxes to Loading Zone", and ~4e-7 from joint
-    # interpolation in "Point-to-Point Trajectory" (previously skipped in
-    # test/objectives_integration_test.py for exactly this rejection).
-    # CAUTION: this flag is binary and controller-wide — it disables the
-    # endpoint-still-moving check for every magnitude on every joint,
-    # including the mecanum base, where a genuinely nonzero terminal velocity
-    # means the base is still translating at trajectory end and then snaps to
-    # a position hold. Acceptable for this sim config; re-evaluate before
-    # copying to real hardware. Remove when moveit_pro#20766 clamps the
-    # residuals at trajectory generation.
-    allow_nonzero_velocity_at_trajectory_end: true
     gains:
       shoulder_pan_joint:
         p: 10.0
@@ -289,13 +202,16 @@ joint_trajectory_controller:
       wrist_3_joint:
         p: 10.0
         ff_velocity_scale: 1.0
-      linear_x_joint:
+      front_left_wheel:
         p: 2.0
         ff_velocity_scale: 1.0
-      linear_y_joint:
+      rear_left_wheel:
         p: 2.0
         ff_velocity_scale: 1.0
-      rotational_yaw_joint:
+      rear_right_wheel:
+        p: 2.0
+        ff_velocity_scale: 1.0
+      front_right_wheel:
         p: 2.0
         ff_velocity_scale: 1.0
     constraints:
@@ -313,12 +229,14 @@ joint_trajectory_controller:
         goal: 0.05
       wrist_3_joint:
         goal: 0.05
-      linear_x_joint:
-        goal: 0.1
-      linear_y_joint:
-        goal: 0.1
-      rotational_yaw_joint:
-        goal: 0.1
+      front_left_wheel:
+        goal: 0.5
+      rear_left_wheel:
+        goal: 0.5
+      rear_right_wheel:
+        goal: 0.5
+      front_right_wheel:
+        goal: 0.5
 
     acceleration_limits:
       shoulder_pan_joint: 10.0
@@ -355,29 +273,18 @@ imu_sensor_broadcaster:
 
 velocity_force_controller:
   ros__parameters:
-    # The joint group to control.
+    # The whole-body group: the arm and the wheel joints of the 'ridgeback' mobile base. The controller drives the base
+    # through its wheels, so it commands the group's own joints (the default) and needs no 'command_joints'.
     planning_group_name: manipulator
-    # The joints that the controller will command.
-    # The 'platform' joints are renamed to match the joint names exposed by the 'platform_velocity_controller', which
-    # enables layered control of those joints.
-    command_joints:
-      - platform_velocity_controller/linear_x_joint
-      - platform_velocity_controller/linear_y_joint
-      - platform_velocity_controller/rotational_yaw_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    # Command just velocity to support layering with the mobile base controller.
+    # Wheels take only velocity commands, and every joint gets the same interfaces.
     command_interfaces: ["velocity"]
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: grasp_link
     # The frame where the force / torque sensor reading is given.
     # (Needs to exist in the kinematic chain).
     sensor_frame: tool0
-    # Maximum joint-space velocities.
+    # Maximum joint-space velocities, one per group joint: the six arm joints and the four wheels. All are equal so that
+    # the list does not depend on the group's joint order; at 1 rad/s the wheels drive the base at up to 0.076 m/s.
     max_joint_velocity:
       - 1.0
       - 1.0
@@ -388,8 +295,10 @@ velocity_force_controller:
       - 1.0
       - 1.0
       - 1.0
-    # Maximum joint-space accelerations.
+      - 1.0
+    # Maximum joint-space accelerations, one per group joint, equal for the same reason; within the wheels' 2.6 rad/s^2.
     max_joint_acceleration:
+      - 2.0
       - 2.0
       - 2.0
       - 2.0
@@ -475,50 +384,6 @@ arm_only_velocity_force_controller:
     command_timeout: 0.2
     # Padding (in radians) to add to joint position limits as a safety margin.
     joint_limit_position_tolerance: 0.02
-
-joint_velocity_controller:
-  ros__parameters:
-    # Joint group to control.
-    planning_group_name: manipulator
-    command_joints:
-      - platform_velocity_controller/linear_x_joint
-      - platform_velocity_controller/linear_y_joint
-      - platform_velocity_controller/rotational_yaw_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    # Maximum joint-space velocities.
-    max_joint_velocity:
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-    # Maximum joint-space accelerations.
-    max_joint_acceleration:
-      - 2.0
-      - 2.0
-      - 2.0
-      - 2.0
-      - 2.0
-      - 2.0
-      - 2.0
-      - 2.0
-      - 2.0
-    command_interfaces: ["velocity"]
-    # Padding (in radians) to add to joint position limits as a safety margin.
-    joint_limit_position_tolerance: 0.02
-    # Timeout in seconds after which the controller will stop motion if no new commands are received.
-    command_timeout: 0.2
-    # Rate in Hz at which the controller will publish the state.
-    state_publish_rate: 20
 
 arm_only_joint_velocity_controller:
   ros__parameters:

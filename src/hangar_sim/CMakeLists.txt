@@ -3,26 +3,6 @@ project(hangar_sim)
 
 find_package(ament_cmake REQUIRED)
 find_package(picknik_accessories REQUIRED)
-find_package(fuse_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
-
-# Composes fuse's estimate and MuJoCo's ground truth into the live odom -> world edge, so that
-# navigation resolves odom -> base to the estimate while world -> base stays truth. Launched only
-# when use_fuse is on; see robot_drivers_to_persist_sim.launch.py.
-add_library(odom_world_drift_core STATIC src/odom_world_drift.cpp)
-target_include_directories(odom_world_drift_core PUBLIC include)
-target_compile_features(odom_world_drift_core PUBLIC cxx_std_20)
-ament_target_dependencies(odom_world_drift_core fuse_msgs geometry_msgs nav_msgs rclcpp tf2 tf2_geometry_msgs tf2_ros)
-
-add_executable(odom_world_drift src/odom_world_drift_main.cpp)
-target_link_libraries(odom_world_drift odom_world_drift_core)
-
-install(TARGETS odom_world_drift DESTINATION lib/${PROJECT_NAME})
 
 install(
   DIRECTORY
@@ -39,20 +19,13 @@ install(
 
 install(PROGRAMS
   script/lidar_flattener.py
-  script/odometry_joint_state_publisher.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
-  find_package(tf2_msgs REQUIRED)
   ament_lint_auto_find_test_dependencies()
-  # odom_world_drift's free functions, truth history, and the class composed with an injected node.
-  ament_add_gtest(odom_world_drift_test test/test_odom_world_drift.cpp)
-  target_link_libraries(odom_world_drift_test odom_world_drift_core)
-  ament_target_dependencies(odom_world_drift_test tf2_msgs)
   # Pure-data comparison of the URDF chain against the MJCF bodies; no simulator,
   # so it stays outside the long objectives suite below.
   ament_add_pytest_test(

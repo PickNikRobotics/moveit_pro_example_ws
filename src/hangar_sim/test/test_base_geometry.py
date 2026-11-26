@@ -55,6 +55,7 @@ from ament_index_python.packages import get_package_share_directory
 DESCRIPTION = Path(__file__).resolve().parent.parent / "description"
 MJCF = DESCRIPTION / "ur5e_ridgeback.xml"
 XACRO = DESCRIPTION / "ur5e_ridgeback.xacro"
+CONTROL_XACRO = DESCRIPTION / "picknik_ur_mujoco_ros2_control.xacro"
 CONTROL_YAML = (
     Path(__file__).resolve().parent.parent
     / "config"
@@ -64,7 +65,6 @@ CONTROL_YAML = (
 
 # All mecanum controller instances drive the same four wheels.
 MECANUM_CONTROLLERS = (
-    "platform_velocity_controller",
     "platform_velocity_controller_nav2",
     "platform_velocity_controller_base_jog",
 )
@@ -104,22 +104,24 @@ def _xacro_property(source: Path, name: str) -> float:
 
 
 def _base_anchor_z() -> float:
-    """z of the joint that hangs the whole robot off the world frame."""
-    match = re.search(
-        r'<joint name="linear_x_joint"[^>]*>(?:(?!</joint>).)*?'
-        r'<origin xyz="[-0-9.eE]+ [-0-9.eE]+ ([-0-9.eE]+)"',
-        XACRO.read_text(),
-        re.DOTALL,
-    )
-    assert match, "linear_x_joint has no parsable origin in ur5e_ridgeback.xacro"
-    return float(match.group(1))
+    """z of the MJCF base body, which the odom TF hands to the URDF root.
+
+    The URDF is rooted at `ridgeback_base_link` and placed only by MuJoCo's
+    odom -> ridgeback_base_link edge, so the MJCF anchor is the URDF's height too.
+    `test_odom_tf_carries_the_ride_height` holds the odom publisher to that.
+    """
+    worldbody = ET.parse(MJCF).getroot().find("worldbody")
+    assert worldbody is not None, f"{MJCF.name} has no <worldbody>"
+    anchor = worldbody.find("body[@name='base_platform_rotation']")
+    assert anchor is not None, f"{MJCF.name} has no base_platform_rotation body"
+    return float(anchor.get("pos", "0 0 0").split()[2])
 
 
 def _urdf_wheel_height() -> float:
     """World z of a wheel axle, walked down the URDF chain.
 
-    `linear_x_joint` carries the whole robot's height; the joints between it and
-    `chassis_link` are planar, which `test_base_chain_is_otherwise_planar` holds to.
+    The root carries the whole robot's height; `base_link_joint` up to
+    `chassis_link` is planar, which `test_base_chain_is_otherwise_planar` holds to.
     Below that, chassis -> axle is `axle_offset` and the rocker and wheel joints add
     whatever z the vendored description gives them.
     """
@@ -257,21 +259,44 @@ def _mjcf_wheel_heights() -> dict[str, float]:
 
 
 def test_base_chain_is_otherwise_planar() -> None:
-    """`_urdf_wheel_height` reads one joint's z; the rest of the chain must add none."""
+    """`_urdf_wheel_height` takes the root's z from the MJCF; the root joint must add none."""
     text = XACRO.read_text() + RIDGEBACK_XACRO.read_text()
-    for joint in ("linear_y_joint", "rotational_yaw_joint", "base_link_joint"):
-        match = re.search(
-            rf'<joint name="{joint}"[^>]*>(?:(?!</joint>).)*?'
-            rf'<origin xyz="[-0-9.eE]+ [-0-9.eE]+ ([-0-9.eE]+)"',
-            text,
-            re.DOTALL,
-        )
-        if match is None:
-            continue  # no origin means the identity, which is what we want
-        assert float(match.group(1)) == pytest.approx(0.0, abs=TOLERANCE_M), (
-            f"{joint} now adds {float(match.group(1)):+.6f} m of height, which the "
-            f"wheel-height walk does not account for."
-        )
+    match = re.search(
+        r'<joint name="base_link_joint"[^>]*>(?:(?!</joint>).)*?'
+        r'<origin xyz="[-0-9.eE]+ [-0-9.eE]+ ([-0-9.eE]+)"',
+        text,
+        re.DOTALL,
+    )
+    if match is None:
+        return  # no origin means the identity, which is what we want
+    assert float(match.group(1)) == pytest.approx(0.0, abs=TOLERANCE_M), (
+        f"base_link_joint now adds {float(match.group(1)):+.6f} m of height, which the "
+        f"wheel-height walk does not account for."
+    )
+
+
+def test_odom_tf_carries_the_ride_height() -> None:
+    """The odom edge is the URDF root's only placement, so it must keep the MJCF z."""
+    control = CONTROL_XACRO.read_text()
+
+    def param(name: str) -> str | None:
+        match = re.search(rf'<param name="{name}">([^<]*)</param>', control)
+        return match.group(1).strip() if match else None
+
+    assert param("odom_publish_tf") == "true"
+    assert param("odom_child_frame") == "ridgeback_base_link"
+    assert param("odom_planar") == "false", (
+        "odom_planar zeroes z in the odom -> ridgeback_base_link TF, which drops every "
+        f"link {_base_anchor_z():.4f} m below where MuJoCo simulates it."
+    )
+
+    # Without odom_planar, the base itself must have no z, roll or pitch DOF to report.
+    worldbody = ET.parse(MJCF).getroot().find("worldbody")
+    assert worldbody is not None
+    anchor = worldbody.find("body[@name='base_platform_rotation']")
+    assert anchor is not None
+    dofs = {(j.get("type"), j.get("axis")) for j in anchor.findall("joint")}
+    assert dofs == {("slide", "1 0 0"), ("slide", "0 1 0"), ("hinge", "0 0 1")}
 
 
 def _rotation_of(body: ET.Element) -> str | None:
@@ -382,3 +407,48 @@ def test_arm_mount_agrees_between_the_models() -> None:
         f"the arm plate lands at {urdf_z + MESH_BASE_OFFSET_M:.6f} m rather than on "
         f"the {deck:.6f} m deck."
     )
+
+
+SCENE = DESCRIPTION / "hangar_scene.xml"
+RESET_OBJECTIVE = (
+    Path(__file__).resolve().parent.parent / "objectives" / "reset_mujoco_sim.xml"
+)
+BASE_JOINTS = ("linear_x_joint", "linear_y_joint", "rotational_yaw_joint")
+
+
+def test_reset_seeds_amcl_at_the_keyframe_base_pose() -> None:
+    # The scene includes the robot first and the base's slide/yaw joints lead its worldbody,
+    # so they own the keyframe's first three qpos entries.
+    includes = [inc.get("file") for inc in ET.parse(SCENE).getroot().iter("include")]
+    assert includes[0] == MJCF.name, f"hangar_scene.xml includes {includes[0]} first"
+    worldbody = ET.parse(MJCF).getroot().find("worldbody")
+    assert worldbody is not None
+    first_joints = tuple(joint.get("name") for joint in worldbody.iter("joint"))[:3]
+    assert (
+        first_joints == BASE_JOINTS
+    ), f"the first robot joints are {first_joints}, so qpos[0:3] is not the base pose"
+    key = next(
+        key
+        for key in ET.parse(SCENE).getroot().iter("key")
+        if key.get("name") == "default"
+    )
+    keyframe_x, keyframe_y, keyframe_yaw = (
+        float(value) for value in key.get("qpos").split()[:3]
+    )
+
+    seed = next(
+        action
+        for action in ET.parse(RESET_OBJECTIVE).getroot().iter("Action")
+        if action.get("ID") == "CreatePoseStamped"
+        and action.get("pose_stamped") == "{keyframe_base_pose}"
+    )
+    assert seed.get("reference_frame") == "map"
+    x, y, _ = (float(value) for value in seed.get("position_xyz").split(";"))
+    qx, qy, qz, qw = (float(value) for value in seed.get("orientation_xyzw").split(";"))
+    assert (qx, qy) == (0.0, 0.0), "the seed must be a pure yaw"
+    assert math.hypot(qz, qw) == pytest.approx(1.0, abs=1e-5)
+    yaw = 2.0 * math.atan2(qz, qw)
+
+    # A mismatch seeds AMCL away from where the reset put the robot.
+    assert (x, y) == pytest.approx((keyframe_x, keyframe_y), abs=TOLERANCE_M)
+    assert yaw == pytest.approx(keyframe_yaw, abs=1e-5)

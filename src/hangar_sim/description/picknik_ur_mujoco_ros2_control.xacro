@@ -70,15 +70,13 @@
           <param name="publish_odom">${publish_odom}</param>
           <param name="odom_child_frame">ridgeback_base_link</param>
           <param name="odom_rate">150</param>
-          <!-- Zero z/roll/pitch in /odom for this planar base. The previous tag here,
-               odom_zero_z, is not a recognized odom publisher parameter and was silently
-               ignored; odom_planar is the real one. -->
-          <param name="odom_planar">true</param>
-          <!-- robot_state_publisher owns the live TF to ridgeback_base_link via the
-               virtual-rail joint chain (driven by MuJoCo's own joint states), so the
-               odom publisher must not broadcast a competing odom -> ridgeback_base_link
-               edge. /odom messages keep flowing for Nav2. -->
-          <param name="odom_publish_tf">false</param>
+          <!-- The MJCF base moves only in x, y and yaw, so the unprojected pose is already
+               planar and carries the base's ride height, which the URDF has no other way
+               to place. odom_planar would zero that height and sink every link in TF. -->
+          <param name="odom_planar">false</param>
+          <!-- The URDF is rooted at ridgeback_base_link, so this odom -> ridgeback_base_link
+               edge is the only TF that places the robot. -->
+          <param name="odom_publish_tf">true</param>
           <param name="odom_frame">odom</param>
           <param name="publish_mj_world_tf">false</param>
           <!-- Stop the site TF fill-in chain at the robot's base instead of walking to

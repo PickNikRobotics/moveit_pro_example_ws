@@ -1,5 +1,7 @@
 
 # Planning groups to use in JointJog, and their corresponding JVC controllers.
 # The number of elements in `planning_groups` and `controllers` must match.
-planning_groups: ['manipulator', 'arm_only']
-controllers: ['joint_velocity_controller', 'arm_only_joint_velocity_controller']
+# 'manipulator' is not listed: it contains the wheels of the 'ridgeback' mobile base, which a Joint Velocity Controller
+# rejects. Drive the base through Pose Jog or base jogging instead.
+planning_groups: ['arm_only']
+controllers: ['arm_only_joint_velocity_controller']

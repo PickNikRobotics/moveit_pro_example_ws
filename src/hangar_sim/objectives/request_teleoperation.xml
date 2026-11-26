@@ -149,7 +149,7 @@
                       acceleration_scale_factor="1.0"
                       velocity_scale_factor="{velocity_scale_factor}"
                       controller_action_server="{controller_action_server}"
-                      controller_names="joint_trajectory_controller;platform_velocity_controller"
+                      controller_names="joint_trajectory_controller"
                       joint_group_name="{default_planning_group}"
                       link_padding="{link_padding}"
                       collision_check_params="{collision_check_params}"
@@ -298,7 +298,7 @@
       />
       <input_port
         name="default_planning_group"
-        default="manipulator"
+        default="arm_only"
         type="std::string"
       />
       <input_port

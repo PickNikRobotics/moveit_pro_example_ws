@@ -24,10 +24,8 @@ hardware:
           path: "config/moveit/joint_limits.yaml"
       - mujoco_model: "description/hangar_scene.xml"
       - mujoco_viewer: false  # set to true locally to open the MuJoCo viewer window
-      # Publishes /odom messages for Nav2. The odom -> ridgeback_base_link TF edge is NOT
-      # published by MuJoCo (odom_publish_tf is false in the ros2_control xacro);
-      # robot_state_publisher owns the live transform to ridgeback_base_link via
-      # the virtual-rail joint chain, so this can stay true with fuse enabled.
+      # Publishes /odom messages for Nav2 and the odom -> ridgeback_base_link TF edge,
+      # which is the only transform that places the robot (the URDF is rooted there).
       # Rebuild hangar_sim after changing this value.
       - publish_odom: true
       # Publishes the forward stereo pair for visual odometry. Off because it adds two unusable entries to the
@@ -107,7 +105,6 @@ ros2_control:
     - "force_torque_sensor_broadcaster"
     - "imu_sensor_broadcaster"
     - "joint_state_broadcaster"
-    - "platform_velocity_controller"
     - "vacuum_gripper"
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
@@ -116,5 +113,4 @@ ros2_control:
     - "joint_trajectory_controller"
     - "velocity_force_controller"
     - "arm_only_velocity_force_controller"
-    - "joint_velocity_controller"
     - "arm_only_joint_velocity_controller"

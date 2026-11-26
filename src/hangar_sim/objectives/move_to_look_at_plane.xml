@@ -3,17 +3,32 @@
   <!--//////////-->
   <BehaviorTree
     ID="Move to Look at Plane"
-    _description="Move the base an arm close to the plane"
+    _description="Move the base and arm close to the plane"
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <!--The base pose the Look at Plane waypoint was recorded at, in the map frame.-->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="-4.1133;12.9190;0.0"
+        orientation_xyzw="0;0;-0.0186405;0.9998263"
+        pose_stamped="{plane_viewpoint}"
+      />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Navigate Base to Pose"
+        _collapsed="true"
+        goal_pose="{plane_viewpoint}"
+        refine_localization="false"
+      />
+      <!--arm_only: the waypoint holds the arm joints only, and joint-space planners keep the base at one pose.-->
+      <SubTree
+        ID="Move to Named Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
+        joint_group_name="arm_only"
         collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
         velocity_scale_factor="1.0"
         waypoint_name="Look at Plane"

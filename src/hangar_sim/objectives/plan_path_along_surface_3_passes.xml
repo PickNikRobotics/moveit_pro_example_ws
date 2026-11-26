@@ -6,18 +6,34 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <!--Look at the fuselage ahead of the wing, so the base can drive along the slice without meeting the wing.-->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="-4.1133;11.7;0.0"
+        orientation_xyzw="0;0;-0.0186405;0.9998263"
+        pose_stamped="{plane_viewpoint}"
+      />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Navigate Base to Pose"
+        _collapsed="true"
+        goal_pose="{plane_viewpoint}"
+        refine_localization="false"
+      />
+      <!--arm_only: the waypoint holds the arm joints only, and joint-space planners keep the base at one pose.-->
+      <SubTree
+        ID="Move to Named Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
+        joint_group_name="arm_only"
         collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
-        seed="0"
         velocity_scale_factor="1.0"
         waypoint_name="Look at Plane"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
       />
+      <!--The planning scene holds no hangar geometry, so plan validation sees the aircraft only through this capture: put the camera's view, without the floor, into the octomap.-->
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
       <!--Capture one point cloud and lift it to the world frame; all three slices reuse it.-->
       <Action
         ID="GetPointCloud"
@@ -32,20 +48,38 @@
         output_cloud="{full_cloud}"
         target_frame="world"
       />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        pose_stamped="{scene_crop_center}"
+        position_xyz="0;0;2.05"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{scene_crop_center}"
+        point_cloud="{full_cloud}"
+        point_cloud_cropped="{scene_cloud}"
+        crop_box_size="100;100;4"
+      />
+      <Action
+        ID="UpdatePlanningSceneService"
+        point_cloud="{scene_cloud}"
+        point_cloud_service="/point_cloud_service"
+      />
       <!--========== Generate all three contours and show their markers ==========-->
       <!--Row 1: top, z = 1.7-->
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
         pose_stamped="{roi_1}"
-        position_xyz="0;12.5;1.7"
+        position_xyz="0;11.7;1.7"
       />
       <Action
         ID="CropPointsInBox"
         crop_box_centroid_pose="{roi_1}"
         point_cloud="{full_cloud}"
         point_cloud_cropped="{crop_1}"
-        crop_box_size="5;4;0.2"
+        crop_box_size="5;2.5;0.2"
       />
       <Action
         ID="GetCentroidFromPointCloud"
@@ -60,30 +94,22 @@
         input_cloud="{crop_1}"
         slice_distance_from_plane="0.050000"
         slice_plane="{centroid_1}"
-        contour_crop_angle_span="3.15"
-        contour_crop_angle_start="1.60"
-      />
-      <!--Reverse contours 1 and 3 (contour 2 is left as-is) so the three passes
-           chain end-to-start in alternating directions: pass 1 y11->y14,
-           pass 2 y14->y11, pass 3 y11->y14. No return-home between passes.-->
-      <Action
-        ID="ReversePoseStampedVector"
-        input_vector="{contour_1}"
-        output_vector="{contour_1}"
+        contour_crop_angle_span="3.11"
+        contour_crop_angle_start="1.66"
       />
       <!--Row 2: middle, z = 1.55-->
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
         pose_stamped="{roi_2}"
-        position_xyz="0;12.5;1.55"
+        position_xyz="0;11.7;1.55"
       />
       <Action
         ID="CropPointsInBox"
         crop_box_centroid_pose="{roi_2}"
         point_cloud="{full_cloud}"
         point_cloud_cropped="{crop_2}"
-        crop_box_size="5;4;0.2"
+        crop_box_size="5;2.5;0.2"
       />
       <Action
         ID="GetCentroidFromPointCloud"
@@ -98,22 +124,32 @@
         input_cloud="{crop_2}"
         slice_distance_from_plane="0.050000"
         slice_plane="{centroid_2}"
-        contour_crop_angle_span="3.15"
-        contour_crop_angle_start="1.60"
+        contour_crop_angle_span="3.11"
+        contour_crop_angle_start="1.66"
+      />
+      <!--Reverse contour 2 (contours 1 and 3 are left as-is) so the three passes
+           chain end-to-start in alternating directions: pass 1 y13->y11,
+           pass 2 y11->y13, pass 3 y13->y11. No return-home between passes.
+           Pass 1 starts at the end nearer the wing, which the arm reaches from
+           the viewpoint.-->
+      <Action
+        ID="ReversePoseStampedVector"
+        input_vector="{contour_2}"
+        output_vector="{contour_2}"
       />
       <!--Row 3: bottom, z = 1.4-->
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
         pose_stamped="{roi_3}"
-        position_xyz="0;12.5;1.4"
+        position_xyz="0;11.7;1.4"
       />
       <Action
         ID="CropPointsInBox"
         crop_box_centroid_pose="{roi_3}"
         point_cloud="{full_cloud}"
         point_cloud_cropped="{crop_3}"
-        crop_box_size="5;4;0.2"
+        crop_box_size="5;2.5;0.2"
       />
       <Action
         ID="GetCentroidFromPointCloud"
@@ -128,13 +164,8 @@
         input_cloud="{crop_3}"
         slice_distance_from_plane="0.050000"
         slice_plane="{centroid_3}"
-        contour_crop_angle_span="3.15"
-        contour_crop_angle_start="1.60"
-      />
-      <Action
-        ID="ReversePoseStampedVector"
-        input_vector="{contour_3}"
-        output_vector="{contour_3}"
+        contour_crop_angle_span="3.11"
+        contour_crop_angle_start="1.66"
       />
       <!--Show all three path markers at once before any motion.-->
       <Action

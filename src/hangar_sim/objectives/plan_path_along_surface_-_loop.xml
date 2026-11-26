@@ -5,119 +5,160 @@
     _description="Plan and execute a path following a surface"
     _favorite="true"
   >
-    <Decorator ID="KeepRunningUntilFailure">
-      <Control ID="Sequence" name="TopLevelSequence" _collapsed="true">
-        <SubTree
-          ID="Move to Waypoint (JTC)"
-          _collapsed="true"
-          acceleration_scale_factor="1.0"
-          controller_names="joint_trajectory_controller"
-          joint_group_name="manipulator"
-          collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
-          seed="0"
-          velocity_scale_factor="1.0"
-          waypoint_name="Look at Plane"
-        />
-        <Control ID="Sequence" _collapsed="true">
-          <!--Get a point cloud and crop it to the area of interest-->
-          <Action
-            ID="GetPointCloud"
-            topic_name="/wrist_camera/points"
-            message_out="{point_cloud}"
-            publisher_timeout_sec="5.000000"
-            message_timeout_sec="5.000000"
-          />
-          <Action
-            ID="TransformPointCloudFrame"
-            input_cloud="{point_cloud}"
-            output_cloud="{point_cloud}"
-            target_frame="world"
-          />
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Decorator ID="KeepRunningUntilFailure">
+        <Control ID="Sequence" name="LoopSequence" _collapsed="true">
+          <!--Each pass drives the base along the fuselage, so return to the viewpoint before looking again.-->
+          <!--Look at the fuselage ahead of the wing, so the base can drive along the slice without meeting the wing.-->
           <Action
             ID="CreatePoseStamped"
-            reference_frame="world"
-            pose_stamped="{roi_frame}"
-            position_xyz="0;12;1.7"
+            reference_frame="map"
+            position_xyz="-4.1133;11.7;0.0"
+            orientation_xyzw="0;0;-0.0186405;0.9998263"
+            pose_stamped="{plane_viewpoint}"
           />
-          <Action
-            ID="CropPointsInBox"
-            crop_box_centroid_pose="{roi_frame}"
-            point_cloud="{point_cloud}"
-            point_cloud_cropped="{point_cloud}"
-            crop_box_size="5;15;0.2"
+          <SubTree
+            ID="Navigate Base to Pose"
+            _collapsed="true"
+            goal_pose="{plane_viewpoint}"
+            refine_localization="false"
           />
-          <!--Visualize the cropped point cloud-->
-          <Action
-            ID="SendPointCloudToUI"
-            pcd_topic="/pcd_pointcloud_captures"
-            point_cloud="{point_cloud}"
+          <!--arm_only: the waypoint holds the arm joints only, and joint-space planners keep the base at one pose.-->
+          <SubTree
+            ID="Move to Named Waypoint (JTC)"
+            _collapsed="true"
+            acceleration_scale_factor="1.0"
+            controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+            controller_names="joint_trajectory_controller"
+            joint_group_name="arm_only"
+            collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+            velocity_scale_factor="1.0"
+            waypoint_name="Look at Plane"
           />
+          <Control ID="Sequence" _collapsed="true">
+            <!--The planning scene holds no hangar geometry, so plan validation sees the aircraft only through this capture: put the camera's view, without the floor, into the octomap.-->
+            <SubTree ID="Clear Snapshot" _collapsed="true" />
+            <!--Get a point cloud and crop it to the area of interest-->
+            <Action
+              ID="GetPointCloud"
+              topic_name="/wrist_camera/points"
+              message_out="{point_cloud}"
+              publisher_timeout_sec="5.000000"
+              message_timeout_sec="5.000000"
+            />
+            <Action
+              ID="TransformPointCloudFrame"
+              input_cloud="{point_cloud}"
+              output_cloud="{point_cloud}"
+              target_frame="world"
+            />
+            <Action
+              ID="CreatePoseStamped"
+              reference_frame="world"
+              pose_stamped="{scene_crop_center}"
+              position_xyz="0;0;2.05"
+            />
+            <Action
+              ID="CropPointsInBox"
+              crop_box_centroid_pose="{scene_crop_center}"
+              point_cloud="{point_cloud}"
+              point_cloud_cropped="{scene_cloud}"
+              crop_box_size="100;100;4"
+            />
+            <Action
+              ID="UpdatePlanningSceneService"
+              point_cloud="{scene_cloud}"
+              point_cloud_service="/point_cloud_service"
+            />
+            <Action
+              ID="CreatePoseStamped"
+              reference_frame="world"
+              pose_stamped="{roi_frame}"
+              position_xyz="0;11.7;1.7"
+            />
+            <Action
+              ID="CropPointsInBox"
+              crop_box_centroid_pose="{roi_frame}"
+              point_cloud="{point_cloud}"
+              point_cloud_cropped="{point_cloud}"
+              crop_box_size="5;2.5;0.2"
+            />
+            <!--Visualize the cropped point cloud-->
+            <Action
+              ID="SendPointCloudToUI"
+              pcd_topic="/pcd_pointcloud_captures"
+              point_cloud="{point_cloud}"
+            />
+          </Control>
+          <Control ID="Sequence" _collapsed="true">
+            <!--Get the centroid of the cropped point cloud and use it to get a contour-->
+            <Action
+              ID="GetCentroidFromPointCloud"
+              output_pose="{centroid}"
+              point_cloud="{point_cloud}"
+            />
+            <Action
+              ID="VisualizePose"
+              marker_lifetime="20"
+              marker_name="centroid"
+              marker_size="0.200000"
+              pose="{centroid}"
+            />
+            <Action
+              ID="GetContourFromPointCloudSlice"
+              contour_path="{contour_path}"
+              max_pose_spacing="0.200000"
+              hull_alpha="-1.000000"
+              input_cloud="{point_cloud}"
+              slice_distance_from_plane="0.100000"
+              slice_plane="{centroid}"
+              contour_crop_angle_span="3.11"
+              contour_crop_angle_start="1.66"
+            />
+            <Action
+              ID="VisualizePath"
+              marker_lifetime="20"
+              marker_name="path"
+              path="{contour_path}"
+              pose_marker_size="0.100000"
+              show_poses="true"
+            />
+          </Control>
+          <Control ID="Sequence" _collapsed="true">
+            <!--Plan, validate and execute a whole-body path following the contour at a small distance-->
+            <Action
+              ID="PlanCartesianPath"
+              blending_radius="0.0050000"
+              ik_cartesian_space_density="0.010000"
+              ik_joint_space_density="0.100000"
+              joint_trajectory_msg="{joint_trajectory_msg}"
+              path="{contour_path}"
+              planning_group_name="manipulator"
+              cartesian_constraint="[{constraint_type: position_and_orientation}]"
+              trajectory_timing="[{mode: time_optimal}]"
+              tip_offset="0;0;0.1;0;0;0"
+              debug_solution="{debug_solution}"
+            />
+            <Action
+              ID="GetCurrentPlanningScene"
+              planning_scene_msg="{planning_scene}"
+            />
+            <Action
+              ID="ValidateTrajectory"
+              planning_scene_msg="{planning_scene}"
+              planning_group_name="manipulator"
+              joint_trajectory_msg="{joint_trajectory_msg}"
+              debug_solution="{debug_solution}"
+            />
+            <Action
+              ID="ExecuteTrajectory"
+              execution_pipeline="jtc"
+              controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+            />
+          </Control>
         </Control>
-        <Control ID="Sequence" _collapsed="true">
-          <!--Get the centroid of the cropped point cloud and use it to get a contour-->
-          <Action
-            ID="GetCentroidFromPointCloud"
-            output_pose="{centroid}"
-            point_cloud="{point_cloud}"
-          />
-          <Action
-            ID="VisualizePose"
-            marker_lifetime="20"
-            marker_name="centroid"
-            marker_size="0.200000"
-            pose="{centroid}"
-          />
-          <Action
-            ID="GetContourFromPointCloudSlice"
-            contour_path="{contour_path}"
-            max_pose_spacing="0.200000"
-            hull_alpha="-1.000000"
-            input_cloud="{point_cloud}"
-            slice_distance_from_plane="0.100000"
-            slice_plane="{centroid}"
-            contour_crop_angle_span="3.2"
-            contour_crop_angle_start="1.58"
-          />
-          <Action
-            ID="VisualizePath"
-            marker_lifetime="20"
-            marker_name="path"
-            path="{contour_path}"
-            pose_marker_size="0.100000"
-            show_poses="true"
-          />
-        </Control>
-        <Control ID="Sequence" _collapsed="true">
-          <!--Plan and execute a path following the contour at a small distance-->
-          <Action
-            ID="PlanCartesianPath"
-            blending_radius="0.0050000"
-            ik_cartesian_space_density="0.010000"
-            ik_joint_space_density="0.100000"
-            joint_trajectory_msg="{joint_trajectory_msg}"
-            path="{contour_path}"
-            planning_group_name="manipulator"
-            cartesian_constraint="[{constraint_type: position_and_orientation}]"
-            trajectory_timing="[{mode: time_optimal}]"
-            tip_offset="0;0;0.1;0;0;0"
-            debug_solution="{debug_solution}"
-          />
-          <Action
-            ID="ExecuteTrajectory"
-            execution_pipeline="jtc"
-            controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-          />
-        </Control>
-        <SubTree
-          ID="Move to Waypoint (JTC)"
-          _collapsed="true"
-          waypoint_name="Look at Plane"
-          collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
-          acceleration_scale_factor="1.0"
-          _skipIf="true"
-        />
-      </Control>
-    </Decorator>
+      </Decorator>
+    </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Plan Path Along Surface - Loop">

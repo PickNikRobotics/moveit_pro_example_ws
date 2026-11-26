@@ -8,7 +8,7 @@ nav2LocalPlanTopic: /optimal_trajectory
 # The velocity smoother's output is what reaches the mecanum wheels, and it is
 # unstamped, so set the frame the command is expressed in. The controller that
 # subscribes here starts inactive and is only activated by a Nav2 Objective, so the
-# overlay stays silent during teleop and whole-body motion, which drive the base
-# through platform_velocity_controller instead.
+# overlay stays silent during teleop and whole-body motion, which drive the wheels
+# through platform_velocity_controller_base_jog and joint_trajectory_controller.
 nav2CmdVelTopic: /platform_velocity_controller_nav2/cmd_vel_unstamped
 nav2CmdVelFrame: ridgeback_base_link

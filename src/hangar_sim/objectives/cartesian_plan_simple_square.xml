@@ -7,16 +7,39 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree
-        ID="Move to Waypoint (JTC)"
-        _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
-        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
-        velocity_scale_factor="1.0"
-        waypoint_name="Look at Plane"
+      <SubTree ID="Move to Look at Plane" _collapsed="true" />
+      <!--The planning scene holds no hangar geometry, so plan validation sees the aircraft only through this capture: put the camera's view, without the floor, into the octomap.-->
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{point_cloud}"
+        output_cloud="{point_cloud}"
+        target_frame="world"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        pose_stamped="{scene_crop_center}"
+        position_xyz="0;0;2.05"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{scene_crop_center}"
+        point_cloud="{point_cloud}"
+        point_cloud_cropped="{scene_cloud}"
+        crop_box_size="100;100;4"
+      />
+      <Action
+        ID="UpdatePlanningSceneService"
+        point_cloud="{scene_cloud}"
+        point_cloud_service="/point_cloud_service"
       />
       <Action
         ID="CreatePoseStamped"
@@ -108,6 +131,17 @@
         cartesian_constraint="[{constraint_type: position_and_orientation}]"
         tip_links="grasp_link"
         trajectory_timing="[{mode: time_optimal}]"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        planning_scene_msg="{planning_scene}"
+        planning_group_name="manipulator"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        debug_solution="{debug_solution}"
       />
       <Action ID="IsUserAvailable" />
       <Action ID="WaitForMTCSolutionApproval" solution="{debug_solution}" />

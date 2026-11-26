@@ -10,6 +10,9 @@ pruned_paths:
   - ridgeback_control (ROS 1 controller and hardware configuration)
   - ridgeback_msgs (ROS 1 hardware status messages)
   - ridgeback_navigation (ROS 1 navigation configuration)
+modified_paths:
+  - ridgeback_description/urdf/ridgeback.urdf.xacro
 notes:
   - The retained Ridgeback description provides the mobile-base model and meshes used by simulation.
-  - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.
+  - ridgeback.urdf.xacro: each wheel joint gains a <limit effort="100" velocity="6.6"/>, because joint_trajectory_controller dereferences the URDF limits of every joint it controls and hangar_sim's wheels are trajectory joints; a BSD-licensed file, so no PickNik change notice is required in the file itself.
+  - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream. Every other vendored file is byte-identical to upstream.

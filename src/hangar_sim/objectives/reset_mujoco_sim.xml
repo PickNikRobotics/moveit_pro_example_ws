@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reset MuJoCo Sim">
+  <BehaviorTree
+    ID="Reset MuJoCo Sim"
+    _description="Reset the simulation to the `default` keyframe, discard the captured point clouds, octomap and surface coverage, and seed AMCL with the robot's keyframe pose so localization starts where the robot is."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="ListControllers"
+        type="command"
+        state="active"
+        controller_list="{command_controllers}"
+        service_name="/controller_manager/list_controllers"
+      />
+      <Action
+        ID="SwitchController"
+        deactivate_controllers="{command_controllers}"
+      />
+      <Control ID="Fallback">
+        <Control ID="Sequence">
+          <Action
+            ID="ResetMujocoKeyframe"
+            response_timeout="10.000000"
+            wait_for_server_available_timeout="3.000000"
+            keyframe_name="default"
+          />
+          <Action ID="ClearSnapshot" />
+          <!--AMCL keeps its pre-reset estimate after the robot jumps. The base pose of the `default`
+            keyframe in hangar_scene.xml, in map (mj_world to map is the identity);
+            test_base_geometry.py keeps the two equal.-->
+          <Action
+            ID="CreatePoseStamped"
+            reference_frame="map"
+            position_xyz="-0.0576239;-0.0172046;0.0"
+            orientation_xyzw="0;0;-0.0092757;0.999957"
+            pose_stamped="{keyframe_base_pose}"
+          />
+          <!--AMCL applies the reset's odometry jump at its next scan update. Seeding before that update
+            would let the jump move the seeded particles, so wait for it first.-->
+          <Decorator ID="Delay" delay_msec="1500">
+            <Action
+              ID="SetInitialPose"
+              pose="{keyframe_base_pose}"
+              robot_frame_id="ridgeback_base_link"
+              global_frame_id="map"
+              xy_variance="0.0025"
+              yaw_variance="0.003"
+            />
+          </Decorator>
+        </Control>
+        <!--A failed reset or seed restores the controllers, then fails, so localization is never left
+          silently at the old pose.-->
+        <Control ID="Sequence">
+          <Action
+            ID="SwitchController"
+            controller_list_action_name="/controller_manager/list_controllers"
+            activate_controllers="{command_controllers}"
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+      <Action
+        ID="SwitchController"
+        controller_list_action_name="/controller_manager/list_controllers"
+        activate_controllers="{command_controllers}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reset MuJoCo Sim">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="MuJoCo Simulation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
