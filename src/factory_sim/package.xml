@@ -22,7 +22,7 @@
   <depend>sensor_msgs</depend>
   <depend>behaviortree_cpp_picknik</depend>
   <exec_depend>admittance_controller</exec_depend>
-  <exec_depend>moveit_ros_perception</exec_depend>
+  <exec_depend>moveit_occupancy_map</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
 

@@ -19,7 +19,7 @@
 
   <exec_depend>admittance_controller</exec_depend>
   <exec_depend>lab_sim</exec_depend>
-  <exec_depend>moveit_ros_perception</exec_depend>
+  <exec_depend>moveit_occupancy_map</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
