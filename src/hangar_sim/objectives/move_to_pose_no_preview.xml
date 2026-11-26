@@ -16,10 +16,11 @@
         task="{move_to_pose_task}"
       />
       <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
+      <!--arm_only: the MTC planners keep the base at one pose. Use the whole-body manipulator group once they plan through the mobile base (moveit_pro#24547).-->
       <Action
         ID="SetupMTCPlanToPose"
         ik_frame="grasp_link"
-        planning_group_name="manipulator"
+        planning_group_name="arm_only"
         target_pose="{target_pose}"
         task="{move_to_pose_task}"
         monitored_stage="current state"

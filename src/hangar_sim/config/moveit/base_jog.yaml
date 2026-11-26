@@ -1,4 +1,5 @@
-planning_group: linear_actuator
+# Names the /base_jog/<planning_group> command topic; the SRDF's mobile_base is the jogged base.
+planning_group: ridgeback
 controller: platform_velocity_controller_base_jog
 # Keep turning below the controller's limit for pad control.
 max_linear_velocity: 1.3

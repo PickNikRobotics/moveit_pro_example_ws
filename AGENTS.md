@@ -268,9 +268,7 @@ leaving drivers healthy, `/do_objective` absent, and no obvious error.
 live stack, `platform_velocity_controller_nav2/odom` arrives at ~390 Hz and
 `imu_sensor_broadcaster/imu` at ~410 Hz — the controller manager's 600 Hz update rate, minus
 overruns. Anything that accumulates per-message state from those topics has to throttle for itself.
-`hangar_sim`'s fuse config does this with `throttle_period` on both sensor models; without it the
-fixed-lag smoother takes ~200 stamps per 0.5 s window, falls progressively behind (overrun grows
-from ms to minutes), and keeps publishing a frozen `odom_filtered` rather than failing.
+`market_sim`'s and `lunar_sim`'s fuse configs (`config/fuse/fuse.yaml`) do this with `throttle_period` on both sensor models; without it the fixed-lag smoother takes ~200 stamps per 0.5 s window, falls progressively behind (overrun grows from ms to minutes), and keeps publishing a frozen `odom_filtered` rather than failing.
 
 ### An empty YAML list aborts a ROS 2 node — omit the key instead
 
@@ -298,10 +296,6 @@ JSON (`moveit_studio_agent_msgs/msg/Json`) over
 count on it. A headless stand-in therefore has to *subscribe* to the request topic, then answer with
 `{"request_id": ..., "response": {...}}`. Run the Objective itself with a
 `moveit_studio_sdk_msgs/action/DoObjectiveSequence` goal on `/do_objective`.
-
-### A sim reset re-seeds the estimators through `odom_world_drift`
-
-`Reset MuJoCo Sim` (the Desktop App's Reset Simulation) teleports the robot to the keyframe. With `use_fuse:=true`, `odom_world_drift` sees the jump in `/odom` truth, resets fuse through `/state_estimator/set_pose`, and after AMCL's next update re-seeds it on `/initialpose`, both at the truth pose. If `set_pose` is unavailable or rejects the request, the node logs an error and neither estimator is reset: re-localize with a 2D pose estimate before navigating. With `use_fuse:=false`, `odom -> world` is a static identity and AMCL follows the jump as odometry.
 
 ## Config inheritance (`based_on_package`)
 
@@ -476,16 +470,11 @@ to the parent for one of those nodes therefore silently does nothing - the launc
 parameter reads as whatever the YAML hardcoded, and nothing warns.
 
 Rewrite a key in the launch file that creates the node, and pass any `LaunchConfiguration` it needs
-through that include's `launch_arguments` rather than reaching for one it was never given. See
-`odom_topic` in `navigation_launch.py`, driven by `use_fuse`.
+through that include's `launch_arguments` rather than reaching for one it was never given.
 
-Parameter values are not proof that a topic works: check `ros2 topic info <topic>` for a non-zero
-**Publisher count** on the running stack. This exact trap shipped a config where `bt_navigator` and
-`controller_server` both subscribed to a `/odom_filtered` with `Publisher count: 0` - nav2 tolerated
-it and navigation still succeeded, so only the topic check found it.
+Parameter values are not proof that a topic works: check `ros2 topic info <topic>` for a non-zero **Publisher count** on the running stack. nav2 tolerates a subscription to a topic nothing publishes, and navigation can still succeed.
 
-Note `RewrittenYaml` rewrites a key **everywhere it appears** in the file, not per-node, so one
-`odom_topic` entry also hits `velocity_smoother`'s.
+Note `RewrittenYaml` rewrites a key **everywhere it appears** in the file, not per-node: a rewrite aimed at one node also hits every other node whose parameters carry the same key.
 
 ## Known issue: Nav2 Jazzy can keep driving the base after a navigation aborts
 

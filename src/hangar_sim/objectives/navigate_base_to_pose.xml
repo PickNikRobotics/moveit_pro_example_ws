@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Navigate Base to Pose">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Navigate Base to Pose"
+    _description="Stow the arm, then drive the base with Nav2 to a goal pose in the map frame and hand the robot back to the joint trajectory controller. Asks you to localize the robot first if needed."
+    _favorite="false"
+    goal_pose="{goal_pose}"
+    refine_localization="{refine_localization}"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Stops if the scans do not fit the map. Skip it where unmapped objects around the robot hide the
+        mapped walls, such as next to the box pile; AMCL still tracks the base while it drives.-->
+      <SubTree
+        ID="Refine Localization In Place"
+        _skipIf="refine_localization == 'false'"
+      />
+      <!--The Nav2 footprint covers the base only, so stow the arm before driving. arm_only keeps the base still. Zero padding as in Move to Arm Upright: at 0.01 m the resting pose is rejected as self-colliding.-->
+      <SubTree
+        ID="Move to Named Waypoint (JTC)"
+        _collapsed="true"
+        waypoint_name="Arm upright"
+        joint_group_name="arm_only"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+        controller_names="joint_trajectory_controller"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+      />
+      <!--If navigation fails, restore the arm controller before reporting the failure.-->
+      <Control ID="Fallback" name="Drive to the goal, or restore controllers">
+        <Control ID="Sequence" name="Drive to the goal">
+          <Action
+            ID="SwitchController"
+            activate_controllers="platform_velocity_controller_nav2"
+            deactivate_controllers="velocity_force_controller;joint_trajectory_controller"
+          />
+          <Action
+            ID="NavigateToPoseAction"
+            action_name="/navigate_to_pose"
+            behavior_tree_path="/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+            ignore_stamp_time="true"
+            pose_stamped="{goal_pose}"
+          />
+          <Action
+            ID="SwitchController"
+            activate_controllers="joint_trajectory_controller"
+          />
+        </Control>
+        <Control ID="Sequence" name="Restore controllers and fail">
+          <Action
+            ID="SwitchController"
+            activate_controllers="joint_trajectory_controller"
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Navigate Base to Pose">
+      <input_port
+        name="goal_pose"
+        default="{goal_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      >
+        Goal pose of the base, in map.
+      </input_port>
+      <input_port name="refine_localization" default="true" type="bool">
+        If true, check and refine the localization estimate in place before
+        driving.
+      </input_port>
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

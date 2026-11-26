@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Tip Forward - Whole Body">
+  <BehaviorTree
+    ID="Move Tip Forward - Whole Body"
+    _description="Moves the tool 0.3 m forward along its own axis in a straight line, each time it runs. The manipulator group includes the mobile base, so PlanCartesianPath drives the base as well as the arm, and the motion continues once the arm alone cannot reach."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_controller"
+      />
+      <!--The planning scene holds no hangar geometry, so plan validation sees the aircraft only through this capture: put the camera's view, without the floor, into the octomap.-->
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{point_cloud}"
+        output_cloud="{point_cloud}"
+        target_frame="world"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        pose_stamped="{scene_crop_center}"
+        position_xyz="0;0;2.05"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{scene_crop_center}"
+        point_cloud="{point_cloud}"
+        point_cloud_cropped="{scene_cloud}"
+        crop_box_size="100;100;4"
+      />
+      <Action
+        ID="UpdatePlanningSceneService"
+        point_cloud="{scene_cloud}"
+        point_cloud_service="/point_cloud_service"
+      />
+      <!--The target, 0.3 m ahead of the tool, fixed in the world so it stays put while the robot moves.-->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="grasp_link"
+        pose_stamped="{target_pose}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;0;0.3"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{target_pose}"
+        target_frame_id="world"
+        output_pose="{target_pose}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="target"
+        marker_size="0.100000"
+        pose="{target_pose}"
+      />
+      <Action ID="ResetVector" vector="{path}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{path}"
+        element="{target_pose}"
+        output_vector="{path}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        blending_radius="0.020000"
+        debug_solution="{debug_solution}"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path="{path}"
+        planning_group_name="manipulator"
+        cartesian_constraint="[{constraint_type: position_and_orientation}]"
+        tip_links="grasp_link"
+        trajectory_timing="[{mode: time_optimal}]"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        planning_scene_msg="{planning_scene}"
+        planning_group_name="manipulator"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Tip Forward - Whole Body">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Training Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

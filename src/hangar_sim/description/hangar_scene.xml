@@ -5,7 +5,7 @@
   <compiler angle="radian" meshdir="assets" autolimits="true" />
   <include file="ur5e_ridgeback.xml" />
   <include file="hangar.xml" />
-  <!-- hangar runs a heavier stack (nav2 / slam_toolbox / fuse + the mecanum
+  <!-- hangar runs a heavier stack (nav2 / slam_toolbox + the mecanum
        base) than the other configs, so it owns a coarser timestep than the
        0.003 s standard: at 0.003 the CI runner overruns ~47% of sim steps,
        which starves controller mode-switching and fails most motion

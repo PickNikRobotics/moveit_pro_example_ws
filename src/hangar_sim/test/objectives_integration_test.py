@@ -39,7 +39,6 @@ import rclpy
 import tf2_ros
 from tf2_msgs.msg import TFMessage
 from nav_msgs.msg import Odometry
-from sensor_msgs.msg import Imu
 import yaml
 from rclpy.action import ActionClient
 from rclpy.time import Time
@@ -101,9 +100,6 @@ skip_objectives = {
     "Segment Image from Point",
     "Segment Image from Text Prompt",
     "Segment Point Cloud from Clicked Point",
-    # Fails by design: ValidateTrajectory rejects the intentionally-colliding
-    # demo path and the Objective ends on that failure.
-    "Cartesian Path with Collision Checking",
     # User input required: no primary UI is attached in headless CI, so these
     # block on a pose-from-user prompt or an MTC-solution/path approval that
     # never arrives.
@@ -112,12 +108,8 @@ skip_objectives = {
     "Localize Robot",  # AdjustPoseWithIMarker needs an operator to place the marker.
     # AMCL can lose track during the earlier "Plan Path Along Surface - Loop", and the scan check then rejects.
     "Refine Localization In Place",
-    "Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
-    "Solution - Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
-    "Solution - Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     # IsUserAvailable returns FAILURE headless, so its top-level Sequence
     # fails before reaching WaitForMTCSolutionApproval.
-    "Solution - Draw Square",
     "Cartesian Plan Simple Square",
     # Core-library objectives (moveit_pro_objectives) aggregated into every
     # config. These require operator input or approval unavailable in this sweep.
@@ -128,15 +120,6 @@ skip_objectives = {
     # A 121 m drive for scoring odometry against ground truth, not a smoke test;
     # it is run by hand.
     "Navigate Hangar Loop",
-    # Intermittent Jazzy CI-runner flakes. Skipped so the suite is deterministic.
-    #
-    # "Solution - Draw Picknik" is the suite's longest objective and sits on
-    # the 90 s execute-timeout boundary on the jazzy runner. When it overruns,
-    # the mid-execution halt leaves the joint_trajectory_controller commanding
-    # the interrupted draw pose; the 5 s inter-test reset cannot recover it, so
-    # the next objectives plan from a self-colliding start. Skipping removes the
-    # timeout flake and its downstream sim-state pollution.
-    "Solution - Draw Picknik",
 }
 
 # Execute-timeout overrides for objectives that legitimately exceed the 90 s
@@ -185,8 +168,7 @@ def wait_for_mujoco_reset_service(
 # first tests on a loaded CI runner, so the first controller-using objective
 # (cartesian_draw_geometry_from_file) raced them and failed SwitchController
 # with "Controller joint_trajectory_controller is not an existing controller"
-# or "command interface platform_velocity_controller/linear_x_joint/velocity
-# is not available".
+# or "command interface ... is not available".
 _CONFIG_YAML_PATH = Path(__file__).parent.parent / "config" / "config.yaml"
 
 
@@ -201,8 +183,7 @@ def _spawned_controllers_from_config() -> frozenset[str]:
 
 
 REQUIRED_CONTROLLERS = _spawned_controllers_from_config()
-# A controller in either of these states is loaded and configured; "inactive"
-# is enough for a chained controller to export its command interfaces.
+# A controller in either of these states is loaded and configured.
 CONFIGURED_CONTROLLER_STATES = ("inactive", "active")
 CONTROLLER_LOAD_TIMEOUT_S = 300.0
 LIST_CONTROLLERS_CALL_TIMEOUT_S = 10.0
@@ -216,9 +197,8 @@ def wait_for_controllers_loaded(
 
     Waits for each controller in ``REQUIRED_CONTROLLERS`` to report
     ``inactive`` or ``active`` from ``/controller_manager/list_controllers``,
-    once per module. ``inactive`` is enough: a configured chained controller
-    (platform_velocity_controller) already exports the command interfaces the
-    whole-body joint_trajectory_controller claims on activation.
+    once per module. ``inactive`` is enough: SwitchController activates a
+    configured controller on demand.
 
     Defined after ``wait_for_mujoco_reset_service`` on purpose: pytest runs
     module-scoped autouse fixtures in definition order, and the MuJoCo reset
@@ -310,10 +290,8 @@ def wait_for_robot_tf(
 # "Move to Arm Upright" drives the manipulator group to the "Arm upright"
 # waypoint via the joint_trajectory_controller. We resolve the expected target
 # at runtime from /get_saved_waypoints (same source of truth the objective
-# uses), then restrict the comparison to the manipulator arm joints: the saved
-# waypoint's joint_state also carries the mecanum base joints (linear_x/y,
-# rotational_yaw), which this objective does not command, so asserting them
-# would compare against an uncommanded pose.
+# uses), then restrict the comparison to the manipulator arm joints, the ones
+# this objective commands.
 JOINT_CHECK_OBJECTIVE = "Move to Arm Upright"
 JOINT_CHECK_WAYPOINT = "Arm upright"
 MANIPULATOR_ARM_JOINTS = (
@@ -354,6 +332,16 @@ TF_FIRST_SIGHTING_TIMEOUT_S = 60.0
 TF_PARENT_SAMPLE_DURATION_S = 4.0
 
 
+def _mjcf_base_ride_height() -> float:
+    """z of the MJCF base body, which moves only in x, y and yaw."""
+    mjcf = Path(__file__).parent.parent / "description" / "ur5e_ridgeback.xml"
+    anchor = (
+        ET.parse(mjcf).getroot().find("worldbody/body[@name='base_platform_rotation']")
+    )
+    assert anchor is not None, f"{mjcf.name} has no base_platform_rotation body"
+    return float(anchor.get("pos", "0 0 0").split()[2])
+
+
 def test_base_link_has_single_tf_parent(
     execute_objective_resource: ExecuteObjectiveResource,
 ) -> None:
@@ -362,18 +350,14 @@ def test_base_link_has_single_tf_parent(
     Regression guard for the three-parent TF conflict (MuJoCo lidar fill-in
     chain, MuJoCo odom TF, and robot_state_publisher all claiming the frame),
     which made the robot oscillate below base_link in the web UI.
-    robot_state_publisher owns the edge via the virtual-rail chain; a second
-    parent appearing here means a MuJoCo TF publisher was re-enabled (check
-    base_link_name / odom_publish_tf in the ros2_control xacro) or fuse's
-    publish_tf was turned back on.
+    MuJoCo's odom publisher owns the edge, since the URDF is rooted at
+    ridgeback_base_link; a second parent appearing here means another MuJoCo TF
+    publisher was re-enabled (check base_link_name in the ros2_control xacro).
     """
     node = execute_objective_resource.node
     parents: set[str] = set()
     odom_z_samples: list[float] = []
 
-    # Watching /tf only is correct while rotational_yaw_joint (the edge into
-    # ridgeback_base_link) is a moving joint; if it ever becomes fixed the edge
-    # moves to /tf_static and this test must follow it there.
     def collect(msg: TFMessage) -> None:
         for transform in msg.transforms:
             if transform.child_frame_id == BASE_LINK_FRAME:
@@ -383,9 +367,8 @@ def test_base_link_has_single_tf_parent(
         odom_z_samples.append(msg.pose.pose.position.z)
 
     subscription = node.create_subscription(TFMessage, "/tf", collect, 100)
-    # Piggyback an odom_planar check: odom_zero_z was a silently-ignored
-    # parameter for months, so pin the real one's effect (z zeroed in /odom)
-    # rather than trusting the spelling.
+    # The odom edge is the URDF root's only placement, so /odom must carry the
+    # base's ride height rather than odom_planar's zeroed z.
     odom_subscription = node.create_subscription(
         Odometry, "/odom", collect_odom, qos_profile_sensor_data
     )
@@ -413,53 +396,19 @@ def test_base_link_has_single_tf_parent(
         rclpy.spin_once(node, timeout_sec=0.1)
     node.destroy_subscription(subscription)
     node.destroy_subscription(odom_subscription)
-    assert parents == {"virtual_rail_link_2"}, (
-        f"Expected robot_state_publisher's virtual_rail_link_2 as the sole TF "
-        f"parent of {BASE_LINK_FRAME}, saw parents: {sorted(parents)}"
+    assert parents == {"odom"}, (
+        f"Expected MuJoCo's odom as the sole TF parent of {BASE_LINK_FRAME}, "
+        f"saw parents: {sorted(parents)}"
     )
     assert (
         odom_z_samples
     ), "No /odom messages observed; MuJoCo odom publisher may be off."
-    assert all(abs(z) < 1e-6 for z in odom_z_samples), (
-        f"odom_planar should zero /odom pose z for this planar base; "
-        f"saw max |z| = {max(abs(z) for z in odom_z_samples):.4f}"
+    ride_height = _mjcf_base_ride_height()
+    assert all(abs(z - ride_height) < 1e-6 for z in odom_z_samples), (
+        f"/odom pose z should stay at the MJCF base's {ride_height:.6f} m ride "
+        f"height; saw {min(odom_z_samples):.6f}..{max(odom_z_samples):.6f} m. "
+        f"Check odom_planar in the ros2_control xacro."
     )
-
-
-FUSE_INPUT_TIMEOUT_S = 60.0
-
-
-def test_fuse_inputs_reach_a_reliable_subscriber(
-    execute_objective_resource: ExecuteObjectiveResource,
-) -> None:
-    """fuse subscribes RELIABLE, which silently receives nothing from a BEST_EFFORT publisher."""
-    node = execute_objective_resource.node
-    topics = {
-        "/imu_sensor_broadcaster/imu": Imu,
-        "/platform_velocity_controller/odom": Odometry,
-        "/platform_velocity_controller_nav2/odom": Odometry,
-    }
-    received = dict.fromkeys(topics, 0)
-
-    def count(topic):
-        return lambda _msg: received.__setitem__(topic, received[topic] + 1)
-
-    def satisfied():
-        # Only the active base controller publishes odom, so either odom topic counts.
-        odom = [n for topic, n in received.items() if topic.endswith("/odom")]
-        return received["/imu_sensor_broadcaster/imu"] > 0 and any(odom)
-
-    # Default QoS is RELIABLE, as in fuse.
-    subscriptions = [
-        node.create_subscription(msg_type, topic, count(topic), 10)
-        for topic, msg_type in topics.items()
-    ]
-    deadline = time.monotonic() + FUSE_INPUT_TIMEOUT_S
-    while time.monotonic() < deadline and not satisfied():
-        rclpy.spin_once(node, timeout_sec=0.1)
-    for subscription in subscriptions:
-        node.destroy_subscription(subscription)
-    assert satisfied(), f"fuse input silent to a RELIABLE subscriber: {received}"
 
 
 # --- Box drop footprint reservation ---

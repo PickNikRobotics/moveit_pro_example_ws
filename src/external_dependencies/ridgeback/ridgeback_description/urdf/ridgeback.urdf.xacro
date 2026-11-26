@@ -59,6 +59,8 @@
       <child link="${prefix}_${side}_wheel_link" />
       <xacro:insert_block name="joint_pose" />
       <axis xyz="0 1 0" />
+      <!-- joint_trajectory_controller dereferences the URDF limits of every joint it controls. -->
+      <limit effort="100" velocity="6.6" />
     </joint>
 
     <transmission name="${prefix}_wheel_trans">

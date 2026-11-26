@@ -63,10 +63,17 @@
       <Control ID="Fallback">
         <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
           <Control ID="Sequence">
+            <!--The two viewpoints below are the base poses the "View Boxes" waypoints were recorded at; the
+              waypoints hold the arm joints only. Both drives skip the in-place localization check: they
+              start next to the box pile or the placed boxes, which hide the mapped walls from the lidar.
+              AMCL still tracks the base while it drives.-->
             <SubTree
               ID="Move Boxes to Loading Zone Start from Waypoint"
               _collapsed="true"
               waypoint_name="View Boxes"
+              view_base_position_xyz="-7.5;5.5;0.0"
+              view_base_orientation_xyzw="0;0;-0.9757234;0.2190067"
+              refine_localization="false"
               confidence_threshold="0.25"
               text_prompt="a single small orange cube box"
               place_pose="{place_pose}"
@@ -88,6 +95,9 @@
               _collapsed="true"
               _skipIf="picked_at_wp1"
               waypoint_name="View Boxes 2"
+              view_base_position_xyz="-9.784;0.407;0.0"
+              view_base_orientation_xyzw="0;0;0.9456215;0.3252691"
+              refine_localization="false"
               confidence_threshold="0.25"
               text_prompt="a single small orange cube box"
               place_pose="{place_pose}"

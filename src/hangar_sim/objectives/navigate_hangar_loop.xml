@@ -110,7 +110,7 @@
           <Action
             ID="SwitchController"
             activate_controllers="platform_velocity_controller_nav2"
-            deactivate_controllers="velocity_force_controller;joint_trajectory_controller;platform_velocity_controller"
+            deactivate_controllers="velocity_force_controller;joint_trajectory_controller"
           />
           <Decorator
             ID="ForEach"

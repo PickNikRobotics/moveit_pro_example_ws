@@ -1,8 +1,4 @@
-manipulator:
-  kinematics_solver: pose_ik_plugin/PoseIKPlugin
-  target_tolerance: 0.001
-  solve_mode: "first_found"
-
+# 'manipulator' holds the wheels of the 'ridgeback' mobile base, which Pose IK does not solve, so it has no solver.
 arm_only:
   kinematics_solver: pose_ik_plugin/PoseIKPlugin
   target_tolerance: 0.001

@@ -6,8 +6,11 @@
   <!--//////////-->
   <BehaviorTree
     ID="Move Boxes to Loading Zone Start from Waypoint"
-    _description="Move boxes to loading zone from waypoint"
+    _description="Drive to a box viewpoint with Nav2, pick a box with a whole-body straight-line approach, and drive back to place it in the loading zone"
     waypoint_name="View Boxes"
+    view_base_position_xyz="{view_base_position_xyz}"
+    view_base_orientation_xyzw="{view_base_orientation_xyzw}"
+    refine_localization="{refine_localization}"
     place_pose="{place_pose}"
     placed_count="{placed_count}"
     confidence_threshold="{confidence_threshold}"
@@ -35,17 +38,29 @@
         timeout="10.000000"
         gripper_command_action_name="/vacuum_gripper/gripper_cmd"
       />
+      <!--Drive the base to the viewpoint with Nav2, then raise the camera with the arm alone. The waypoint holds
+        the arm joints only.-->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="{view_base_position_xyz}"
+        orientation_xyzw="{view_base_orientation_xyzw}"
+        pose_stamped="{view_base_pose}"
+      />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Navigate Base to Pose"
         _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="platform_velocity_controller;joint_trajectory_controller"
-        joint_group_name="manipulator"
-        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
-        velocity_scale_factor="1.0"
+        goal_pose="{view_base_pose}"
+        refine_localization="{refine_localization}"
+      />
+      <SubTree
+        ID="Move to Named Waypoint (JTC)"
+        _collapsed="true"
         waypoint_name="{waypoint_name}"
-        seed="0"
+        joint_group_name="arm_only"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+        controller_names="joint_trajectory_controller"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
       />
       <SubTree ID="Clear Snapshot" _collapsed="false" />
       <Decorator ID="Delay" delay_msec="2000">
@@ -209,6 +224,18 @@
             point_cloud="{point_cloud_cropped}"
             graspable_objects="{graspable_objects}"
             face_separation_threshold="0.2"
+          />
+          <!--Start each straight-line approach elbow up, with the gripper pointing down in front of
+            the base, so the arm descends to the box without folding toward the floor. A failed
+            approach executes nothing, so every detection starts from here.-->
+          <SubTree
+            ID="Move to Named Waypoint (JTC)"
+            _collapsed="true"
+            waypoint_name="Pick Ready"
+            joint_group_name="arm_only"
+            collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+            controller_names="joint_trajectory_controller"
+            controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
           />
           <Control ID="Fallback">
             <Decorator ID="Inverter">
@@ -374,6 +401,166 @@
                       ID="Script"
                       code="graspable_candidate_count := graspable_candidate_count + 1"
                     />
+                    <!--
+                      Every leveled grasp left in the band lies on the top face with the same
+                      straight-down orientation, so their average is the face center.
+                    -->
+                    <Action
+                      ID="AveragePoseStampedVector"
+                      pose_stamped_vector="{leveled_grasp_poses}"
+                      average_pose_stamped="{grasp_pose}"
+                    />
+                    <!--
+                      Four candidate approach paths, each the pre-grasp pose 0.15 m above the grasp (the grasp
+                      points down, so a grasp_link-relative -Z offset is world +Z) and then the grasp, with both
+                      turned 0, 90, 180, and 270 deg about the approach axis. The approach keeps the grasp's
+                      orientation, so each turn also turns the base on its way in, and the base can come from
+                      another side when one is blocked. The suction cup is symmetric about that axis, so every
+                      candidate grasps the box the same way.
+                    -->
+                    <Action ID="ResetVector" vector="{candidate_paths}" />
+                    <Action
+                      ID="TransformPose"
+                      input_pose="{grasp_pose}"
+                      output_pose="{pre_grasp_0}"
+                      translation_xyz="0;0;-0.15"
+                    />
+                    <Action
+                      ID="ResetPoseStampedVector"
+                      vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_path}"
+                      element="{pre_grasp_0}"
+                      output_vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_path}"
+                      element="{grasp_pose}"
+                      output_vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_paths}"
+                      element="{candidate_path}"
+                      output_vector="{candidate_paths}"
+                    />
+                    <Action
+                      ID="TransformPose"
+                      input_pose="{grasp_pose}"
+                      output_pose="{grasp_90}"
+                      quaternion_xyzw="0;0;0.7071068;0.7071068"
+                    />
+                    <Action
+                      ID="TransformPose"
+                      input_pose="{grasp_90}"
+                      output_pose="{pre_grasp_90}"
+                      translation_xyz="0;0;-0.15"
+                    />
+                    <Action
+                      ID="ResetPoseStampedVector"
+                      vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_path}"
+                      element="{pre_grasp_90}"
+                      output_vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_path}"
+                      element="{grasp_90}"
+                      output_vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_paths}"
+                      element="{candidate_path}"
+                      output_vector="{candidate_paths}"
+                    />
+                    <Action
+                      ID="TransformPose"
+                      input_pose="{grasp_pose}"
+                      output_pose="{grasp_180}"
+                      quaternion_xyzw="0;0;1;0"
+                    />
+                    <Action
+                      ID="TransformPose"
+                      input_pose="{grasp_180}"
+                      output_pose="{pre_grasp_180}"
+                      translation_xyz="0;0;-0.15"
+                    />
+                    <Action
+                      ID="ResetPoseStampedVector"
+                      vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_path}"
+                      element="{pre_grasp_180}"
+                      output_vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_path}"
+                      element="{grasp_180}"
+                      output_vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_paths}"
+                      element="{candidate_path}"
+                      output_vector="{candidate_paths}"
+                    />
+                    <Action
+                      ID="TransformPose"
+                      input_pose="{grasp_pose}"
+                      output_pose="{grasp_270}"
+                      quaternion_xyzw="0;0;-0.7071068;0.7071068"
+                    />
+                    <Action
+                      ID="TransformPose"
+                      input_pose="{grasp_270}"
+                      output_pose="{pre_grasp_270}"
+                      translation_xyz="0;0;-0.15"
+                    />
+                    <Action
+                      ID="ResetPoseStampedVector"
+                      vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_path}"
+                      element="{pre_grasp_270}"
+                      output_vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_path}"
+                      element="{grasp_270}"
+                      output_vector="{candidate_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{candidate_paths}"
+                      element="{candidate_path}"
+                      output_vector="{candidate_paths}"
+                    />
+                    <!--
+                      Whole-body Path IK over the four candidates, base included: each a straight line from
+                      the view pose to its pre-grasp pose, then straight down onto the box. The shortest
+                      candidate that succeeds is executed. The stage checks the
+                      collisions along the base path the wheels drive, so a box whose every candidate
+                      approach would run the chassis or the arm through other boxes fails here and
+                      the loop moves on to the next detection. Nearer boxes leave fewer boxes in the
+                      way, so they pass first. The gripper may touch the octomap, which holds the
+                      target box. Position and orientation, so the gripper reaches the box level:
+                      with position only, the orientation drifts along the long line and the tilted
+                      gripper rim lands on the box top before the cups do.
+                    -->
                     <Action
                       ID="InitializeMTCTask"
                       task="{task}"
@@ -389,42 +576,13 @@
                       task="{task}"
                     />
                     <Action
-                      ID="SetupMTCConnectWithProRRT"
-                      acceleration_scale_factor="1.000000"
-                      max_iterations="5000"
+                      ID="SetupMTCBatchPathIK"
+                      paths="{candidate_paths}"
                       planning_group_name="manipulator"
-                      seed="0"
-                      task="{task}"
-                      trajectory_sampling_rate="100"
-                      velocity_scale_factor="1.000000"
-                    />
-                    <Action
-                      ID="SetupMTCMoveAlongFrameAxis"
-                      acceleration_scale="1.000000"
-                      axis_frame="grasp_link"
-                      axis_x="0.000000"
-                      axis_y="0.000000"
-                      axis_z="1.000000"
-                      hand_frame="grasp_link"
+                      tip_links="grasp_link"
+                      cartesian_constraint="[{constraint_type: position_and_orientation}]"
+                      blending_radius="0.02"
                       ignore_environment_collisions="false"
-                      max_distance="0.2"
-                      min_distance="0.05"
-                      planning_group_name="manipulator"
-                      task="{task}"
-                      velocity_scale="1.000000"
-                    />
-                    <!--`manipulator` is the whole-body group, so a solve relocates the base metres
-                        from the seed with the arm low in its envelope; 0.01 s leaves pose_ik too few
-                        restarts and it returns nothing for any generated grasp about half the time.-->
-                    <Action
-                      ID="SetupMTCBatchPoseIK"
-                      end_effector_group="moveit_ee"
-                      end_effector_link="grasp_link"
-                      ik_group="manipulator"
-                      ik_timeout_s="0.05"
-                      max_ik_solutions="8"
-                      monitored_stage="allow collision (gripper, &lt;octomap&gt;)"
-                      target_poses="{leveled_grasp_poses}"
                       task="{task}"
                     />
                     <Control ID="Parallel" success_count="2" failure_count="1">
@@ -497,7 +655,7 @@
                     <!--Lift the box straight up ~10 cm right after grasping to clear the surface before
                       transiting, so it does not drag along the ground. grasp_link points straight down at
                       the grasp, so a grasp_link-relative -Z move is world +Z (up); mirrors the standard
-                      pick retreat (retract_xyz default 0;0;-0.1).-->
+                      pick retreat (retract_xyz default 0;0;-0.1). A pure vertical lift, so the arm alone moves.-->
                     <Action
                       ID="CreatePoseStamped"
                       reference_frame="grasp_link"
@@ -518,7 +676,7 @@
                       ik_joint_space_density="0.100000"
                       joint_trajectory_msg="{joint_trajectory_msg}"
                       path="{lift_path}"
-                      planning_group_name="manipulator"
+                      planning_group_name="arm_only"
                       cartesian_constraint="[{constraint_type: position_and_orientation}]"
                       tip_links="grasp_link"
                       trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 1.0, acceleration_scale_factor: 1.0, trajectory_sampling_rate: 100}]"
@@ -533,8 +691,6 @@
                       controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
                       joint_trajectory_msg="{joint_trajectory_msg}"
                     />
-                    <!--Reserve this drop footprint before whole-body hover planning so the base
-                      stays clear of the box. Retain it after release for subsequent plans.-->
                     <Action
                       ID="Script"
                       code="placed_box_id := 'placed_box_' .. placed_count"
@@ -548,6 +704,160 @@
                       output_pose="{placed_box_pose}"
                       translation_xyz="0;0;0.375"
                     />
+                    <!--Lower the held box to 1 cm above the floor: its top, where grasp_link is, at world z=0.26.-->
+                    <Action
+                      ID="TransformPose"
+                      input_pose="{place_pose}"
+                      output_pose="{lowered_place_pose}"
+                      translation_xyz="0;0;0.24"
+                    />
+                    <!--Park the base 1.3 m short of the drop spot (world -y), facing it (yaw +90 deg), so
+                      the "Pick Ready" waypoint holds the box 0.5 m short of the hover pose. The hover pose
+                      points down, so its local frame has world -X, +Y, -Z axes: local (0, -1.3, 0.5) is
+                      world (0, -1.3, -0.5), the floor 1.3 m before that spot.-->
+                    <Action
+                      ID="TransformPose"
+                      input_pose="{place_pose}"
+                      output_pose="{unload_base_pose}"
+                      translation_xyz="0;-1.3;0.5"
+                    />
+                    <Action
+                      ID="OverridePoseOrientation"
+                      input_pose="{unload_base_pose}"
+                      orientation_xyzw="0;0;0.7071068;0.7071068"
+                      output_pose="{unload_base_pose}"
+                    />
+                    <!--The box pile hides the mapped walls from the lidar here, so the in-place
+                      localization check would reject a good estimate.-->
+                    <SubTree
+                      ID="Navigate Base to Pose"
+                      _collapsed="true"
+                      goal_pose="{unload_base_pose}"
+                      refine_localization="false"
+                    />
+                    <!--Hold the box out in front of the base. The arm alone moves, so the box stays clear
+                      of the robot body.-->
+                    <SubTree
+                      ID="Move to Named Waypoint (JTC)"
+                      _collapsed="true"
+                      waypoint_name="Pick Ready"
+                      joint_group_name="arm_only"
+                      collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+                      controller_names="joint_trajectory_controller"
+                      controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+                    />
+                    <!--One whole-body straight line, base included, from wherever Nav2 stopped to the hover
+                      pose: the planned path, not the base's stopping accuracy, places the box. Position only,
+                      so the wrist need not turn to the hover pose's yaw. PlanCartesianPath leaves the
+                      collision check along the base path the wheels drive to ValidateTrajectory.-->
+                    <Action ID="ResetPoseStampedVector" vector="{place_path}" />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{place_path}"
+                      element="{place_pose}"
+                      output_vector="{place_path}"
+                    />
+                    <Action
+                      ID="PlanCartesianPath"
+                      blending_radius="0.020000"
+                      ik_cartesian_space_density="0.010000"
+                      ik_joint_space_density="0.100000"
+                      joint_trajectory_msg="{joint_trajectory_msg}"
+                      path="{place_path}"
+                      planning_group_name="manipulator"
+                      cartesian_constraint="[{constraint_type: position_only}]"
+                      tip_links="grasp_link"
+                      trajectory_timing="[{mode: time_optimal}]"
+                      debug_solution="{debug_solution}"
+                    />
+                    <Action
+                      ID="GetCurrentPlanningScene"
+                      planning_scene_msg="{planning_scene}"
+                    />
+                    <Action
+                      ID="ValidateTrajectory"
+                      planning_scene_msg="{planning_scene}"
+                      planning_group_name="manipulator"
+                      joint_trajectory_msg="{joint_trajectory_msg}"
+                      debug_solution="{debug_solution}"
+                    />
+                    <Action
+                      ID="ExecuteTrajectory"
+                      execution_pipeline="jtc"
+                      controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+                      joint_trajectory_msg="{joint_trajectory_msg}"
+                    />
+                    <!--Then straight down with the arm alone: the chassis stands about 0.2 m short of the
+                      neighboring placed box, and a whole-body descent drives the base into it.-->
+                    <Action
+                      ID="ResetPoseStampedVector"
+                      vector="{descend_path}"
+                    />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{descend_path}"
+                      element="{lowered_place_pose}"
+                      output_vector="{descend_path}"
+                    />
+                    <Action
+                      ID="PlanCartesianPath"
+                      blending_radius="0.020000"
+                      ik_cartesian_space_density="0.010000"
+                      ik_joint_space_density="0.100000"
+                      joint_trajectory_msg="{joint_trajectory_msg}"
+                      path="{descend_path}"
+                      planning_group_name="arm_only"
+                      cartesian_constraint="[{constraint_type: position_only}]"
+                      tip_links="grasp_link"
+                      trajectory_timing="[{mode: time_optimal}]"
+                    />
+                    <Action
+                      ID="ExecuteTrajectory"
+                      execution_pipeline="jtc"
+                      controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+                      joint_trajectory_msg="{joint_trajectory_msg}"
+                    />
+                    <Action
+                      ID="MoveGripperAction"
+                      position="0.0"
+                      timeout="10.000000"
+                      gripper_command_action_name="/vacuum_gripper/gripper_cmd"
+                    />
+                    <!--Lift the gripper off the released box with the arm alone before the next drive, so the
+                      base does not drag the cups across it.-->
+                    <Action
+                      ID="CreatePoseStamped"
+                      reference_frame="grasp_link"
+                      pose_stamped="{lift_pose}"
+                      position_xyz="0;0;-0.15"
+                    />
+                    <Action ID="ResetPoseStampedVector" vector="{lift_path}" />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{lift_path}"
+                      element="{lift_pose}"
+                      output_vector="{lift_path}"
+                    />
+                    <Action
+                      ID="PlanCartesianPath"
+                      blending_radius="0.020000"
+                      ik_cartesian_space_density="0.010000"
+                      ik_joint_space_density="0.100000"
+                      joint_trajectory_msg="{joint_trajectory_msg}"
+                      path="{lift_path}"
+                      planning_group_name="arm_only"
+                      cartesian_constraint="[{constraint_type: position_and_orientation}]"
+                      tip_links="grasp_link"
+                      trajectory_timing="[{mode: time_optimal}]"
+                    />
+                    <Action
+                      ID="ExecuteTrajectory"
+                      execution_pipeline="jtc"
+                      controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+                      joint_trajectory_msg="{joint_trajectory_msg}"
+                    />
+                    <!--Add the placed box only now: the place and lift plans end and start with the cups on
+                      its top face. Later plans stay clear of it.-->
                     <Action
                       ID="AddCollisionMesh"
                       object_id="{placed_box_id}"
@@ -556,30 +866,6 @@
                       scale="1;1;1"
                       overwrite="true"
                     />
-                    <Control ID="Fallback">
-                      <Control ID="Sequence">
-                        <SubTree
-                          ID="Move to Pose No Preview"
-                          _collapsed="true"
-                          target_pose="{place_pose}"
-                        />
-                        <Action
-                          ID="MoveGripperAction"
-                          position="0.0"
-                          timeout="10.000000"
-                          gripper_command_action_name="/vacuum_gripper/gripper_cmd"
-                        />
-                      </Control>
-                      <!--A failed hover move or release must not leave an unplaced box in the scene.
-                        Preserve failure so the existing pick-loop handling remains in control.-->
-                      <Control ID="Sequence">
-                        <Action
-                          ID="RemoveCollisionObject"
-                          object_id="{placed_box_id}"
-                        />
-                        <Action ID="AlwaysFailure" />
-                      </Control>
-                    </Control>
                     <Action
                       ID="Script"
                       code="placed_count := placed_count + 1"
@@ -629,6 +915,20 @@
       <inout_port name="placed_count" default="0" />
       <input_port name="text_prompt" default="{text_prompt}" />
       <input_port name="waypoint_name" default="View Boxes" />
+      <input_port name="view_base_position_xyz" default="-7.5;5.5;0.0">
+        Base position to view the boxes from, in map, in meters.
+      </input_port>
+      <input_port
+        name="view_base_orientation_xyzw"
+        default="0;0;-0.9757234;0.2190067"
+      >
+        Base orientation to view the boxes from, in map.
+      </input_port>
+      <input_port name="refine_localization" default="true" type="bool">
+        If true, check and refine the localization estimate before driving to
+        the viewpoint. Set false when the drive starts next to the box
+        pile, which hides the mapped walls.
+      </input_port>
     </SubTree>
   </TreeNodesModel>
 </root>

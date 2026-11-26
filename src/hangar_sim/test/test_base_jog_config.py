@@ -41,10 +41,7 @@ PACKAGE = Path(__file__).resolve().parents[1]
 CONTROL = yaml.safe_load(
     (PACKAGE / "config/control/picknik_ur.ros2_control.yaml").read_text()
 )
-OTHER_BASE_CONTROLLERS = (
-    "platform_velocity_controller",
-    "platform_velocity_controller_nav2",
-)
+OTHER_BASE_CONTROLLERS = ("platform_velocity_controller_nav2",)
 
 
 def read_yaml(relative_path: str) -> dict:
@@ -100,7 +97,7 @@ def test_base_jog_controller_reads_body_frame_stamped_commands(
 
 @pytest.mark.parametrize("other", OTHER_BASE_CONTROLLERS)
 def test_other_base_controllers_stay_unstamped(other: str) -> None:
-    """Nav2 and whole-body motion keep the unstamped input they use on main."""
+    """Nav2 keeps the unstamped input it uses on main."""
     assert CONTROL[other]["ros__parameters"]["use_stamped_vel"] is False
 
 
@@ -129,17 +126,12 @@ def test_base_jog_speed_caps_fit_controller(
     assert -speed >= controller[f"{axis}.min_velocity"]
 
 
-def test_base_jog_group_contains_only_base_joints(base_jog: dict) -> None:
-    """The Base tab selects an existing group without arm joints."""
+def test_base_jog_names_the_mobile_base(base_jog: dict) -> None:
+    """The Base tab jogs the SRDF's mobile base, the only base the robot has."""
     srdf = ET.parse(PACKAGE / "config/moveit/picknik_ur.srdf")
-    group = srdf.find(f"group[@name='{base_jog['planning_group']}']")
-    assert group is not None
-    assert {joint.attrib["name"] for joint in group.findall("joint")} == {
-        "linear_x_joint",
-        "linear_y_joint",
-        "rotational_yaw_joint",
-    }
-    assert not group.findall("chain")
+    assert [base.attrib["name"] for base in srdf.findall("mobile_base")] == [
+        base_jog["planning_group"]
+    ]
 
 
 def test_base_mode_switches_controller_before_jogging(base_jog: dict) -> None:
@@ -152,16 +144,3 @@ def test_base_mode_switches_controller_before_jogging(base_jog: dict) -> None:
     assert switch.attrib["activate_controllers"] == "{controllers}"
     assert jog.attrib["ID"] == "BaseJog"
     assert jog.attrib["cmd_vel_topic"] == f"/{base_jog['controller']}/cmd_vel"
-
-
-def test_state_estimator_fuses_base_jog_odometry(base_jog: dict) -> None:
-    """Localization and mapping keep wheel odometry while the Base tab drives."""
-    fuse = read_yaml("config/fuse/fuse.yaml")["state_estimator"]["ros__parameters"]
-    topic = f"/{base_jog['controller']}/odom"
-    sensors = [
-        name
-        for name, sensor in fuse.items()
-        if isinstance(sensor, dict) and sensor.get("topic") == topic
-    ]
-    assert len(sensors) == 1
-    assert fuse["sensor_models"][sensors[0]]["type"] == "fuse_models::Odometry3D"
