@@ -75,6 +75,9 @@ extern "C" int replay_step(void* p, const double* q, const double* r, const doub
   reference.positions = Eigen::Map<const Eigen::VectorNd>(r, 7);
   reference.velocities = Eigen::VectorNd::Zero(7);
   reference.accelerations = Eigen::VectorNd::Zero(7);
+  // The controller calls updateKinematics once per cycle before update, and update rejects a cycle without it.
+  if (a.controller->updateKinematics(current, reference) != AdmittanceResult::SUCCESS)
+    return 0;
   auto status =
       a.controller->update(current, { Eigen::Map<const Eigen::Vector6d>(w) }, reference, Duration(dt), desired);
   Eigen::Map<Eigen::VectorNd>(out, 7) = desired.positions;
