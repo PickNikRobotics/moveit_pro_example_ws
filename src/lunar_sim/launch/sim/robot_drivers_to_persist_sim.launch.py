@@ -199,6 +199,39 @@ def generate_launch_description():
         }.items(),
     )
 
+    # Idle slam_toolbox for Build Map: inactive until lifecycle_manager_mapping starts it, so it
+    # publishes no map -> odom and no /map while beluga_amcl owns localization.
+    idle_slam_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("slam_toolbox"),
+                "launch",
+                "online_sync_launch.py",
+            )
+        ),
+        condition=run_amcl,
+        launch_arguments={
+            "use_lifecycle_manager": "true",
+            "use_sim_time": use_sim_time,
+            "slam_params_file": params_file,
+        }.items(),
+    )
+
+    mapping_lifecycle_manager = NodeWithAnsiLogging(
+        condition=run_amcl,
+        package="nav2_lifecycle_manager",
+        executable="lifecycle_manager",
+        name="lifecycle_manager_mapping",
+        parameters=[
+            {
+                "autostart": False,
+                "node_names": ["slam_toolbox"],
+                "use_sim_time": use_sim_time,
+            }
+        ],
+        output="screen",
+    )
+
     localization_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(launch_dir, "localization_launch.py")
@@ -341,6 +374,8 @@ def generate_launch_description():
             nav2_container,
             localization_container,
             slam_cmd,
+            idle_slam_cmd,
+            mapping_lifecycle_manager,
             localization_cmd,
             navigation_cmd,
             static_tf_world_to_map,
