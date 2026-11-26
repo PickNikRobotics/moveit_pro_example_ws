@@ -17,7 +17,7 @@
         path="{path}"
         tip_links="gripper_end"
         planning_group_name="manipulator"
-        position_only="false"
+        cartesian_constraint="[{constraint_type: position_and_orientation}]"
         blending_radius="0.001"
         velocity_scale_factor="{velocity_scale_factor}"
         acceleration_scale_factor="{acceleration_scale_factor}"

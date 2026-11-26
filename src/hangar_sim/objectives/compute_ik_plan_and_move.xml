@@ -27,7 +27,6 @@
       <Action
         ID="ComputeInverseKinematics"
         ik_timeout_s="0.05"
-        link_padding="0.01"
         planning_group_name="manipulator"
         planning_scene_msg="{planning_scene}"
         target_poses="{target_poses}"
