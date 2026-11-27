@@ -110,6 +110,7 @@ skip_objectives = {
     "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
     "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
     "Localize Robot",  # AdjustPoseWithIMarker needs an operator to place the marker.
+    "Build Map",  # Requires operator Start, teleoperation, and Save Map/Discard input.
     # AMCL can lose track during the earlier "Plan Path Along Surface - Loop", and the scan check then rejects.
     "Refine Localization In Place",
     "Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
