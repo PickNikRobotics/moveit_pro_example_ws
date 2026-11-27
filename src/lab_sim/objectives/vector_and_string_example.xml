@@ -103,7 +103,7 @@
       <Control ID="Sequence" name="Test Some Vector Operations">
         <Action
           ID="Script"
-          code="string3 := 'Make sure you have INFO alert types enables in order to see the messages.'"
+          code="string3 := 'Make sure you have INFO alert types enabled in order to see the messages.'"
         />
         <Action
           ID="CreateStringMessage"

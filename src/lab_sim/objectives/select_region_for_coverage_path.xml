@@ -108,6 +108,7 @@
                           point_cloud_fragment="{selected_cloud}"
                         />
 
+<<<<<<< HEAD
                         <!-- The drawn box rarely stops at the edge of the surface the operator meant: it also catches the
                              object's sides and the table behind it. A plane fitted through all of that tilts away from the
                              surface, so the sweep would neither follow it nor hold its standoff. Keep the surface itself. -->
@@ -149,6 +150,47 @@
                     </Decorator>
                   </Control>
                 </Decorator>
+=======
+          <!-- The drawn box rarely stops at the edge of the surface the operator meant: it also catches the
+               object's sides and the table behind it. A plane fitted through all of that tilts away from the
+               surface, so the sweep would neither follow it nor hold its standoff. Keep the surface itself. -->
+          <Action
+            ID="ExtractDominantPlaneFromPointCloud"
+            point_cloud="{selected_cloud}"
+            inlier_tolerance="0.005"
+            min_inlier_fraction="0.5"
+            plane_point_cloud="{region_cloud}"
+          />
+          <!-- align_xy_to_reference squares the box up with the image axes. The region is a flat patch with
+               no elongation of its own, so its principal axes follow how perspective skewed the selection:
+               they run diagonally across it, tilting the sweep and inflating the box. -->
+          <Action
+            ID="GetOrientedBoundingBoxFromPointCloud"
+            point_cloud="{region_cloud}"
+            reference_pose="{region_reference_pose}"
+            align_xy_to_reference="true"
+            box_center_pose="{region_pose}"
+            box_dimensions="{region_dimensions}"
+          />
+          <!-- SURFACE projection follows the measured surface: each waypoint sits one standoff above the cloud
+               along the local normal. Only the points of point_cloud inside the region box are used. -->
+          <Action
+            ID="GenerateSurfaceCoveragePath"
+            region_pose="{region_pose}"
+            region_dimensions="{region_dimensions}"
+            line_spacing="0.03"
+            point_spacing="0.02"
+            standoff="0.04"
+            margin="0.0"
+            point_cloud="{selected_cloud}"
+            projection_mode="SURFACE"
+            output_frame="world"
+            coverage_path="{coverage_path}"
+            region_cloud="{surface_cloud}"
+          />
+          <!-- Show the cloud the sweep was projected onto: point_cloud cropped to the region box. -->
+          <Action ID="SendPointCloudToUI" point_cloud="{surface_cloud}" />
+>>>>>>> origin/v10.3
 
                 <!-- Preview only a path this pass produced. Outside the ForceSuccess: a failed preview (for example
                      a missing transform to the 3D view) is not fixed by editing the box, so it ends the loop. -->
