@@ -56,7 +56,27 @@ src/vla_sim/config/) > a built-in default. A missing or empty YAML file is
 fine, so a bare `python vla_inference_server.py --checkpoint <dir-or-hf-id>`
 still works for development; a malformed file or value parks the server in
 the error state.
+
+On a QNN host the compose file also runs this file as the relay
+(VLA_QNN_WORKER_SOCKET) and the supervised NPU worker (--unix-socket); both are
+dispatched before the heavy imports below (vla_inference_forwarder.py).
 """
+
+import os
+import sys
+
+if __name__ == "__main__":
+    if os.environ.get("VLA_QNN_WORKER_SOCKET", "").strip():
+        import vla_inference_forwarder
+
+        sys.exit(vla_inference_forwarder.main())
+    if os.environ.get("VLA_QNN_WORKER_CHILD") != "1" and any(
+        arg == "--unix-socket" or arg.startswith("--unix-socket=")
+        for arg in sys.argv[1:]
+    ):
+        import vla_inference_forwarder
+
+        sys.exit(vla_inference_forwarder.supervise_worker(sys.argv))
 
 import argparse
 import base64
@@ -65,10 +85,10 @@ import hashlib
 import hmac
 import json
 import math
-import os
 import re
+import socket
+import socketserver
 import stat
-import sys
 import threading
 import time
 import traceback
@@ -1205,8 +1225,22 @@ def watched_file_signature(path: str) -> tuple[int, int, int] | None:
     return (metadata.st_ino, metadata.st_size, metadata.st_mtime_ns)
 
 
+# Match WORKER_CHILD_ENV and RESTART_EXIT_CODE in vla_inference_forwarder.py.
+QNN_WORKER_CHILD_ENV = "VLA_QNN_WORKER_CHILD"
+QNN_WORKER_RESTART_EXIT_CODE = 75
+
+
 def restart_process() -> None:
-    """Replace this process so model memory is released before reloading."""
+    """Replace this process so model memory is released before reloading.
+
+    A supervised QNN worker exits instead: FastRPC keys sessions by host PID,
+    which an in-place exec keeps, and the reloaded image then fails to create
+    the HTP device.
+    """
+    if os.environ.get(QNN_WORKER_CHILD_ENV) == "1":
+        sys.stdout.flush()
+        sys.stderr.flush()
+        os._exit(QNN_WORKER_RESTART_EXIT_CODE)
     environment = os.environ.copy()
     if environment.pop(_HF_TOKEN_FILE_SOURCE_ENV, None) == "1":
         # The file is the source of truth. Do not let the old value become an
@@ -1842,7 +1876,9 @@ def parse_args() -> argparse.Namespace:
     # bootstrap parser reads only that flag.
     bootstrap = argparse.ArgumentParser(add_help=False)
     bootstrap.add_argument("--config", default=DEFAULT_CONFIG_PATH)
-    config_path = bootstrap.parse_known_args()[0].config
+    bootstrap.add_argument("--unix-socket", default="")
+    bootstrap_args = bootstrap.parse_known_args()[0]
+    config_path = bootstrap_args.config
 
     config: dict = {}
     config_errors: list = []
@@ -1853,6 +1889,13 @@ def parse_args() -> argparse.Namespace:
         # whether this process loaded that file or some other mount.
         if content is not None:
             config_revision = hashlib.sha256(content).hexdigest()
+        elif bootstrap_args.unix_socket:
+            raise FileNotFoundError(
+                f"{config_path} does not exist: the QNN worker serves "
+                "vla_serving_<VLA_QNN_HOST>.yaml from the active robot "
+                "configuration package's config directory (or VLA_CONFIG_DIR), "
+                "so check VLA_QNN_HOST, MOVEIT_CONFIG_PACKAGE and VLA_CONFIG_DIR"
+            )
         config = parse_serving_config(config_path, content)
     except Exception as exc:
         # A malformed config must park in the error state after the socket
@@ -1973,6 +2016,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--port", type=int, default=8973)
     parser.add_argument(
+        "--unix-socket",
+        default="",
+        help="listen on this Unix socket instead of TCP --port; used by the "
+        "network-less QNN worker behind the inference_server relay",
+    )
+    parser.add_argument(
         "--state-dim",
         type=int,
         default=numeric_default("state_dim", int, 0),
@@ -2056,6 +2105,127 @@ def apply_bearer_key(state: ServerState, environment: Mapping[str, str]) -> bool
     return False
 
 
+class ThreadingUnixHTTPServer(
+    socketserver.ThreadingMixIn, socketserver.UnixStreamServer
+):
+    """ThreadingHTTPServer's behaviour on a Unix socket."""
+
+    daemon_threads = True
+
+    def get_request(self):
+        # AF_UNIX peers have no address, but BaseHTTPRequestHandler logs one.
+        request, _ = super().get_request()
+        return request, ("unix", 0)
+
+
+# `moveit_pro run` leaves the worker running when it stops the relay, so the
+# worker exits once the relay's polls (WORKER_KEEPALIVE_SECONDS in
+# vla_inference_forwarder.py) stop for this long.
+RELAY_SILENCE_EXIT_SECONDS = 60.0
+RELAY_FIRST_CONTACT_SECONDS = 600.0
+RELAY_WATCHDOG_PERIOD_SECONDS = 5.0
+# Matches RELAY_ID_HEADER in vla_inference_forwarder.py.
+RELAY_ID_HEADER = "X-VLA-Relay-Id"
+
+
+class RelayWatchdog:
+    """Decides when a --unix-socket worker has lost the relay it serves."""
+
+    def __init__(self, clock=time.monotonic):
+        self._clock = clock
+        self._started = clock()
+        self._last_contact: float | None = None
+        self._relay_id: str | None = None
+        self._lock = threading.Lock()
+
+    def touch(self) -> None:
+        with self._lock:
+            self._last_contact = self._clock()
+
+    def note_relay(self, relay_id: str) -> bool:
+        """Record the relay's id; True when it replaces a different relay's."""
+        if not relay_id:
+            return False
+        with self._lock:
+            replaced = self._relay_id is not None and self._relay_id != relay_id
+            self._relay_id = relay_id
+            return replaced
+
+    def expired_reason(self) -> str | None:
+        """Why the worker should exit now, or None while its relay is present."""
+        now = self._clock()
+        with self._lock:
+            last_contact = self._last_contact
+        if last_contact is None:
+            if now - self._started > RELAY_FIRST_CONTACT_SECONDS:
+                return (
+                    f"no relay connected within {RELAY_FIRST_CONTACT_SECONDS:.0f} s "
+                    "of start"
+                )
+            return None
+        if now - last_contact > RELAY_SILENCE_EXIT_SECONDS:
+            return f"no relay request for {now - last_contact:.0f} s"
+        return None
+
+
+def track_relay_contact(
+    handler, watchdog: RelayWatchdog, state: "ServerState | None" = None
+):
+    """The handler class with every connection counted as relay contact.
+
+    A worker parked after a native QNN failure restarts when a new relay
+    connects, since it can outlive the old relay by RELAY_SILENCE_EXIT_SECONDS.
+    """
+
+    class RelayTrackedHandler(handler):
+        def setup(self):
+            watchdog.touch()
+            super().setup()
+
+        def parse_request(self):
+            parsed = super().parse_request()
+            if parsed and watchdog.note_relay(self.headers.get(RELAY_ID_HEADER, "")):
+                if state is not None and state.qnn_restart_required:
+                    log(
+                        "a new inference_server relay connected to a worker "
+                        "parked after a native QNN failure; restarting"
+                    )
+                    restart_process()
+            return parsed
+
+    return RelayTrackedHandler
+
+
+def watch_relay(watchdog: RelayWatchdog, period: float = RELAY_WATCHDOG_PERIOD_SECONDS):
+    """Exit the process once the relay is gone, which releases the NPU."""
+    while True:
+        time.sleep(period)
+        reason = watchdog.expired_reason()
+        if reason:
+            log(f"exiting: {reason}; the inference_server relay has stopped")
+            os._exit(0)
+
+
+def bind_unix_http_server(path: str, handler) -> ThreadingUnixHTTPServer:
+    """Bind the HTTP handler to a Unix socket, replacing a stale one.
+
+    The socket is 0666 so the non-root relay can reach a root worker without
+    CAP_CHOWN; access control is the private vla_qnn_ipc volume only those two
+    mount, plus the bearer token.
+    """
+    try:
+        if stat.S_ISSOCK(os.lstat(path).st_mode):
+            os.unlink(path)
+    except FileNotFoundError:
+        pass
+    previous_umask = os.umask(0o111)
+    try:
+        httpd = ThreadingUnixHTTPServer(path, handler)
+    finally:
+        os.umask(previous_umask)
+    return httpd
+
+
 def main() -> None:
     token_file = os.environ.get("HF_TOKEN_FILE", "").strip()
     token_error = load_hf_token_file(token_file)
@@ -2069,7 +2239,17 @@ def main() -> None:
     state.checkpoint_revision = args.checkpoint_revision
     state.config_revision = args.config_revision
     state.trainer_handoff_version = args.trainer_handoff_version
-    httpd = ThreadingHTTPServer(("0.0.0.0", args.port), make_handler(state))
+    if args.unix_socket:
+        watchdog = RelayWatchdog()
+        httpd = bind_unix_http_server(
+            args.unix_socket,
+            track_relay_contact(make_handler(state), watchdog, state),
+        )
+        threading.Thread(target=watch_relay, args=(watchdog,), daemon=True).start()
+        listen_address = args.unix_socket
+    else:
+        httpd = ThreadingHTTPServer(("0.0.0.0", args.port), make_handler(state))
+        listen_address = f"0.0.0.0:{args.port}"
     watched_paths = [args.config]
     if token_file:
         watched_paths.append(token_file)
@@ -2081,7 +2261,7 @@ def main() -> None:
     ).start()
     if apply_bearer_key(state, os.environ):
         threading.Thread(target=load_policy, args=(state, args), daemon=True).start()
-        log(f"listening on 0.0.0.0:{args.port}; loading model ...")
+        log(f"listening on {listen_address}; loading model ...")
     else:
         # The model is deliberately not loaded without a key.
         log(f"FATAL: {state.detail}")

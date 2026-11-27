@@ -1,4 +1,4 @@
-# Empty for CPU, CUDA, and Jetson; `-rocm` on AMD x86_64 hosts. Compose uses the same value in the image tag, so a tag always names the stage it holds.
+# Empty for CPU, CUDA, and Jetson; `-rocm` on AMD x86_64 hosts; `-qnn` on Qualcomm hosts that set VLA_QNN_HOST. Compose uses the same value in the image tag, so a tag always names the stage it holds.
 ARG MOVEIT_INFERENCE_IMAGE_SUFFIX=
 
 FROM python:3.12-slim AS runtime
@@ -77,11 +77,59 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # actionable startup error. An explicit device: cpu remains an opt-out.
 ENV VLA_REQUIRE_GPU=1
 
+# Qualcomm Hexagon NPU (backend: qnn). Ubuntu, not Debian: FastRPC from a Debian
+# image stalls every native call (README.md, "Serve on the IQ10 NPU").
+FROM ubuntu:24.04@sha256:9c7f200c07e3d4a03e7249d2c16bf66a51120fb876aa2242cf31451412543289 AS runtime-qnn
+
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      python3 python3-venv libgl1 libglib2.0-0 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV VIRTUAL_ENV=/opt/venv \
+    PATH=/opt/venv/bin:$PATH
+RUN python3 -m venv /opt/venv
+
+ARG TORCH_VERSION=2.11.0
+ARG TORCHVISION_VERSION=0.26.0
+ARG TORCHAO_VERSION=0.17.0
+# The diffusers fix and decord removal are explained in the runtime stage above.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    export PIP_DEFAULT_TIMEOUT=120 PIP_RETRIES=10 \
+    && pip install --index-url https://download.pytorch.org/whl/cpu \
+      --extra-index-url https://pypi.org/simple \
+      "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION" \
+    && pip install "lerobot[pi,smolvla,groot]==0.6.0" \
+      "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION" \
+      "torchao==$TORCHAO_VERSION" \
+    && pip uninstall -y decord \
+    && sed -i '0,/^if is_torchao_available():/s//logger = logging.get_logger(__name__)\n&/' \
+      /opt/venv/lib/python3.12/site-packages/diffusers/quantizers/torchao/torchao_quantizer.py \
+    && python -c 'import lerobot.policies.factory, torchao.quantization, lerobot.policies.groot.modeling_groot, lerobot.policies.groot.processor_groot'
+
+# --no-deps: only the bundled QAIRT 2.50 libraries are used, not ONNX Runtime.
+ARG QNN_LIBRARY_DIR=/opt/venv/lib/python3.12/site-packages/onnxruntime_qnn
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-deps \
+      https://files.pythonhosted.org/packages/45/7c/dbe4d15c97e744f51a20be5aafe8bebf77b7dba113db03b61d53b9fab9eb/onnxruntime_qnn-2.6.0-cp312-cp312-manylinux_2_34_aarch64.whl#sha256=aa78412661bb8b6ce2ed44d4ff2360817875131d6c79f35c1d915159c668d79e \
+    && test -f "${QNN_LIBRARY_DIR}/libQnnHtp.so" \
+    && test -f "${QNN_LIBRARY_DIR}/libQnnHtpV81Skel.so" \
+    && test -f "${QNN_LIBRARY_DIR}/libQnnHtpV81Stub.so"
+
+# FastRPC's `;`-separated search paths for the V81 skeleton and the DSP shell;
+# /vendor/dsp is mounted by inference_qnn_worker.
+ENV QNN_HTP_LIBRARY="${QNN_LIBRARY_DIR}/libQnnHtp.so" \
+    LD_LIBRARY_PATH="${QNN_LIBRARY_DIR}" \
+    ADSP_LIBRARY_PATH="${QNN_LIBRARY_DIR};/vendor/dsp/cdsp;/vendor/dsp/cdsp0" \
+    CDSP_LIBRARY_PATH="${QNN_LIBRARY_DIR};/vendor/dsp/cdsp;/vendor/dsp/cdsp0" \
+    CDSP0_LIBRARY_PATH="${QNN_LIBRARY_DIR};/vendor/dsp/cdsp;/vendor/dsp/cdsp0" \
+    OMP_NUM_THREADS=1
+
 # Selects a named stage above, whose external base is already versioned.
 # hadolint ignore=DL3006
 FROM runtime${MOVEIT_INFERENCE_IMAGE_SUFFIX} AS server
 
-COPY vla_inference_server.py vla_qnn_policy.py vla_qnn_runtime.py vla_qnn_export.py /app/
+COPY vla_inference_server.py vla_inference_forwarder.py vla_qnn_policy.py vla_qnn_runtime.py vla_qnn_export.py /app/
 WORKDIR /app
 
 # Non-root default for a bare `docker run` (the compose service overrides the
