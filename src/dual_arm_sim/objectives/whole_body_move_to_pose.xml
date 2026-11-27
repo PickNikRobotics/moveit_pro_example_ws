@@ -28,7 +28,6 @@
         joint_costs="{joint_costs}"
         ik_timeout_s="1.0"
         optimization_timeout_s="0.05"
-        link_padding="0.01"
         solution="{ik_solution}"
       />
       <SubTree

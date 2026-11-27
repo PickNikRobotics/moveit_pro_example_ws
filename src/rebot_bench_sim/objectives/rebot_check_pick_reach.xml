@@ -37,7 +37,7 @@
         ik_timeout_s="0.5"
         solve_mode="optimize_distance"
         optimization_timeout_s="0.1"
-        link_padding="0.0"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
         solution="{goal}"
       />
       <!-- Bound planned joint2 reach; motor-temperature protection is independent. -->
@@ -64,7 +64,7 @@
         ik_timeout_s="0.5"
         solve_mode="optimize_distance"
         optimization_timeout_s="0.1"
-        link_padding="0.0"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
         solution="{goal}"
       />
       <!-- Bound planned joint2 reach; motor-temperature protection is independent. -->

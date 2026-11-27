@@ -265,7 +265,7 @@ protected:
           BT::InputPort<std::string>("tip_links"), BT::InputPort<PlanningScene>("planning_scene_msg"),
           BT::InputPort<std::string>("planning_group_name"), BT::InputPort<double>("ik_timeout_s"),
           BT::InputPort<std::string>("solve_mode"), BT::InputPort<double>("optimization_timeout_s"),
-          BT::InputPort<double>("link_padding"), BT::OutputPort<RobotState>("solution") });
+          BT::InputPort<std::string>("collision_check_params"), BT::OutputPort<RobotState>("solution") });
     factory.registerSimpleAction(
         "RetrieveWaypoint",
         [](BT::TreeNode& node) {
