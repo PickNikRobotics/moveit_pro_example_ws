@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Localize Robot"
-    _description="Place a marker on the robot to localize it. Run after startup and whenever the robot is moved by hand."
+    _description="Re-localize the robot when its estimated position is wrong. Drag the marker to roughly where the robot actually is, with the red X axis pointing forward; height is ignored. The robot then fine-tunes the position against its lidar scans. If the scans don't match the map, the Objective fails and the previous position is restored."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
