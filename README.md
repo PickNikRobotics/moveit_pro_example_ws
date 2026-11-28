@@ -53,6 +53,7 @@ This directory is gitignored. The configuration's `runtime.launch.xml` starts Ny
 - `lunar_sim`
 - `market_sim`
 - `rebot_bench_sim`
+- `rebot_peg_in_hole_sim`
 - `so101_base_config`
 - `so101_sim`
 - `vla_sim`
